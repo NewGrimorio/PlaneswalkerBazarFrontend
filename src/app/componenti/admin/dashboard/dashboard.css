@@ -1,0 +1,45 @@
+.plancia { padding: 24px; }
+.griglia {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+.tessera {
+  padding: 20px;
+  cursor: pointer;
+  text-align: center;
+  transition: box-shadow 0.2s;
+  align-items: center;   /* ← centra icona e title nel flex della mat-card */
+}
+
+.tessera:hover { box-shadow: var(--mat-sys-level3); }
+.icona {
+  font-size: 40px; width: 40px; height: 40px;
+  color: var(--mat-sys-primary);
+  margin-bottom: 8px;
+}
+
+.riga-stat {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 16px 0 24px;
+}
+.stat {
+  background: #fff; border-radius: 8px;
+  padding: 16px 20px;
+  display: flex; align-items: center; gap: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.stat strong { display: block; font-size: 26px; line-height: 1.1; }
+.stat small  { color: #777; }
+.cerchio {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; flex-shrink: 0;
+}
+.verde  { background: #2ecc71; }
+.giallo { background: #f1b53d; }
+.blu    { background: #2f6fd6; }
+.rosso  { background: #d64541; }

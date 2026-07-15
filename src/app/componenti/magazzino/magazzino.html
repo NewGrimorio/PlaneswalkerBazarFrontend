@@ -1,0 +1,184 @@
+<h1>Magazzino</h1>
+<p class="sottotitolo">
+  Varianti, prezzi e giacenze. Cerca un prodotto per gestirne gli SKU.
+</p>
+
+<div class="pannello-ricerca">
+  <mat-form-field appearance="outline" class="cresce">
+    <mat-label>Cerca prodotto</mat-label>
+    <input matInput [(ngModel)]="testoRicerca" placeholder="es. Lightning Bolt"
+           (keyup.enter)="cerca()">
+  </mat-form-field>
+  <button mat-flat-button (click)="cerca()"
+          [disabled]="testoRicerca.trim().length < 2">
+    <mat-icon>search</mat-icon> Cerca
+  </button>
+</div>
+<div class="tabs">
+  @for (t of tipiSfoglia; track t.valore) {
+    <button class="tab" [class.attiva]="tipoSfoglia() === t.valore"
+            (click)="sfoglia(t.valore)">{{ t.etichetta }}</button>
+  }
+</div>
+
+@if (tipoSfoglia() === 'SINGLE' && !espansioneSel()) {
+  <div class="griglia-espansioni">
+    @for (e of espansioni(); track e.id) {
+      <button class="scheda-espansione" (click)="scegliEspansione(e)">
+        <span class="codice">{{ e.codice.toUpperCase() }}</span>
+        <span class="nome">{{ e.nome }}</span>
+        <span class="conta">{{ e.numeroCarte }} carte</span>
+      </button>
+    }
+  </div>
+}
+
+@if (espansioneSel(); as esp) {
+  <div class="briciole">
+    <button mat-button (click)="tornaAEspansioni()">
+      <mat-icon>arrow_back</mat-icon> Espansioni
+    </button>
+    <span class="dove">Singole di {{ esp.nome }}</span>
+  </div>
+}
+
+@if (risultati().length > 0) {
+  <ul class="risultati">
+    @for (p of risultati(); track p.id) {
+      <li (click)="seleziona(p)">
+        @if (urlImmagine(p.imageUrl); as img) {
+          <img [src]="img" alt="">
+        }
+        <span class="nome">{{ p.nome }}</span>
+        <span class="tipo">{{ p.tipoProdotto }}</span>
+        @if (!p.attivo) { <span class="spento-badge">disattivato</span> }
+      </li>
+    }
+  </ul>
+} @else if (cercato()) {
+  <p class="vuoto-ricerca">
+    {{ tipoSfoglia() && tipoSfoglia() !== 'SINGLE'
+       ? 'Nessun prodotto in questa categoria.'
+       : 'Nessun prodotto trovato.' }}
+  </p>
+}
+
+@if (messaggio(); as m) {
+  <p class="messaggio" [class.errore]="m.errore">{{ m.testo }}</p>
+}
+
+@if (prodotto(); as p) {
+  <div class="testata-prodotto">
+    @if (urlImmagine(p.imageUrl); as img) {
+      <img class="miniatura" [src]="img" alt="">
+    }
+    <div>
+      <h2>{{ p.nome }}</h2>
+      <span class="tipo">{{ p.tipoProdotto }}</span>
+      @if (p.espansioneNome) { <span class="tipo">· {{ p.espansioneNome }}</span> }
+    </div>
+    <span class="spazio"></span>
+    <button mat-flat-button (click)="apriForm()">
+      <mat-icon>add</mat-icon> Nuova variante
+    </button>
+  </div>
+
+  @if (formAperto()) {
+    <div class="pannello-form">
+      <div class="riga">
+        @if (isSingle) {
+          <mat-form-field appearance="outline">
+            <mat-label>Condizione</mat-label>
+            <mat-select [(ngModel)]="fCondizione">
+              @for (c of condizioni; track c.valore) {
+                <mat-option [value]="c.valore">{{ c.etichetta }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+        <mat-form-field appearance="outline">
+          <mat-label>Lingua</mat-label>
+          <mat-select [(ngModel)]="fLingua">
+            @for (l of lingue; track l) {
+              <mat-option [value]="l">{{ l.toUpperCase() }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Finitura</mat-label>
+          <mat-select [(ngModel)]="fFinitura">
+            @for (f of finiture; track f) {
+              <mat-option [value]="f">{{ f }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="campo-num">
+          <mat-label>Prezzo €</mat-label>
+          <input matInput type="number" min="0" step="0.01" [(ngModel)]="fPrezzo">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="campo-num">
+          <mat-label>Quantità</mat-label>
+          <input matInput type="number" min="0" step="1" [(ngModel)]="fQuantita">
+        </mat-form-field>
+      </div>
+      <div class="azioni-form">
+        <button mat-button (click)="formAperto.set(false)">Annulla</button>
+        <button mat-flat-button
+                [disabled]="fPrezzo === null || fQuantita === null || inCorso()"
+                (click)="creaVariante()">
+          {{ inCorso() ? 'Creazione…' : 'Crea variante' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <table class="tabella">
+    <thead>
+      <tr>
+        <th>Condizione</th><th>Lingua</th><th>Finitura</th>
+        <th class="num">Prezzo €</th><th class="num">Quantità</th>
+        <th>Stato</th><th class="azioni"></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (r of righe(); track r.sku.id) {
+        <tr [class.disattivo]="!r.sku.attivo">
+          <td>{{ etichettaCondizione(r.sku.condizione) }}</td>
+          <td>{{ r.sku.lingua.toUpperCase() }}</td>
+          <td>{{ r.sku.finitura }}</td>
+          <td class="num">
+            <input class="cella-input" type="number" min="0" step="0.01"
+                   [(ngModel)]="r.prezzo">
+          </td>
+          <td class="num">
+            <input class="cella-input" type="number" min="0" step="1"
+                   [(ngModel)]="r.quantita">
+          </td>
+          <td>
+            <span class="stato" [class.spento]="!r.sku.disponibile">
+              {{ !r.sku.attivo ? 'Disattivato'
+                 : r.sku.quantita === 0 ? 'Esaurito' : 'Disponibile' }}
+            </span>
+          </td>
+          <td class="azioni">
+            @if (modificata(r)) {
+              <button mat-icon-button class="salva-riga" title="Salva modifiche"
+                      (click)="salvaRiga(r)">
+                <mat-icon>check_circle</mat-icon>
+              </button>
+            }
+            <button mat-icon-button
+                    [title]="r.sku.attivo ? 'Disattiva' : 'Riattiva'"
+                    (click)="toggleAttivo(r)">
+              <mat-icon>{{ r.sku.attivo ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="7" class="vuoto">
+          Nessuna variante. Crea la prima con «Nuova variante».
+        </td></tr>
+      }
+    </tbody>
+  </table>
+}

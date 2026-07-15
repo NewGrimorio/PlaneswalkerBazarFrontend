@@ -1,0 +1,26 @@
+<div class="plancia">
+  <h1>Dashboard amministratore</h1>
+  @if (stats(); as s) {
+    <div class="riga-stat">
+      <div class="stat"><span class="cerchio verde"><mat-icon>local_shipping</mat-icon></span>
+        <div><strong>{{ s.ordiniDaSpedire }}</strong><small>Ordini da spedire</small></div></div>
+      <div class="stat"><span class="cerchio giallo"><mat-icon>account_balance</mat-icon></span>
+        <div><strong>{{ s.bonificiInAttesa }}</strong><small>Bonifici da confermare</small></div></div>
+      <div class="stat"><span class="cerchio blu"><mat-icon>rate_review</mat-icon></span>
+        <div><strong>{{ s.recensioniDaModerare }}</strong><small>Recensioni da moderare</small></div></div>
+      <div class="stat"><span class="cerchio rosso"><mat-icon>warning</mat-icon></span>
+        <div><strong>{{ s.skuSottoScorta }}</strong><small>SKU sotto scorta</small></div></div>
+    </div>
+  }@else if (erroreStats()) {
+      <p class="avviso">Contatori non disponibili al momento.</p>
+  }
+  <div class="griglia">
+    @for (s of sezioni; track s.link) {
+      <mat-card class="tessera" [routerLink]="s.link">
+        <mat-icon class="icona">{{ s.icona }}</mat-icon>
+        <mat-card-title>{{ s.titolo }}</mat-card-title>
+        <mat-card-content>{{ s.descrizione }}</mat-card-content>
+      </mat-card>
+    }
+  </div>
+</div>

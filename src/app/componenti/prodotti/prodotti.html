@@ -1,0 +1,139 @@
+<h1>Catalogo prodotti</h1>
+<p class="sottotitolo">
+  Sigillato, accessori e lotti. Le carte singole nascono dalla sincronizzazione
+  e si gestiscono dal magazzino.
+</p>
+
+<div class="tabs">
+  @for (t of tipi; track t.valore) {
+    <button class="tab" [class.attiva]="tipoAttivo() === t.valore"
+            (click)="cambiaTab(t.valore)">{{ t.etichetta }}</button>
+  }
+  <span class="spazio"></span>
+  <button mat-flat-button (click)="nuovoProdotto()">
+    <mat-icon>add</mat-icon> Nuovo prodotto
+  </button>
+</div>
+
+@if (messaggio(); as m) {
+  <p class="messaggio" [class.errore]="m.errore">{{ m.testo }}</p>
+}
+
+@if (formAperto() !== null) {
+  <div class="pannello-form">
+    <h2>{{ formAperto() === 0 ? 'Nuovo prodotto' : 'Modifica prodotto' }}</h2>
+
+    <div class="riga">
+      <mat-form-field appearance="outline">
+        <mat-label>Tipo</mat-label>
+        <mat-select [(ngModel)]="fTipo" [disabled]="formAperto() !== 0">
+          @for (t of tipi; track t.valore) {
+            <mat-option [value]="t.valore">{{ t.etichetta }}</mat-option>
+          }
+        </mat-select>
+        @if (formAperto() !== 0) {
+          <mat-hint>Il tipo non è modificabile</mat-hint>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="cresce">
+        <mat-label>Nome</mat-label>
+        <input matInput [(ngModel)]="fNome" required maxlength="300">
+      </mat-form-field>
+    </div>
+
+    <div class="riga">
+      <mat-form-field appearance="outline" class="cresce">
+        <mat-label>Slug</mat-label>
+        <input matInput [(ngModel)]="fSlug" maxlength="300">
+        <mat-hint>Vuoto = generato dal nome</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="cresce">
+        <mat-label>Espansione (facoltativa)</mat-label>
+        <mat-select [(ngModel)]="fEspansioneId">
+          <mat-option [value]="null">— Nessuna —</mat-option>
+          @for (e of espansioni(); track e.id) {
+            <mat-option [value]="e.id">{{ e.codice.toUpperCase() }} — {{ e.nome }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="pieno">
+      <mat-label>Descrizione</mat-label>
+      <textarea matInput rows="3" [(ngModel)]="fDescrizione"></textarea>
+    </mat-form-field>
+
+    <div class="blocco-immagine">
+      <button mat-stroked-button type="button"
+              [disabled]="caricamentoImmagine()"
+              (click)="fileInput.click()">
+        <mat-icon>upload</mat-icon>
+        {{ caricamentoImmagine() ? 'Caricamento…' : 'Carica immagine' }}
+      </button>
+      <input #fileInput type="file" hidden
+             accept="image/jpeg,image/png,image/webp"
+             (change)="caricaImmagine($event)">
+
+      <div class="cornice-anteprima">
+        @if (anteprima(); as a) {
+          <img [src]="a" alt="Anteprima immagine prodotto">
+        } @else {
+          <span class="segnaposto">
+            <mat-icon>image</mat-icon>
+            Nessuna immagine
+          </span>
+        }
+      </div>
+    </div>
+
+    <div class="azioni-form">
+      <button mat-button (click)="chiudiForm()">Annulla</button>
+      <button mat-flat-button [disabled]="!fNome.trim() || inCorso()"
+              (click)="salva()">
+        {{ inCorso() ? 'Salvataggio…' : 'Salva' }}
+      </button>
+    </div>
+  </div>
+}
+
+<table class="tabella">
+  <thead>
+    <tr>
+      <th></th><th>Nome</th><th>Slug</th><th>Espansione</th>
+      <th>Stato</th><th class="azioni"></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (p of prodotti(); track p.id) {
+      <tr [class.disattivo]="!p.attivo">
+        <td class="cella-img">
+          @if (urlImmagine(p.imageUrl); as img) {
+            <img class="miniatura" [src]="img" alt="">
+          }
+        </td>
+        <td>{{ p.nome }}</td>
+        <td class="slug">{{ p.slug }}</td>
+        <td>{{ p.espansioneNome ?? '—' }}</td>
+        <td>
+          <span class="stato" [class.spento]="!p.attivo">
+            {{ p.attivo ? 'Attivo' : 'Disattivato' }}
+          </span>
+        </td>
+        <td class="azioni">
+          <button mat-icon-button title="Modifica" (click)="modifica(p)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button
+                  [title]="p.attivo ? 'Disattiva' : 'Riattiva'"
+                  (click)="toggleAttivo(p)">
+            <mat-icon>{{ p.attivo ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+        </td>
+      </tr>
+    } @empty {
+      <tr><td colspan="6" class="vuoto">Nessun prodotto in questa categoria.</td></tr>
+    }
+  </tbody>
+</table>

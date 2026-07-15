@@ -1,0 +1,129 @@
+.sottotitolo { color: #777; margin-top: -8px; }
+
+/* ---------- Ricerca ---------- */
+.pannello-ricerca {
+  display: flex; align-items: center; gap: 12px;
+  background: #fff; border-radius: 8px;
+  padding: 16px 20px 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  margin: 16px 0;
+}
+.cresce { flex: 1; }
+.risultati {
+  list-style: none; margin: 0 0 16px; padding: 0;
+  background: #fff; border-radius: 8px; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.risultati li {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px; cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+.risultati li:hover { background: rgba(0,0,0,0.04); }
+.risultati img { height: 36px; width: 36px; object-fit: cover; border-radius: 4px; }
+.risultati .nome { flex: 1; }
+.tipo { color: #888; font-size: 12px; text-transform: uppercase; }
+.spento-badge {
+  font-size: 11px; color: #b3261e;
+  border: 1px solid #b3261e; border-radius: 10px;
+  padding: 1px 8px;
+}
+.vuoto-ricerca { color: #999; margin: 0 0 16px 4px; }
+
+/* ---------- Testata prodotto ---------- */
+.testata-prodotto {
+  display: flex; align-items: center; gap: 16px;
+  background: #fff; border-radius: 8px;
+  padding: 16px 20px; margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.testata-prodotto h2 { margin: 0; font-size: 18px; }
+.testata-prodotto .miniatura {
+  height: 48px; width: 48px; object-fit: cover;
+  border-radius: 6px; border: 1px solid #eee;
+}
+.spazio { flex: 1; }
+
+/* ---------- Form nuova variante ---------- */
+.pannello-form {
+  background: #fff; border-radius: 8px;
+  padding: 20px; margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.riga { display: flex; gap: 12px; flex-wrap: wrap; }
+.riga mat-form-field { min-width: 150px; }
+.campo-num { max-width: 140px; }
+.azioni-form { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ---------- Messaggi ---------- */
+.messaggio {
+  padding: 10px 16px; border-radius: 6px;
+  background: #e6f6ec; color: #1e7a43;
+}
+.messaggio.errore { background: #fdecea; color: #b3261e; }
+
+/* ---------- Tabella SKU ---------- */
+.tabella {
+  width: 100%; border-collapse: collapse;
+  background: #fff; border-radius: 8px; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.tabella th, .tabella td {
+  text-align: left; padding: 10px 16px;
+  border-bottom: 1px solid #eee;
+}
+.tabella th { font-size: 12px; text-transform: uppercase; color: #888; }
+.num { text-align: right; }
+.cella-input {
+  width: 90px; text-align: right;
+  padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px;
+  font: inherit;
+}
+.cella-input:focus { outline: 2px solid #1d2b4f; border-color: transparent; }
+.azioni { text-align: right; white-space: nowrap; }
+tr.disattivo td { color: #aaa; }
+.stato { color: #1e7a43; font-weight: 500; }
+.stato.spento { color: #b3261e; }
+.salva-riga { color: #1e7a43; }
+.vuoto { text-align: center; color: #999; padding: 32px; }
+
+@media (max-width: 700px) {
+  .riga { flex-direction: column; gap: 0; }
+}
+
+.griglia-espansioni {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px; margin-bottom: 16px;
+}
+.scheda-espansione {
+  background: #fff; border: 1px solid #eee; border-radius: 8px;
+  padding: 14px 16px; cursor: pointer; text-align: left;
+  display: flex; flex-direction: column; gap: 2px;
+  font: inherit;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.scheda-espansione:hover { border-color: #1d2b4f; }
+.scheda-espansione .codice { font-family: monospace; font-weight: 700; }
+.scheda-espansione .nome { color: #333; }
+.scheda-espansione .conta { color: #999; font-size: 12px; }
+
+.briciole {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 12px;
+}
+.briciole .dove { color: #555; font-weight: 500; }
+
+/* ---------- Tab sfoglia per tipo ---------- */
+.tabs {
+  display: flex; align-items: center; gap: 4px;
+  margin: 0 0 16px;
+  flex-wrap: wrap;
+}
+.tab {
+  background: none; border: none; cursor: pointer;
+  padding: 8px 16px; border-radius: 20px;
+  font: inherit; color: #555;
+}
+.tab:hover { background: rgba(0,0,0,0.05); }
+.tab.attiva { background: #1d2b4f; color: #fff; }

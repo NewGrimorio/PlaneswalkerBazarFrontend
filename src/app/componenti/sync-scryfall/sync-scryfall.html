@@ -1,0 +1,66 @@
+<h1>Sincronizza set</h1>
+<p class="sottotitolo">Importa o aggiorna espansioni e carte dal database Scryfall.</p>
+
+<div class="pannello-nuovo">
+  <mat-form-field appearance="outline" class="campo-codice">
+    <mat-label>Codice set</mat-label>
+    <input matInput [(ngModel)]="codice" placeholder="es. mh3"
+           [disabled]="inCorso() !== null"
+           (keyup.enter)="sincronizza(codice)">
+  </mat-form-field>
+  <button mat-flat-button (click)="sincronizza(codice)"
+          [disabled]="!codice.trim() || inCorso() !== null">
+    @if (inCorso() !== null) {
+      <mat-spinner diameter="18" class="spinner-bottone" />
+      Sincronizzazione in corso…
+    } @else {
+      Sincronizza
+    }
+  </button>
+</div>
+
+@if (messaggio(); as m) {
+  <p class="messaggio" [class.errore]="m.tipo === 'errore'"
+                       [class.avviso]="m.tipo === 'avviso'">{{ m.testo }}</p>
+}
+
+<table class="tabella">
+  <thead>
+    <tr>
+      <th>Codice</th><th>Nome</th><th>Uscita</th>
+      <th class="num">Carte</th><th>Ultima sync</th><th></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (e of espansioni(); track e.id) {
+      <tr>
+        <td class="codice">{{ e.codice.toUpperCase() }}</td>
+        <td>{{ e.nome }}</td>
+        <td>{{ e.dataUscita | date:'dd/MM/yyyy' }}</td>
+        <td class="num">{{ e.numeroCarte }}</td>
+        <td>
+          @if (e.dataUltimaSincronizzazione) {
+            {{ e.dataUltimaSincronizzazione | date:'dd/MM/yyyy HH:mm' }}
+          } @else {
+            <span class="mai">mai</span>
+          }
+        </td>
+        <td class="azioni">
+          <button mat-icon-button title="Risincronizza"
+                  [disabled]="inCorso() !== null"
+                  (click)="sincronizza(e.codice)">
+            @if (inCorso() === e.codice) {
+              <mat-spinner diameter="20" />
+            } @else {
+              <mat-icon>refresh</mat-icon>
+            }
+          </button>
+        </td>
+      </tr>
+    } @empty {
+      <tr><td colspan="6" class="vuoto">
+        Nessuna espansione importata. Inserisci un codice set per iniziare.
+      </td></tr>
+    }
+  </tbody>
+</table>

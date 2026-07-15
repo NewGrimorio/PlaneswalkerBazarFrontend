@@ -1,0 +1,63 @@
+.scaffale {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+/* Sidebar scura come il riferimento */
+.barra-laterale {
+  background: #1d2b4f;
+  color: #e8eaf2;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+}
+.logo {
+  font-size: 18px; font-weight: 700;
+  padding: 8px 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.etichetta {
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: #8f9bbd; padding: 16px 20px 8px;
+}
+.barra-laterale nav a {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 20px;
+  color: #c6cde2; text-decoration: none;
+  border-left: 3px solid transparent;
+  transition: background 0.15s;
+}
+.barra-laterale nav a:hover { background: rgba(255,255,255,0.06); }
+.barra-laterale nav a.attiva {
+  background: rgba(255,255,255,0.10);
+  border-left-color: var(--mat-sys-primary);
+  color: #fff;
+}
+.esci {
+  margin-top: auto;
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 20px;
+  background: none; border: none; color: #c6cde2;
+  cursor: pointer; font: inherit;
+}
+.esci:hover { color: #fff; }
+
+.colonna-destra { background: #f4f5f8; display: flex; flex-direction: column; }
+.barra-alta {
+  background: #fff;
+  padding: 12px 24px;
+  display: flex; justify-content: flex-end;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.benvenuto { color: #555; font-size: 14px; }
+.contenuto { padding: 24px; }
+
+/* Sotto i 900px la sidebar si comprime a sole icone */
+@media (max-width: 900px) {
+  .scaffale { grid-template-columns: 64px 1fr; }
+  .logo, .etichetta,
+  .barra-laterale nav a span,
+  .esci span { display: none; }
+  .barra-laterale nav a { justify-content: center; padding: 14px 0; border-left-width: 0; }
+}

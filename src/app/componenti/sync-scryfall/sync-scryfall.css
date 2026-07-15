@@ -1,0 +1,35 @@
+.messaggio.avviso { background: #fdf4e3; color: #8a5a00; }
+
+.sottotitolo { color: #777; margin-top: -8px; }
+
+.pannello-nuovo {
+  display: flex; align-items: center; gap: 12px;
+  background: #fff; border-radius: 8px;
+  padding: 16px 20px 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  margin: 16px 0;
+}
+.campo-codice { width: 180px; }
+.spinner-bottone { display: inline-block; margin-right: 8px; }
+
+.messaggio {
+  padding: 10px 16px; border-radius: 6px;
+  background: #e6f6ec; color: #1e7a43;
+}
+.messaggio.errore { background: #fdecea; color: #b3261e; }
+
+.tabella {
+  width: 100%; border-collapse: collapse;
+  background: #fff; border-radius: 8px; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.tabella th, .tabella td {
+  text-align: left; padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+}
+.tabella th { font-size: 12px; text-transform: uppercase; color: #888; }
+.codice { font-family: monospace; font-weight: 600; }
+.num { text-align: right; }
+.azioni { text-align: right; }
+.mai { color: #b3261e; font-style: italic; }
+.vuoto { text-align: center; color: #999; padding: 32px; }

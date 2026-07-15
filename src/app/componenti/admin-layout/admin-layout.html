@@ -1,0 +1,29 @@
+<div class="scaffale">
+
+  <aside class="barra-laterale">
+    <div class="logo">PlaneswalkerBazar</div>
+    <div class="etichetta">Gestione</div>
+    <nav>
+      @for (v of voci; track v.link) {
+        <a [routerLink]="v.link" routerLinkActive="attiva"
+           [routerLinkActiveOptions]="{ exact: v.link === '/admin' }">
+          <mat-icon>{{ v.icona }}</mat-icon>
+          <span>{{ v.titolo }}</span>
+        </a>
+      }
+    </nav>
+    <button class="esci" (click)="esci()">
+      <mat-icon>logout</mat-icon><span>Esci</span>
+    </button>
+  </aside>
+
+  <div class="colonna-destra">
+    <header class="barra-alta">
+      <span class="benvenuto">Ciao, {{ utente()?.nome }}</span>
+    </header>
+    <main class="contenuto">
+      <router-outlet />
+    </main>
+  </div>
+
+</div>

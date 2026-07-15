@@ -1,0 +1,71 @@
+<div class="centro">
+  <mat-card class="scheda">
+    <mat-card-header>
+      <mat-card-title>Registrazione</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form (ngSubmit)="registrati()">
+        <mat-form-field appearance="outline" class="campo">
+          <mat-label>Nome</mat-label>
+          <input matInput type="text" name="nome" [(ngModel)]="nome" required />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="campo">
+          <mat-label>Cognome</mat-label>
+          <input matInput type="text" name="cognome" [(ngModel)]="cognome" required />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="campo">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" name="email" [(ngModel)]="email" required />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="campo">
+          <mat-label>Telefono</mat-label>
+          <input matInput type="tel" name="telefono" [(ngModel)]="telefono" />
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline" class="campo">
+          <mat-label>Data di nascita</mat-label>
+          <input matInput type="date" name="dataNascita" [(ngModel)]="dataNascita" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="campo">
+          <mat-label>Codice fiscale</mat-label>
+          <input
+            matInput
+            type="text"
+            name="codiceFiscale"
+            [(ngModel)]="codiceFiscale"
+            maxlength="16"
+          />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="campo">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            type="password"
+            name="password"
+            [(ngModel)]="password"
+            required
+            minlength="8"
+          />
+        </mat-form-field>
+
+        @if (errore()) {
+          <p class="errore">{{ errore() }}</p>
+        }
+
+        <button matButton="filled" type="submit" class="campo" [disabled]="inCorso()">
+          {{ inCorso() ? 'Registrazione in corso...' : 'Registrati' }}
+        </button>
+      </form>
+    </mat-card-content>
+
+    <mat-card-footer class="footer">
+      Hai giÃ  un account? <a routerLink="/login">Accedi</a>
+    </mat-card-footer>
+  </mat-card>
+</div>
