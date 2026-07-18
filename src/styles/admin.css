@@ -1,0 +1,79 @@
+/* ============================================================
+   Stili del pannello admin — validi SOLO dentro app-admin-layout.
+   Il negozio pubblico non vede nulla di questo file: variabile e
+   classi vivono nel sottoalbero DOM del layout admin.
+   ============================================================ */
+
+app-admin-layout {
+  --colore-plancia: #1d2b4f;
+}
+
+app-admin-layout .sottotitolo { color: #777; margin-top: -8px; }
+
+/* ---------- Tab ---------- */
+app-admin-layout .tabs {
+  display: flex; align-items: center; gap: 4px;
+  margin: 0 0 16px;
+  flex-wrap: wrap;
+}
+app-admin-layout .tab {
+  background: none; border: none; cursor: pointer;
+  padding: 8px 16px; border-radius: 20px;
+  font: inherit; color: #555;
+}
+app-admin-layout .tab:hover { background: rgba(0,0,0,0.05); }
+app-admin-layout .tab.attiva { background: var(--colore-plancia); color: #fff; }
+app-admin-layout .spazio { flex: 1; }
+
+/* ---------- Pannelli bianchi ---------- */
+app-admin-layout .pannello-form,
+app-admin-layout .pannello-ricerca {
+  background: #fff; border-radius: 8px;
+  padding: 20px; margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+app-admin-layout .pannello-ricerca {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 20px 4px;
+}
+app-admin-layout .riga { display: flex; gap: 12px; flex-wrap: wrap; }
+app-admin-layout .riga mat-form-field { min-width: 150px; }
+app-admin-layout .cresce { flex: 1; }
+app-admin-layout .pieno { width: 100%; }
+app-admin-layout .azioni-form { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ---------- Messaggi ---------- */
+app-admin-layout .messaggio {
+  padding: 10px 16px; border-radius: 6px;
+  background: #e6f6ec; color: #1e7a43;
+}
+app-admin-layout .messaggio.errore { background: #fdecea; color: #b3261e; }
+app-admin-layout .messaggio.avviso { background: #fdf4e3; color: #8a5a00; }
+
+/* ---------- Tabelle ---------- */
+app-admin-layout .tabella {
+  width: 100%; border-collapse: collapse;
+  background: #fff; border-radius: 8px; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+app-admin-layout .tabella th,
+app-admin-layout .tabella td {
+  text-align: left; padding: 10px 16px;
+  border-bottom: 1px solid #eee;
+}
+app-admin-layout .tabella th {
+  font-size: 12px; text-transform: uppercase; color: #888;
+}
+app-admin-layout .num { text-align: right; }
+app-admin-layout .azioni { text-align: right; white-space: nowrap; }
+app-admin-layout .tabella th.azioni,
+app-admin-layout .tabella td.azioni { width: 1%; }
+app-admin-layout tr.disattivo td { color: #aaa; }
+app-admin-layout .stato { color: #1e7a43; font-weight: 500; }
+app-admin-layout .stato.spento { color: #b3261e; }
+app-admin-layout .vuoto { text-align: center; color: #999; padding: 32px; }
+app-admin-layout .miniatura {
+  height: 40px; width: 40px; object-fit: cover;
+  border-radius: 4px; border: 1px solid #eee;
+  display: block;
+}

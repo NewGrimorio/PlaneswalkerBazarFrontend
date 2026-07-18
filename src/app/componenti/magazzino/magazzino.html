@@ -14,6 +14,7 @@
     <mat-icon>search</mat-icon> Cerca
   </button>
 </div>
+
 <div class="tabs">
   @for (t of tipiSfoglia; track t.valore) {
     <button class="tab" [class.attiva]="tipoSfoglia() === t.valore"
@@ -78,9 +79,11 @@
       @if (p.espansioneNome) { <span class="tipo">· {{ p.espansioneNome }}</span> }
     </div>
     <span class="spazio"></span>
-    <button mat-flat-button (click)="apriForm()">
-      <mat-icon>add</mat-icon> Nuova variante
-    </button>
+    @if (isSingle || righe().length === 0) {
+      <button mat-flat-button (click)="apriForm()">
+        <mat-icon>add</mat-icon> {{ etichettaBottoneNuova }}
+      </button>
+    }
   </div>
 
   @if (formAperto()) {
@@ -95,20 +98,20 @@
               }
             </mat-select>
           </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Finitura</mat-label>
+            <mat-select [(ngModel)]="fFinitura">
+              @for (f of finiture; track f) {
+                <mat-option [value]="f">{{ f }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
         }
         <mat-form-field appearance="outline">
           <mat-label>Lingua</mat-label>
           <mat-select [(ngModel)]="fLingua">
             @for (l of lingue; track l) {
               <mat-option [value]="l">{{ l.toUpperCase() }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Finitura</mat-label>
-          <mat-select [(ngModel)]="fFinitura">
-            @for (f of finiture; track f) {
-              <mat-option [value]="f">{{ f }}</mat-option>
             }
           </mat-select>
         </mat-form-field>
@@ -125,8 +128,8 @@
         <button mat-button (click)="formAperto.set(false)">Annulla</button>
         <button mat-flat-button
                 [disabled]="fPrezzo === null || fQuantita === null || inCorso()"
-                (click)="creaVariante()">
-          {{ inCorso() ? 'Creazione…' : 'Crea variante' }}
+                (click)="salvaVariante()">
+          {{ inCorso() ? 'Salvataggio…' : (isSingle ? 'Crea variante' : 'Conferma') }}
         </button>
       </div>
     </div>
@@ -135,24 +138,46 @@
   <table class="tabella">
     <thead>
       <tr>
-        <th>Condizione</th><th>Lingua</th><th>Finitura</th>
-        <th class="num">Prezzo €</th><th class="num">Quantità</th>
-        <th>Stato</th><th class="azioni"></th>
+        @if (isSingle) { <th>Condizione</th> }
+        <th>Lingua</th>
+        @if (isSingle) { <th>Finitura</th> }
+        <th class="num">Prezzo €</th>
+        <th class="num">Quantità</th>
+        <th>Stato</th>
+        <th class="azioni"></th>
       </tr>
     </thead>
     <tbody>
       @for (r of righe(); track r.sku.id) {
         <tr [class.disattivo]="!r.sku.attivo">
-          <td>{{ etichettaCondizione(r.sku.condizione) }}</td>
-          <td>{{ r.sku.lingua.toUpperCase() }}</td>
-          <td>{{ r.sku.finitura }}</td>
+          @if (isSingle) { <td>{{ etichettaCondizione(r.sku.condizione) }}</td> }
+          <td>
+            @if (inModifica(r) && !isSingle) {
+              <select class="cella-select" [(ngModel)]="r.lingua">
+                @for (l of lingue; track l) {
+                  <option [value]="l">{{ l.toUpperCase() }}</option>
+                }
+              </select>
+            } @else {
+              {{ r.sku.lingua.toUpperCase() }}
+            }
+          </td>
+          @if (isSingle) { <td>{{ r.sku.finitura }}</td> }
           <td class="num">
-            <input class="cella-input" type="number" min="0" step="0.01"
-                   [(ngModel)]="r.prezzo">
+            @if (inModifica(r)) {
+              <input class="cella-input" type="number" min="0" step="0.01"
+                     [(ngModel)]="r.prezzo">
+            } @else {
+              {{ r.sku.prezzo }}
+            }
           </td>
           <td class="num">
-            <input class="cella-input" type="number" min="0" step="1"
-                   [(ngModel)]="r.quantita">
+            @if (inModifica(r)) {
+              <input class="cella-input" type="number" min="0" step="1"
+                     [(ngModel)]="r.quantita">
+            } @else {
+              {{ r.sku.quantita }}
+            }
           </td>
           <td>
             <span class="stato" [class.spento]="!r.sku.disponibile">
@@ -161,22 +186,34 @@
             </span>
           </td>
           <td class="azioni">
-            @if (modificata(r)) {
-              <button mat-icon-button class="salva-riga" title="Salva modifiche"
+            @if (inModifica(r)) {
+              <button mat-icon-button class="salva-riga" title="Salva"
                       (click)="salvaRiga(r)">
                 <mat-icon>check_circle</mat-icon>
               </button>
+              <button mat-icon-button title="Annulla"
+                      (click)="annullaModifica(r)">
+                <mat-icon>close</mat-icon>
+              </button>
+            } @else {
+              <button mat-icon-button
+                      [title]="isSingle ? 'Modifica prezzo e quantità'
+                                        : 'Modifica lingua, prezzo e quantità'"
+                      (click)="apriModifica(r)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button
+                      [title]="r.sku.attivo ? 'Disattiva' : 'Riattiva'"
+                      (click)="toggleAttivo(r)">
+                <mat-icon>{{ r.sku.attivo ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
             }
-            <button mat-icon-button
-                    [title]="r.sku.attivo ? 'Disattiva' : 'Riattiva'"
-                    (click)="toggleAttivo(r)">
-              <mat-icon>{{ r.sku.attivo ? 'visibility_off' : 'visibility' }}</mat-icon>
-            </button>
           </td>
         </tr>
       } @empty {
-        <tr><td colspan="7" class="vuoto">
-          Nessuna variante. Crea la prima con «Nuova variante».
+        <tr><td [attr.colspan]="isSingle ? 7 : 5" class="vuoto">
+          {{ isSingle ? 'Nessuna variante. Crea la prima con «Nuova variante».'
+                      : 'Non in vendita. Usa «Inserisci scorte» per creare lo SKU.' }}
         </td></tr>
       }
     </tbody>

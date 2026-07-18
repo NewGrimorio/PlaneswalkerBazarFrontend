@@ -12,14 +12,29 @@
         </a>
       }
     </nav>
-    <button class="esci" (click)="esci()">
-      <mat-icon>logout</mat-icon><span>Esci</span>
-    </button>
   </aside>
 
   <div class="colonna-destra">
     <header class="barra-alta">
-      <span class="benvenuto">Ciao, {{ utente()?.nome }}</span>
+      <span class="spazio"></span>
+      <button class="chip-utente" [matMenuTriggerFor]="menuUtente">
+        <span class="avatar">{{ iniziali }}</span>
+        <span class="chi">
+          <span class="nome">{{ utente()?.nome }} {{ utente()?.cognome }}</span>
+          <span class="ruolo">Amministratore</span>
+        </span>
+        <mat-icon>expand_more</mat-icon>
+      </button>
+      <mat-menu #menuUtente="matMenu" xPosition="before">
+        <a mat-menu-item routerLink="/">
+          <mat-icon>storefront</mat-icon>
+          <span>Vai al negozio</span>
+        </a>
+        <button mat-menu-item (click)="esci()">
+          <mat-icon>logout</mat-icon>
+          <span>Esci</span>
+        </button>
+      </mat-menu>
     </header>
     <main class="contenuto">
       <router-outlet />

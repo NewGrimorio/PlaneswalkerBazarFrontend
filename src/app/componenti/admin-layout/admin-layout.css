@@ -4,9 +4,9 @@
   min-height: 100vh;
 }
 
-/* Sidebar scura come il riferimento */
+/* Sidebar scura: il colore vive nella variabile dichiarata in admin.css */
 .barra-laterale {
-  background: #1d2b4f;
+  background: var(--colore-plancia);
   color: #e8eaf2;
   display: flex;
   flex-direction: column;
@@ -34,30 +34,41 @@
   border-left-color: var(--mat-sys-primary);
   color: #fff;
 }
-.esci {
-  margin-top: auto;
-  display: flex; align-items: center; gap: 12px;
-  padding: 11px 20px;
-  background: none; border: none; color: #c6cde2;
-  cursor: pointer; font: inherit;
-}
-.esci:hover { color: #fff; }
 
 .colonna-destra { background: #f4f5f8; display: flex; flex-direction: column; }
+
+/* ---------- Topbar con chip utente ---------- */
 .barra-alta {
   background: #fff;
-  padding: 12px 24px;
-  display: flex; justify-content: flex-end;
+  padding: 6px 16px;
+  display: flex; align-items: center;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
-.benvenuto { color: #555; font-size: 14px; }
+.spazio { flex: 1; }
+
+.chip-utente {
+  display: flex; align-items: center; gap: 10px;
+  background: none; border: none; cursor: pointer;
+  padding: 6px 10px; border-radius: 24px;
+  font: inherit;
+}
+.chip-utente:hover { background: rgba(0,0,0,0.05); }
+.avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--colore-plancia); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 600; font-size: 14px;
+}
+.chi { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
+.chi .nome { font-size: 14px; color: #333; }
+.chi .ruolo { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.05em; }
+
 .contenuto { padding: 24px; }
 
-/* Sotto i 900px la sidebar si comprime a sole icone */
 @media (max-width: 900px) {
   .scaffale { grid-template-columns: 64px 1fr; }
   .logo, .etichetta,
-  .barra-laterale nav a span,
-  .esci span { display: none; }
+  .barra-laterale nav a span { display: none; }
   .barra-laterale nav a { justify-content: center; padding: 14px 0; border-left-width: 0; }
+  .chi { display: none; }   /* su mobile resta solo l'avatar */
 }

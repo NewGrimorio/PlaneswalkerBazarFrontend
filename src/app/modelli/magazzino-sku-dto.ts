@@ -9,3 +9,4 @@ export interface MagazzinoSKUDTO {
   attivo: boolean;
   disponibile: boolean;
 }
+  
