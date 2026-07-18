@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { AuthServices } from '../../auth/auth-services';
+import { AuthServices } from '../../../auth/auth-services';
 
 @Component({
   selector: 'app-admin-layout',

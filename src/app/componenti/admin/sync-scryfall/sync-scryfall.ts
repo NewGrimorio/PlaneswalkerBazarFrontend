@@ -7,9 +7,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { EspansioneDTO } from '../../modelli/espansione-dto';
-import { SincronizzazioneDTO } from '../../modelli/sincronizzazione-dto';
-import { environment } from '../../../environments/environment';
+import { EspansioneDTO } from '../../../modelli/espansione-dto';
+import { SincronizzazioneDTO } from '../../../modelli/sincronizzazione-dto';
+import { environment } from '../../../../environments/environment';
 
 const BASE = environment.apiUrl;
 

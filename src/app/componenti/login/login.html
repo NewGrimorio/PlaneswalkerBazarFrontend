@@ -6,9 +6,10 @@
     <mat-card-content>
       <form (ngSubmit)="accediAlSito()">
         <mat-form-field appearance="outline" class="campo">
-          <mat-label>Email</mat-label>
-          <input matInput type="email" name="email" [(ngModel)]="email" required />
-        </mat-form-field>
+         <mat-label>Email o username</mat-label>
+          <input matInput type="text" name="identificativo"
+              [(ngModel)]="identificativo" required>
+          </mat-form-field>
 
         <mat-form-field appearance="outline" class="campo">
           <mat-label>Password</mat-label>

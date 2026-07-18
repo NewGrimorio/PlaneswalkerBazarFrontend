@@ -6,11 +6,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
-import { environment } from '../../../environments/environment';
-import { ProdottoDTO } from '../../modelli/prodotti-dto';
-import { MagazzinoSKUDTO } from '../../modelli/magazzino-sku-dto';
-import { MagazzinoSKUReq } from '../../modelli/magazzino-sku-req';
-import { EspansioneDTO } from '../../modelli/espansione-dto';
+import { environment } from '../../../../environments/environment';
+import { ProdottoDTO } from '../../../modelli/prodotti-dto';
+import { MagazzinoSKUDTO } from '../../../modelli/magazzino-sku-dto';
+import { MagazzinoSKUReq } from '../../../modelli/magazzino-sku-req';
+import { EspansioneDTO } from '../../../modelli/espansione-dto';
 
 const BASE = environment.apiUrl;
 const HOST = environment.serverUrl;

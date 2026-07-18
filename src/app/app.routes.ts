@@ -3,10 +3,10 @@ import { Homepage } from './componenti/homepage/homepage';
 import { Login } from './componenti/login/login';
 import { Dashboard } from './componenti/admin/dashboard/dashboard';
 import { adminGuard } from './auth/admin-guard';
-import { AdminLayout } from './componenti/admin-layout/admin-layout';
-import { SyncScryfall } from './componenti/sync-scryfall/sync-scryfall';
-import { Prodotti } from './componenti/prodotti/prodotti';
-import { Magazzino } from './componenti/magazzino/magazzino';
+import { AdminLayout } from './componenti/admin/admin-layout/admin-layout';
+import { SyncScryfall } from './componenti/admin/sync-scryfall/sync-scryfall';
+import { Prodotti } from './componenti/admin/prodotti/prodotti';
+import { Magazzino } from './componenti/admin/magazzino/magazzino';
 import { Registrazione } from './componenti/registrazione/registrazione';
 
 export const routes: Routes = [

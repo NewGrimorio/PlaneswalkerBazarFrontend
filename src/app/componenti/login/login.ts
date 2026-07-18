@@ -19,10 +19,10 @@ import { AuthServices } from '../../auth/auth-services';
 export class Login {
 
   private utenteS = inject(Utente);
+  private authS = inject(AuthServices);
   private router = inject(Router);
-  private authS = inject(AuthServices); 
 
-  email = '';
+  identificativo = '';                 // ← era: email = ''
   password = '';
   errore = signal<string | null>(null);
   inCorso = signal(false);
@@ -30,9 +30,8 @@ export class Login {
   accediAlSito(): void {
     this.errore.set(null);
     this.inCorso.set(true);
-    this.utenteS.loginUtente(this.email, this.password).subscribe({
+    this.utenteS.loginUtente(this.identificativo, this.password).subscribe({   // ← qui
       next: (utente) => {
-        console.log('Login riuscito:', utente);
         this.authS.login(utente);
         this.router.navigate([this.authS.isRoleAdmin() ? '/admin' : '/']);
       },
@@ -42,5 +41,4 @@ export class Login {
       }
     });
   }
-
 }
