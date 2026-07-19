@@ -25,3 +25,20 @@
   padding: 16px;
   text-align: center;
 }
+
+/* ---- Aggiunte per il form con campi affiancati e hint password ---- */
+.riga {
+  display: flex;
+  gap: 12px;
+}
+.riga mat-form-field {
+  flex: 1;
+  margin-top: 12px;
+}
+.rosso {
+  color: #c62828;
+}
+
+@media (max-width: 520px) {
+  .riga { flex-direction: column; gap: 0; }
+}

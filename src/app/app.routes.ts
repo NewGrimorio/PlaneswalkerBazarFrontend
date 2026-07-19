@@ -3,11 +3,12 @@ import { Homepage } from './componenti/homepage/homepage';
 import { Login } from './componenti/login/login';
 import { Dashboard } from './componenti/admin/dashboard/dashboard';
 import { adminGuard } from './auth/admin-guard';
-import { AdminLayout } from './componenti/admin/admin-layout/admin-layout';
+import { AdminLayout } from './componenti/admin-layout/admin-layout';
 import { SyncScryfall } from './componenti/admin/sync-scryfall/sync-scryfall';
 import { Prodotti } from './componenti/admin/prodotti/prodotti';
 import { Magazzino } from './componenti/admin/magazzino/magazzino';
 import { Registrazione } from './componenti/registrazione/registrazione';
+import { Account } from './componenti/admin/account/account';
 
 export const routes: Routes = [
     { path: '', component: Homepage },
@@ -21,7 +22,8 @@ export const routes: Routes = [
             { path: '',     component: Dashboard },
             { path: 'sync', component: SyncScryfall },
             { path: 'prodotti', component: Prodotti },
-            { path: 'magazzino', component: Magazzino },   
+            { path: 'magazzino', component: Magazzino },
+            { path: 'account', component: Account },   
             //{ path: 'ordini',    component: ListaOrdine },
             //{ path: 'movimenti', component: ListaMovimento },
         ]

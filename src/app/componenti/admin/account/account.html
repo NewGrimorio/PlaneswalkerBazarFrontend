@@ -1,1 +1,208 @@
-<p>account works!</p>
+<h1>Il tuo account</h1>
+<p class="sottotitolo">Dati personali, credenziali e indirizzi di spedizione.</p>
+
+<!-- ================= Anagrafica ================= -->
+<div class="pannello-form">
+  <h2>Dati personali</h2>
+  <form #fAnagrafica="ngForm">
+    <div class="riga">
+      <mat-form-field appearance="outline" class="cresce">
+        <mat-label>Nome</mat-label>
+        <input matInput name="nome" [(ngModel)]="fNome" required maxlength="100">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="cresce">
+        <mat-label>Cognome</mat-label>
+        <input matInput name="cognome" [(ngModel)]="fCognome" required maxlength="100">
+      </mat-form-field>
+    </div>
+    <div class="riga">
+      <mat-form-field appearance="outline" class="cresce">
+        <mat-label>Username</mat-label>
+        <input matInput name="username" [(ngModel)]="fUsername" required
+               pattern="^[a-zA-Z0-9._\-]{3,30}$" maxlength="30">
+        <mat-hint>Il nome pubblico su recensioni e ordini</mat-hint>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="cresce">
+        <mat-label>Telefono</mat-label>
+        <input matInput name="telefono" [(ngModel)]="fTelefono"
+               pattern="^[0-9+ ]{6,30}$">
+      </mat-form-field>
+    </div>
+    <div class="riga">
+      <mat-form-field appearance="outline">
+        <mat-label>Data di nascita</mat-label>
+        <input matInput type="date" name="dataNascita" [(ngModel)]="fDataNascita">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="cresce">
+        <mat-label>Codice fiscale</mat-label>
+        <input matInput name="codiceFiscale" [(ngModel)]="fCodiceFiscale"
+               pattern="^[A-Za-z0-9]{16}$" maxlength="16">
+      </mat-form-field>
+    </div>
+  </form>
+  @if (msgAnagrafica(); as m) {
+    <p class="messaggio" [class.errore]="m.errore">{{ m.testo }}</p>
+  }
+  <div class="azioni-form">
+    <button mat-flat-button
+            [disabled]="inCorso() || fAnagrafica.invalid"
+            (click)="salvaAnagrafica()">Salva dati</button>
+  </div>
+</div>
+
+<!-- ================= Email ================= -->
+<div class="pannello-form">
+  <h2>Email di accesso</h2>
+  <p class="nota">Email attuale: <strong>{{ emailAttuale() }}</strong>.
+     L'email serve anche per il login: dopo il cambio userai la nuova.</p>
+  <form #fEmail="ngForm">
+    <div class="riga">
+      <mat-form-field appearance="outline" class="cresce">
+        <mat-label>Nuova email</mat-label>
+        <input matInput type="email" name="nuovaEmail"
+               [(ngModel)]="fNuovaEmail" required email>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="cresce">
+        <mat-label>Password (per conferma)</mat-label>
+        <input matInput type="password" name="passwordEmail"
+               [(ngModel)]="fPasswordEmail" required>
+      </mat-form-field>
+    </div>
+  </form>
+  @if (msgEmail(); as m) {
+    <p class="messaggio" [class.errore]="m.errore">{{ m.testo }}</p>
+  }
+  <div class="azioni-form">
+    <button mat-flat-button
+            [disabled]="inCorso() || fEmail.invalid"
+            (click)="salvaEmail(fEmail)">Cambia email</button>
+  </div>
+</div>
+
+<!-- ================= Password ================= -->
+<div class="pannello-form">
+  <h2>Password</h2>
+  <form #fPassword="ngForm">
+    <div class="riga">
+      <mat-form-field appearance="outline" class="cresce">
+        <mat-label>Password attuale</mat-label>
+        <input matInput type="password" name="vecchia"
+               [(ngModel)]="fVecchia" required>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="cresce">
+        <mat-label>Nuova password</mat-label>
+        <input matInput type="password" name="nuova"
+               [(ngModel)]="fNuova" required minlength="8" maxlength="72">
+        <mat-hint>Minimo 8 caratteri</mat-hint>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="cresce">
+        <mat-label>Conferma nuova</mat-label>
+        <input matInput type="password" name="conferma"
+               [(ngModel)]="fConferma" required>
+        @if (passwordNonCoincidono) {
+          <mat-hint class="rosso">Le password non coincidono</mat-hint>
+        }
+      </mat-form-field>
+    </div>
+  </form>
+  @if (msgPassword(); as m) {
+    <p class="messaggio" [class.errore]="m.errore">{{ m.testo }}</p>
+  }
+  <div class="azioni-form">
+    <button mat-flat-button
+            [disabled]="inCorso() || fPassword.invalid || passwordNonCoincidono"
+            (click)="salvaPassword(fPassword)">Cambia password</button>
+  </div>
+</div>
+
+<!-- ================= Indirizzi ================= -->
+<div class="pannello-form">
+  <div class="testata-sezione">
+    <h2>Indirizzi</h2>
+    <span class="spazio"></span>
+    <button mat-stroked-button (click)="nuovoIndirizzo()">
+      <mat-icon>add</mat-icon> Nuovo indirizzo
+    </button>
+  </div>
+
+  @if (msgIndirizzi(); as m) {
+    <p class="messaggio" [class.errore]="m.errore">{{ m.testo }}</p>
+  }
+
+  @if (formIndirizzo() !== null) {
+    <div class="sottoform">
+      <form #fIndirizzo="ngForm">
+        <div class="riga">
+          <mat-form-field appearance="outline">
+            <mat-label>Etichetta (es. Casa)</mat-label>
+            <input matInput name="etichetta" [(ngModel)]="iEtichetta" maxlength="50">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="cresce">
+            <mat-label>Destinatario</mat-label>
+            <input matInput name="destinatario" [(ngModel)]="iDestinatario"
+                   required maxlength="200">
+          </mat-form-field>
+        </div>
+        <div class="riga">
+          <mat-form-field appearance="outline" class="cresce">
+            <mat-label>Via</mat-label>
+            <input matInput name="via" [(ngModel)]="iVia" required maxlength="200">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="stretto">
+            <mat-label>Civico</mat-label>
+            <input matInput name="civico" [(ngModel)]="iCivico" required maxlength="20">
+          </mat-form-field>
+        </div>
+        <div class="riga">
+          <mat-form-field appearance="outline" class="stretto">
+            <mat-label>CAP</mat-label>
+            <input matInput name="cap" [(ngModel)]="iCap"
+                   required pattern="^[0-9A-Za-z \-]{3,10}$">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="cresce">
+            <mat-label>Città</mat-label>
+            <input matInput name="citta" [(ngModel)]="iCitta" required maxlength="100">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="stretto">
+            <mat-label>Provincia</mat-label>
+            <input matInput name="provincia" [(ngModel)]="iProvincia" maxlength="50">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="stretto">
+            <mat-label>Nazione</mat-label>
+            <input matInput name="nazione" [(ngModel)]="iNazione"
+                   pattern="^[A-Za-z]{2}$" maxlength="2">
+          </mat-form-field>
+        </div>
+      </form>
+      <div class="azioni-form">
+        <button mat-button (click)="formIndirizzo.set(null)">Annulla</button>
+        <button mat-flat-button
+                [disabled]="inCorso() || fIndirizzo.invalid"
+                (click)="salvaIndirizzo()">Salva indirizzo</button>
+      </div>
+    </div>
+  }
+
+  @for (i of indirizzi(); track i.id) {
+    <div class="riga-indirizzo" [class.predef]="i.predefinito">
+      <button mat-icon-button [title]="i.predefinito ? 'Predefinito' : 'Rendi predefinito'"
+              (click)="setPredefinito(i)">
+        <mat-icon>{{ i.predefinito ? 'star' : 'star_border' }}</mat-icon>
+      </button>
+      <div class="dati">
+        <strong>{{ i.etichetta || i.destinatario }}</strong>
+        <span>{{ i.destinatario }} — {{ i.via }} {{ i.civico }},
+              {{ i.cap }} {{ i.citta }}{{ i.provincia ? ' (' + i.provincia + ')' : '' }}</span>
+      </div>
+      <span class="spazio"></span>
+      <button mat-icon-button title="Modifica" (click)="modificaIndirizzo(i)">
+        <mat-icon>edit</mat-icon>
+      </button>
+      <button mat-icon-button title="Elimina" (click)="eliminaIndirizzo(i)">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+  } @empty {
+    <p class="vuoto">Nessun indirizzo salvato.</p>
+  }
+</div>

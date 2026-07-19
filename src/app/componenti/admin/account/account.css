@@ -1,0 +1,21 @@
+.pannello-form h2 { margin: 0 0 16px; font-size: 18px; }
+.nota { color: #666; margin: -8px 0 16px; }
+.rosso { color: #b3261e; }
+.stretto { max-width: 140px; }
+
+.testata-sezione { display: flex; align-items: center; margin-bottom: 8px; }
+
+.sottoform {
+  border: 1px solid #eee; border-radius: 8px;
+  padding: 16px 16px 4px; margin-bottom: 16px;
+  background: #fafafa;
+}
+
+.riga-indirizzo {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 4px;
+  border-bottom: 1px solid #eee;
+}
+.riga-indirizzo .dati { display: flex; flex-direction: column; }
+.riga-indirizzo .dati span { color: #666; font-size: 14px; }
+.riga-indirizzo.predef mat-icon { color: #f1b53d; }

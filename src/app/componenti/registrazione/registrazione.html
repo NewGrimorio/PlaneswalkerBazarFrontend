@@ -1,71 +1,84 @@
 <div class="centro">
   <mat-card class="scheda">
-    <mat-card-header>
-      <mat-card-title>Registrazione</mat-card-title>
-    </mat-card-header>
+    <mat-card-title>Crea il tuo account</mat-card-title>
 
     <mat-card-content>
-      <form (ngSubmit)="registrati()">
-        <mat-form-field appearance="outline" class="campo">
-          <mat-label>Nome</mat-label>
-          <input matInput type="text" name="nome" [(ngModel)]="nome" required />
-        </mat-form-field>
+      <form (ngSubmit)="registrati()" #f="ngForm">
+
+        <div class="riga">
+          <mat-form-field appearance="outline">
+            <mat-label>Nome</mat-label>
+            <input matInput name="nome" [(ngModel)]="nome"
+                   required maxlength="100">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Cognome</mat-label>
+            <input matInput name="cognome" [(ngModel)]="cognome"
+                   required maxlength="100">
+          </mat-form-field>
+        </div>
 
         <mat-form-field appearance="outline" class="campo">
-          <mat-label>Cognome</mat-label>
-          <input matInput type="text" name="cognome" [(ngModel)]="cognome" required />
+          <mat-label>Username</mat-label>
+          <input matInput name="username" [(ngModel)]="username" required
+                 pattern="^[a-zA-Z0-9._\-]{3,30}$" maxlength="30">
+          <mat-hint>3-30 caratteri: lettere, numeri, . _ -</mat-hint>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="campo">
           <mat-label>Email</mat-label>
-          <input matInput type="email" name="email" [(ngModel)]="email" required />
+          <input matInput type="email" name="email" [(ngModel)]="email"
+                 required email>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="campo">
-          <mat-label>Telefono</mat-label>
-          <input matInput type="tel" name="telefono" [(ngModel)]="telefono" />
-        </mat-form-field>
-        
-        <mat-form-field appearance="outline" class="campo">
-          <mat-label>Data di nascita</mat-label>
-          <input matInput type="date" name="dataNascita" [(ngModel)]="dataNascita" />
-        </mat-form-field>
+        <div class="riga">
+          <mat-form-field appearance="outline">
+            <mat-label>Password</mat-label>
+            <input matInput type="password" name="password" [(ngModel)]="password"
+                   required minlength="8" maxlength="72">
+            <mat-hint>Minimo 8 caratteri</mat-hint>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Conferma password</mat-label>
+            <input matInput type="password" name="confermaPassword"
+                   [(ngModel)]="confermaPassword" required>
+            @if (passwordNonCoincidono) {
+              <mat-hint class="rosso">Le password non coincidono</mat-hint>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="riga">
+          <mat-form-field appearance="outline">
+            <mat-label>Telefono (facoltativo)</mat-label>
+            <input matInput name="telefono" [(ngModel)]="telefono"
+                   pattern="^[0-9+ ]{6,30}$">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Data di nascita (facoltativa)</mat-label>
+            <input matInput type="date" name="dataNascita" [(ngModel)]="dataNascita">
+          </mat-form-field>
+        </div>
 
         <mat-form-field appearance="outline" class="campo">
-          <mat-label>Codice fiscale</mat-label>
-          <input
-            matInput
-            type="text"
-            name="codiceFiscale"
-            [(ngModel)]="codiceFiscale"
-            maxlength="16"
-          />
+          <mat-label>Codice fiscale (facoltativo)</mat-label>
+          <input matInput name="codiceFiscale" [(ngModel)]="codiceFiscale"
+                 pattern="^[A-Za-z0-9]{16}$" maxlength="16">
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="campo">
-          <mat-label>Password</mat-label>
-          <input
-            matInput
-            type="password"
-            name="password"
-            [(ngModel)]="password"
-            required
-            minlength="8"
-          />
-        </mat-form-field>
-
-        @if (errore()) {
-          <p class="errore">{{ errore() }}</p>
+        @if (errore(); as e) {
+          <p class="errore">{{ e }}</p>
         }
 
-        <button matButton="filled" type="submit" class="campo" [disabled]="inCorso()">
-          {{ inCorso() ? 'Registrazione in corso...' : 'Registrati' }}
+        <button mat-flat-button type="submit" class="campo"
+                [disabled]="f.invalid || passwordNonCoincidono || inCorso()">
+          {{ inCorso() ? 'Registrazione in corso…' : 'Registrati' }}
         </button>
       </form>
     </mat-card-content>
 
     <mat-card-footer class="footer">
-      Hai giÃ  un account? <a routerLink="/login">Accedi</a>
+      Hai già un account? <a routerLink="/login">Accedi</a>
     </mat-card-footer>
   </mat-card>
 </div>

@@ -1,5 +1,6 @@
 export interface UtenteDTO {
   id: number;
+  username: string;      // ← la riga nuova
   email: string;
   ruolo: string;
   nome: string;

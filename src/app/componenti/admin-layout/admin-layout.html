@@ -19,13 +19,17 @@
       <span class="spazio"></span>
       <button class="chip-utente" [matMenuTriggerFor]="menuUtente">
         <span class="avatar">{{ iniziali }}</span>
-        <span class="chi">
-          <span class="nome">{{ utente()?.nome }} {{ utente()?.cognome }}</span>
-          <span class="ruolo">Amministratore</span>
+          <span class="chi">
+            <span class="nome">{{ utente()?.username }}</span>
+            <span class="ruolo">Amministratore</span>
         </span>
         <mat-icon>expand_more</mat-icon>
       </button>
       <mat-menu #menuUtente="matMenu" xPosition="before">
+        <a mat-menu-item routerLink="/admin/account">
+          <mat-icon>manage_accounts</mat-icon>
+          <span>Account</span>
+        </a>
         <a mat-menu-item routerLink="/">
           <mat-icon>storefront</mat-icon>
           <span>Vai al negozio</span>
