@@ -9,4 +9,5 @@ export interface UtenteDTO {
   dataNascita: string | null;      // le date JSON arrivano come stringhe
   codiceFiscale: string | null;
   dataRegistrazione: string;
+  immagineProfilo: string | null;   // null = mostra il default
 }

@@ -53,12 +53,15 @@
   font: inherit;
 }
 .chip-utente:hover { background: rgba(0,0,0,0.05); }
+
 .avatar {
   width: 36px; height: 36px; border-radius: 50%;
   background: var(--colore-plancia); color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-weight: 600; font-size: 14px;
+  object-fit: cover;          /* per la variante <img>: ritaglia, mai deforma */
 }
+
 .chi { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
 .chi .nome { font-size: 14px; color: #333; }
 .chi .ruolo { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.05em; }

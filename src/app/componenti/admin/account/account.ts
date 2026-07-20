@@ -9,6 +9,7 @@ import { environment } from '../../../../environments/environment';
 import { AuthServices } from '../../../auth/auth-services';
 import { UtenteDTO } from '../../../modelli/utente-dto';
 import { IndirizzoDTO } from '../../../modelli/indirizzo-dto';
+import { urlImmagine } from '../../../utils/url-immagine';
 
 const BASE = environment.apiUrl;
 
@@ -27,6 +28,15 @@ export class Account {
   private authS = inject(AuthServices);
 
   private utenteId = this.authS.utente()!.id;
+
+   // --- Card 0: immagine profilo ---
+  immagineProfilo = signal<string | null>(null);
+  msgAvatar = signal<Esito>(null);
+
+  /** Foto se c'e', altrimenti il default statico */
+  get urlAvatar(): string {
+    return urlImmagine(this.immagineProfilo()) ?? '/avatar-default.svg';
+  }
 
   // --- Card 1: anagrafica ---
   fNome = ''; fCognome = ''; fUsername = '';
@@ -73,12 +83,53 @@ export class Account {
     this.fDataNascita = u.dataNascita ?? '';
     this.fCodiceFiscale = u.codiceFiscale ?? '';
     this.emailAttuale.set(u.email);
+    this.immagineProfilo.set(u.immagineProfilo);
   }
 
   /** Sessione aggiornata = chip in topbar aggiornato in diretta */
   private aggiornaSessione(u: UtenteDTO): void {
     this.authS.login(u);
     this.popolaDa(u);
+  }
+
+  //AVATAR
+
+  caricaAvatar(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || this.inCorso()) return;
+
+    const form = new FormData();
+    form.append('file', file);
+    this.inCorso.set(true);
+    this.msgAvatar.set(null);
+
+    this.http.post<UtenteDTO>(`${BASE}/utenti/${this.utenteId}/immagine-profilo`, form)
+      .subscribe({
+        next: u => {
+          this.aggiornaSessione(u);   // popola anche immagineProfilo -> anteprima e chip
+          this.msgAvatar.set({ testo: 'Immagine aggiornata.', errore: false });
+          this.inCorso.set(false);
+        },
+        error: err => { this.msgAvatar.set(this.esitoErrore(err)); this.inCorso.set(false); }
+      });
+    input.value = '';   // permette di ricaricare lo stesso file
+  }
+
+  rimuoviAvatar(): void {
+    if (this.inCorso() || !this.immagineProfilo()) return;
+    this.inCorso.set(true);
+    this.msgAvatar.set(null);
+
+    this.http.delete<UtenteDTO>(`${BASE}/utenti/${this.utenteId}/immagine-profilo`)
+      .subscribe({
+        next: u => {
+          this.aggiornaSessione(u);
+          this.msgAvatar.set({ testo: 'Immagine rimossa: torna quella predefinita.', errore: false });
+          this.inCorso.set(false);
+        },
+        error: err => { this.msgAvatar.set(this.esitoErrore(err)); this.inCorso.set(false); }
+      });
   }
 
   // ------------------------------------------------------------------

@@ -1,6 +1,32 @@
 <h1>Il tuo account</h1>
 <p class="sottotitolo">Dati personali, credenziali e indirizzi di spedizione.</p>
 
+<!-- ================= Immagine profilo ================= -->
+<div class="pannello-form">
+  <h2>Immagine profilo</h2>
+  <div class="blocco-avatar">
+    <img class="avatar-grande" [src]="urlAvatar" alt="Immagine profilo">
+    <div class="azioni-avatar">
+      <button mat-stroked-button type="button" [disabled]="inCorso()"
+              (click)="fileAvatar.click()">
+        <mat-icon>upload</mat-icon> Carica immagine
+      </button>
+      <input #fileAvatar type="file" hidden
+             accept="image/jpeg,image/png,image/webp"
+             (change)="caricaAvatar($event)">
+      @if (immagineProfilo()) {
+        <button mat-button type="button" [disabled]="inCorso()"
+                (click)="rimuoviAvatar()">
+          <mat-icon>delete</mat-icon> Rimuovi
+        </button>
+      }
+    </div>
+  </div>
+  @if (msgAvatar(); as m) {
+    <p class="messaggio" [class.errore]="m.errore">{{ m.testo }}</p>
+  }
+</div>
+
 <!-- ================= Anagrafica ================= -->
 <div class="pannello-form">
   <h2>Dati personali</h2>
@@ -16,11 +42,11 @@
       </mat-form-field>
     </div>
     <div class="riga">
-      <mat-form-field appearance="outline" class="cresce">
+      <mat-form-field appearance="outline" class="cresce" subscriptSizing="dynamic">
         <mat-label>Username</mat-label>
         <input matInput name="username" [(ngModel)]="fUsername" required
                pattern="^[a-zA-Z0-9._\-]{3,30}$" maxlength="30">
-        <mat-hint>Il nome pubblico su recensioni e ordini</mat-hint>
+        <mat-hint>Visibile pubblicamente sulle tue recensioni</mat-hint>
       </mat-form-field>
       <mat-form-field appearance="outline" class="cresce">
         <mat-label>Telefono</mat-label>
@@ -89,13 +115,13 @@
         <input matInput type="password" name="vecchia"
                [(ngModel)]="fVecchia" required>
       </mat-form-field>
-      <mat-form-field appearance="outline" class="cresce">
+      <mat-form-field appearance="outline" class="cresce" subscriptSizing="dynamic">
         <mat-label>Nuova password</mat-label>
         <input matInput type="password" name="nuova"
                [(ngModel)]="fNuova" required minlength="8" maxlength="72">
         <mat-hint>Minimo 8 caratteri</mat-hint>
       </mat-form-field>
-      <mat-form-field appearance="outline" class="cresce">
+      <mat-form-field appearance="outline" class="cresce" subscriptSizing="dynamic">
         <mat-label>Conferma nuova</mat-label>
         <input matInput type="password" name="conferma"
                [(ngModel)]="fConferma" required>

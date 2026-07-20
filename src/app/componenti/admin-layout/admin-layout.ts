@@ -3,6 +3,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { AuthServices } from '../../auth/auth-services';
+import { urlImmagine } from '../../utils/url-immagine';
 
 @Component({
   selector: 'app-admin-layout',
@@ -16,6 +17,9 @@ export class AdminLayout {
 
   utente = this.authS.utente;
 
+  /** Esposta al template: le funzioni importate non sono visibili da sole */
+  protected readonly urlImmagine = urlImmagine;
+
   voci = [
     { titolo: 'Dashboard',       icona: 'space_dashboard', link: '/admin' },
     { titolo: 'Sincronizza set', icona: 'cloud_download',  link: '/admin/sync' },
@@ -26,16 +30,8 @@ export class AdminLayout {
     { titolo: 'Recensioni',      icona: 'rate_review',     link: '/admin/recensioni' },
   ];
 
-  /** Iniziali per l'avatar del chip utente */
-  get iniziali(): string {
-    const u = this.utente();
-    if (!u) return '';
-    return ((u.nome?.[0] ?? '') + (u.cognome?.[0] ?? '')).toUpperCase();
-  }
-
   esci(): void {
     this.authS.resetAll();
     this.router.navigate(['/login']);
   }
-  
 }

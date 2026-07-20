@@ -18,10 +18,12 @@
     <header class="barra-alta">
       <span class="spazio"></span>
       <button class="chip-utente" [matMenuTriggerFor]="menuUtente">
-        <span class="avatar">{{ iniziali }}</span>
-          <span class="chi">
-            <span class="nome">{{ utente()?.username }}</span>
-            <span class="ruolo">Amministratore</span>
+        <img class="avatar"
+             [src]="urlImmagine(utente()?.immagineProfilo) ?? '/avatar-default.svg'"
+             alt="">
+        <span class="chi">
+          <span class="nome">{{ utente()?.username }}</span>
+          <span class="ruolo">Amministratore</span>
         </span>
         <mat-icon>expand_more</mat-icon>
       </button>

@@ -30,6 +30,7 @@
 .riga {
   display: flex;
   gap: 12px;
+  align-items: flex-start;   /* niente stretch: campi con hint non deformano i vicini */
 }
 .riga mat-form-field {
   flex: 1;

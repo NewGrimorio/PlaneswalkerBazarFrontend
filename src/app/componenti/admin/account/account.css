@@ -3,6 +3,20 @@
 .rosso { color: #b3261e; }
 .stretto { max-width: 140px; }
 
+/* ---------- Card immagine profilo ---------- */
+.blocco-avatar { display: flex; align-items: center; gap: 20px; margin-bottom: 16px; }
+.avatar-grande {
+  width: 96px; height: 96px; border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--colore-plancia);
+  background: #fff;
+}
+.azioni-avatar {
+  display: flex; flex-direction: column;
+  align-items: flex-start; gap: 4px;
+}
+
+/* ---------- Sezione indirizzi ---------- */
 .testata-sezione { display: flex; align-items: center; margin-bottom: 8px; }
 
 .sottoform {
