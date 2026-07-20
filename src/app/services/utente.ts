@@ -1,7 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { UtenteDTO } from '../modelli/utente-dto';
+import { LoginDTO } from '../modelli/login-dto';
 import { environment } from '../../environments/environment';
 
 const BASE = environment.apiUrl;
@@ -10,10 +11,18 @@ const BASE = environment.apiUrl;
 export class Utente {
   private http = inject(HttpClient);
 
-  /** Login e registrazione vivono in /auth (Fase A del refactoring
-   *  sicurezza): sono flussi di identita', non di profilo. */
+  /**
+   * Fase B: il backend risponde LoginDTO (accessToken + utente) e
+   * imposta il refresh token in un cookie HttpOnly — da qui il
+   * withCredentials, senza il quale il browser scarta il cookie.
+   * Per ora esponiamo solo l'utente (contratto invariato verso i
+   * componenti); l'adozione dell'accessToken arriva col prossimo
+   * blocco (AuthServices + interceptor).
+   */
   loginUtente(identificativo: string, password: string): Observable<UtenteDTO> {
-    return this.http.post<UtenteDTO>(`${BASE}/auth/login`, { identificativo, password });
+    return this.http.post<LoginDTO>(`${BASE}/auth/login`,
+        { identificativo, password }, { withCredentials: true })
+      .pipe(map(r => r.utente));
   }
 
   registraUtente(dati: {
