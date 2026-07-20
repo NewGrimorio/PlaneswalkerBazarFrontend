@@ -1,20 +1,25 @@
 import { Component, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { FormsModule, NgForm } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
-import { environment } from '../../../../environments/environment';
 import { AuthServices } from '../../../auth/auth-services';
+import { Utente } from '../../../services/utente';
+import { Indirizzo } from '../../../services/indirizzo';
 import { UtenteDTO } from '../../../modelli/utente-dto';
 import { IndirizzoDTO } from '../../../modelli/indirizzo-dto';
 import { urlImmagine } from '../../../utils/url-immagine';
 
-const BASE = environment.apiUrl;
-
 type Esito = { testo: string; errore: boolean } | null;
 
+/**
+ * FASE C: l'account non conosce piu' il proprio id. "Chi sono" lo
+ * dice il token a ogni chiamata; i dati freschi arrivano da me()
+ * (era getById(id)), e nessun utenteId parte piu' da qui. Le chiamate
+ * HTTP grezze sono passate ai service Utente/Indirizzo, dove la Fase C
+ * ha gia' tolto id e utenteId dalle firme.
+ */
 @Component({
   selector: 'app-account',
   imports: [FormsModule, MatButtonModule, MatFormFieldModule,
@@ -24,10 +29,9 @@ type Esito = { testo: string; errore: boolean } | null;
 })
 export class Account {
 
-  private http = inject(HttpClient);
   private authS = inject(AuthServices);
-
-  private utenteId = this.authS.utente()!.id;
+  private utenteS = inject(Utente);
+  private indirizzoS = inject(Indirizzo);
 
    // --- Card 0: immagine profilo ---
   immagineProfilo = signal<string | null>(null);
@@ -69,9 +73,14 @@ export class Account {
   }
 
   constructor() {
-    // Dati FRESCHI dal backend, mai dal localStorage (puo' essere stantio)
-    this.http.get<UtenteDTO>(`${BASE}/utenti/${this.utenteId}`)
-      .subscribe({ next: u => this.popolaDa(u) });
+    // Dati FRESCHI dal token (me()). L'error handler c'e' apposta:
+    // durante l'SSR queste chiamate partono senza sessione e falliscono
+    // per design — il guscio si renderizza lo stesso, ci pensa il
+    // client dopo l'hydration. Mai piu' errori non gestiti nel render.
+    this.utenteS.me().subscribe({
+      next: u => this.popolaDa(u),
+      error: () => {}
+    });
     this.caricaIndirizzi();
   }
 
@@ -104,7 +113,7 @@ export class Account {
     this.inCorso.set(true);
     this.msgAvatar.set(null);
 
-    this.http.post<UtenteDTO>(`${BASE}/utenti/${this.utenteId}/immagine-profilo`, form)
+    this.utenteS.uploadImmagineProfilo(form)
       .subscribe({
         next: u => {
           this.aggiornaSessione(u);   // popola anche immagineProfilo -> anteprima e chip
@@ -121,7 +130,7 @@ export class Account {
     this.inCorso.set(true);
     this.msgAvatar.set(null);
 
-    this.http.delete<UtenteDTO>(`${BASE}/utenti/${this.utenteId}/immagine-profilo`)
+    this.utenteS.removeImmagineProfilo()
       .subscribe({
         next: u => {
           this.aggiornaSessione(u);
@@ -141,8 +150,7 @@ export class Account {
     this.inCorso.set(true);
     this.msgAnagrafica.set(null);
 
-    this.http.put<UtenteDTO>(`${BASE}/utenti/profilo`, {
-      id: this.utenteId,
+    this.utenteS.updateProfilo({
       nome: this.fNome.trim(),
       cognome: this.fCognome.trim(),
       username: this.fUsername.trim(),
@@ -163,50 +171,44 @@ export class Account {
   // Card 2: email (operazione sensibile: riconferma password)
   // ------------------------------------------------------------------
 
-  salvaEmail(form: NgForm): void {                            // FIX: riceve il form
+  salvaEmail(form: NgForm): void {
     if (this.inCorso()) return;
     this.inCorso.set(true);
     this.msgEmail.set(null);
 
-    this.http.put<UtenteDTO>(`${BASE}/utenti/email`, {
-      utenteId: this.utenteId,
-      nuovaEmail: this.fNuovaEmail.trim(),
-      password: this.fPasswordEmail,
-    }).subscribe({
-      next: u => {
-        this.aggiornaSessione(u);
-        form.resetForm();       // azzera valori E stato touched: niente rosso
-        this.msgEmail.set({
-          testo: 'Email aggiornata: dal prossimo accesso usa la nuova (o lo username).',
-          errore: false
-        });
-        this.inCorso.set(false);
-      },
-      error: err => { this.msgEmail.set(this.esitoErrore(err)); this.inCorso.set(false); }
-    });
+    this.utenteS.changeEmail(this.fNuovaEmail.trim(), this.fPasswordEmail)
+      .subscribe({
+        next: u => {
+          this.aggiornaSessione(u);
+          form.resetForm();       // azzera valori E stato touched: niente rosso
+          this.msgEmail.set({
+            testo: 'Email aggiornata: dal prossimo accesso usa la nuova (o lo username).',
+            errore: false
+          });
+          this.inCorso.set(false);
+        },
+        error: err => { this.msgEmail.set(this.esitoErrore(err)); this.inCorso.set(false); }
+      });
   }
 
   // ------------------------------------------------------------------
   // Card 3: password (la vecchia si verifica sul server, come da service)
   // ------------------------------------------------------------------
 
-  salvaPassword(form: NgForm): void {                         // FIX: riceve il form
+  salvaPassword(form: NgForm): void {
     if (this.inCorso() || this.passwordNonCoincidono) return;
     this.inCorso.set(true);
     this.msgPassword.set(null);
 
-    this.http.put<UtenteDTO>(`${BASE}/utenti/password`, {
-      utenteId: this.utenteId,
-      vecchiaPassword: this.fVecchia,
-      nuovaPassword: this.fNuova,
-    }).subscribe({
-      next: () => {
-        form.resetForm();       // azzera valori E stato touched: niente rosso
-        this.msgPassword.set({ testo: 'Password aggiornata.', errore: false });
-        this.inCorso.set(false);
-      },
-      error: err => { this.msgPassword.set(this.esitoErrore(err)); this.inCorso.set(false); }
-    });
+    this.utenteS.changePassword(this.fVecchia, this.fNuova)
+      .subscribe({
+        next: () => {
+          form.resetForm();       // azzera valori E stato touched: niente rosso
+          this.msgPassword.set({ testo: 'Password aggiornata.', errore: false });
+          this.inCorso.set(false);
+        },
+        error: err => { this.msgPassword.set(this.esitoErrore(err)); this.inCorso.set(false); }
+      });
   }
 
   // ------------------------------------------------------------------
@@ -214,9 +216,11 @@ export class Account {
   // ------------------------------------------------------------------
 
   private caricaIndirizzi(): void {
-    this.http.get<IndirizzoDTO[]>(`${BASE}/indirizzi`,
-        { params: { utenteId: this.utenteId } })
-      .subscribe({ next: l => this.indirizzi.set(l) });
+    this.indirizzoS.list()
+      .subscribe({
+        next: l => this.indirizzi.set(l),
+        error: () => {}   // SSR senza sessione: silenzio, ci pensa il client
+      });
   }
 
   nuovoIndirizzo(): void {
@@ -245,7 +249,6 @@ export class Account {
     this.msgIndirizzi.set(null);
 
     const corpo: any = {
-      utenteId: this.utenteId,
       etichetta: this.iEtichetta.trim() || null,
       destinatario: this.iDestinatario.trim(),
       via: this.iVia.trim(),
@@ -257,8 +260,8 @@ export class Account {
     };
 
     const chiamata = idInModifica === 0
-      ? this.http.post<IndirizzoDTO>(`${BASE}/indirizzi`, corpo)
-      : this.http.put<IndirizzoDTO>(`${BASE}/indirizzi`, { ...corpo, id: idInModifica });
+      ? this.indirizzoS.create(corpo)
+      : this.indirizzoS.update({ ...corpo, id: idInModifica });
 
     chiamata.subscribe({
       next: () => {
@@ -271,8 +274,7 @@ export class Account {
   }
 
   eliminaIndirizzo(i: IndirizzoDTO): void {
-    this.http.delete(`${BASE}/indirizzi/${i.id}`,
-        { params: { utenteId: this.utenteId } })
+    this.indirizzoS.remove(i.id)
       .subscribe({
         next: () => this.caricaIndirizzi(),
         error: err => this.msgIndirizzi.set(this.esitoErrore(err))
@@ -281,8 +283,7 @@ export class Account {
 
   setPredefinito(i: IndirizzoDTO): void {
     if (i.predefinito) return;
-    this.http.post(`${BASE}/indirizzi/${i.id}/set-predefinito`, null,
-        { params: { utenteId: this.utenteId } })
+    this.indirizzoS.setPredefinito(i.id)
       .subscribe({
         next: () => this.caricaIndirizzi(),
         error: err => this.msgIndirizzi.set(this.esitoErrore(err))

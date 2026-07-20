@@ -1,8 +1,9 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 import { UtenteDTO } from '../modelli/utente-dto';
 import { LoginDTO } from '../modelli/login-dto';
+import { AuthServices } from '../auth/auth-services';
 import { environment } from '../../environments/environment';
 
 const BASE = environment.apiUrl;
@@ -10,52 +11,74 @@ const BASE = environment.apiUrl;
 @Injectable({ providedIn: 'root' })
 export class Utente {
   private http = inject(HttpClient);
+  private authS = inject(AuthServices);
 
-  /**
-   * Fase B: il backend risponde LoginDTO (accessToken + utente) e
-   * imposta il refresh token in un cookie HttpOnly — da qui il
-   * withCredentials, senza il quale il browser scarta il cookie.
-   * Per ora esponiamo solo l'utente (contratto invariato verso i
-   * componenti); l'adozione dell'accessToken arriva col prossimo
-   * blocco (AuthServices + interceptor).
-   */
   loginUtente(identificativo: string, password: string): Observable<UtenteDTO> {
     return this.http.post<LoginDTO>(`${BASE}/auth/login`,
         { identificativo, password }, { withCredentials: true })
-      .pipe(map(r => r.utente));
+      .pipe(
+        tap(r => this.authS.sessione(r)),
+        map(r => r.utente)
+      );
+  }
+
+  refresh(): Observable<LoginDTO> {
+    return this.http.post<LoginDTO>(`${BASE}/auth/refresh`,
+        {}, { withCredentials: true })
+      .pipe(tap(r => this.authS.sessione(r)));
+  }
+
+  logout(): Observable<void> {
+    return this.http.post<void>(`${BASE}/auth/logout`,
+        {}, { withCredentials: true });
   }
 
   registraUtente(dati: {
+    email: string;
+    username: string;
+    password: string;
     nome: string;
     cognome: string;
-    email: string;
-    telefono: string;
-    dataNascita: string;
-    codiceFiscale: string;
-    password: string;
+    telefono: string | null;
+    dataNascita: string | null;
+    codiceFiscale: string | null;
   }): Observable<UtenteDTO> {
     return this.http.post<UtenteDTO>(`${BASE}/auth/registrazione`, dati);
   }
 
-  getById(id: number): Observable<UtenteDTO> {
-    return this.http.get<UtenteDTO>(`${BASE}/utenti/${id}`);
+  /**
+   * FASE C: "chi sono" lo dice il token, non un id nell'URL.
+   * Sostituisce il vecchio getById(id), che non esiste piu'.
+   */
+  me(): Observable<UtenteDTO> {
+    return this.http.get<UtenteDTO>(`${BASE}/auth/me`);
   }
 
+  /** FASE C: niente id nel body — lo mette il backend dal token. */
   updateProfilo(dati: {
-    id: number; nome: string; cognome: string; username: string;
+    nome: string; cognome: string; username: string;
     telefono: string | null; dataNascita: string | null; codiceFiscale: string | null;
   }): Observable<UtenteDTO> {
     return this.http.put<UtenteDTO>(`${BASE}/utenti/profilo`, dati);
   }
 
-  changeEmail(utenteId: number, nuovaEmail: string, password: string): Observable<UtenteDTO> {
+  changeEmail(nuovaEmail: string, password: string): Observable<UtenteDTO> {
     return this.http.put<UtenteDTO>(`${BASE}/utenti/email`,
-      { utenteId, nuovaEmail, password });
+      { nuovaEmail, password });
   }
 
-  changePassword(utenteId: number, vecchiaPassword: string, nuovaPassword: string): Observable<UtenteDTO> {
+  changePassword(vecchiaPassword: string, nuovaPassword: string): Observable<UtenteDTO> {
     return this.http.put<UtenteDTO>(`${BASE}/utenti/password`,
-      { utenteId, vecchiaPassword, nuovaPassword });
+      { vecchiaPassword, nuovaPassword });
+  }
+
+  /** FASE C: immagine profilo self-scoped — niente id nel path. */
+  uploadImmagineProfilo(form: FormData): Observable<UtenteDTO> {
+    return this.http.post<UtenteDTO>(`${BASE}/utenti/immagine-profilo`, form);
+  }
+
+  removeImmagineProfilo(): Observable<UtenteDTO> {
+    return this.http.delete<UtenteDTO>(`${BASE}/utenti/immagine-profilo`);
   }
 
 }

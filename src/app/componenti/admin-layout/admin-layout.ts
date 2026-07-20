@@ -3,6 +3,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { AuthServices } from '../../auth/auth-services';
+import { Utente } from '../../services/utente';
 import { urlImmagine } from '../../utils/url-immagine';
 
 @Component({
@@ -13,6 +14,7 @@ import { urlImmagine } from '../../utils/url-immagine';
 })
 export class AdminLayout {
   private authS = inject(AuthServices);
+  private utenteS = inject(Utente);
   private router = inject(Router);
 
   utente = this.authS.utente;
@@ -30,7 +32,20 @@ export class AdminLayout {
     { titolo: 'Recensioni',      icona: 'rate_review',     link: '/admin/recensioni' },
   ];
 
+  /**
+   * Logout VERO (Fase B): prima il backend — revoca la famiglia dei
+   * refresh token e azzera il cookie — poi lo stato locale. Anche se
+   * il backend non risponde, lo stato locale si pulisce comunque:
+   * l'utente non deve mai restare intrappolato dentro.
+   */
   esci(): void {
+    this.utenteS.logout().subscribe({
+      next: () => this.chiudiSessione(),
+      error: () => this.chiudiSessione()
+    });
+  }
+
+  private chiudiSessione(): void {
     this.authS.resetAll();
     this.router.navigate(['/login']);
   }

@@ -22,15 +22,25 @@ export class Login {
   private authS = inject(AuthServices);
   private router = inject(Router);
 
-  identificativo = '';                 // ← era: email = ''
+  identificativo = '';
   password = '';
   errore = signal<string | null>(null);
   inCorso = signal(false);
 
+  constructor() {
+    // Utente gia' loggato che finisce sul login (es. F5 su /login):
+    // si attende il bootstrap e poi lo si rimanda a casa. Sul server
+    // pronta() e' gia' risolta e authS e' vuoto: nessun redirect SSR.
+    this.authS.pronta().then(() => {
+      if (this.authS.isAutentificated())
+        this.router.navigate([this.authS.isRoleAdmin() ? '/admin' : '/']);
+    });
+  }
+
   accediAlSito(): void {
     this.errore.set(null);
     this.inCorso.set(true);
-    this.utenteS.loginUtente(this.identificativo, this.password).subscribe({   // ← qui
+    this.utenteS.loginUtente(this.identificativo, this.password).subscribe({
       next: (utente) => {
         this.authS.login(utente);
         this.router.navigate([this.authS.isRoleAdmin() ? '/admin' : '/']);

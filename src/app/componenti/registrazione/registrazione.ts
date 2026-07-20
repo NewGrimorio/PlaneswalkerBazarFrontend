@@ -1,16 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { switchMap } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { environment } from '../../../environments/environment';
-import { UtenteDTO } from '../../modelli/utente-dto';
-import { AuthServices } from '../../auth/auth-services';
-
-const BASE = environment.apiUrl;
+import { Utente } from '../../services/utente';
 
 @Component({
   selector: 'app-registrazione',
@@ -21,8 +17,7 @@ const BASE = environment.apiUrl;
 })
 export class Registrazione {
 
-  private http = inject(HttpClient);
-  private authS = inject(AuthServices);
+  private utenteS = inject(Utente);
   private router = inject(Router);
 
   // Obbligatori (gruppo Create della UtenteReq)
@@ -62,17 +57,18 @@ export class Registrazione {
       codiceFiscale: this.codiceFiscale.trim().toUpperCase() || null,
     };
 
-    // /auth/registrazione: i flussi di identita' vivono in /api/auth (Fase A)
-    this.http.post<UtenteDTO>(`${BASE}/auth/registrazione`, req).subscribe({
-      next: (utente) => {
-        this.authS.login(utente);      // registrato = gia' autenticato
-        this.router.navigate(['/']);
-      },
+    // La registrazione risponde con l'utente ma SENZA token (per
+    // design: il backend e i suoi test restano intatti). Il login
+    // concatenato subito dopo procura i token e popola AuthServices
+    // (via tap nel service): registrato = loggato PER DAVVERO.
+    this.utenteS.registraUtente(req).pipe(
+      switchMap(() => this.utenteS.loginUtente(this.email, this.password))
+    ).subscribe({
+      next: () => this.router.navigate(['/']),
       error: (err) => {
         this.errore.set(err.error?.msg ?? 'Errore di comunicazione col server');
         this.inCorso.set(false);
       }
     });
   }
-  
 }
