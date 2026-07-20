@@ -9,11 +9,12 @@ const BASE = environment.apiUrl;
 @Injectable({ providedIn: 'root' })
 export class Utente {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/utenti`;
 
+  /** Login e registrazione vivono in /auth (Fase A del refactoring
+   *  sicurezza): sono flussi di identita', non di profilo. */
   loginUtente(identificativo: string, password: string): Observable<UtenteDTO> {
-  return this.http.post<UtenteDTO>(`${BASE}/utenti/login`, { identificativo, password });
-}
+    return this.http.post<UtenteDTO>(`${BASE}/auth/login`, { identificativo, password });
+  }
 
   registraUtente(dati: {
     nome: string;
@@ -24,7 +25,7 @@ export class Utente {
     codiceFiscale: string;
     password: string;
   }): Observable<UtenteDTO> {
-    return this.http.post<UtenteDTO>(`${this.apiUrl}/registrazione`, dati);
+    return this.http.post<UtenteDTO>(`${BASE}/auth/registrazione`, dati);
   }
 
   getById(id: number): Observable<UtenteDTO> {
@@ -47,5 +48,5 @@ export class Utente {
     return this.http.put<UtenteDTO>(`${BASE}/utenti/password`,
       { utenteId, vecchiaPassword, nuovaPassword });
   }
-  
+
 }

@@ -125,7 +125,7 @@ export class Magazzino {
     if (tipo === 'SINGLE') {
       // Passo 1: la scelta dell'espansione (lista caricata una volta sola)
       if (this.espansioni().length === 0) {
-        this.http.get<EspansioneDTO[]>(`${BASE}/espansioni`)
+        this.http.get<EspansioneDTO[]>(`${BASE}/public/espansioni`)
           .subscribe({
             next: l => this.espansioni.set(l),
             error: err => this.mostraErrore(err)

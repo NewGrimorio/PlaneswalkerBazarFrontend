@@ -62,7 +62,8 @@ export class Registrazione {
       codiceFiscale: this.codiceFiscale.trim().toUpperCase() || null,
     };
 
-    this.http.post<UtenteDTO>(`${BASE}/utenti/registrazione`, req).subscribe({
+    // /auth/registrazione: i flussi di identita' vivono in /api/auth (Fase A)
+    this.http.post<UtenteDTO>(`${BASE}/auth/registrazione`, req).subscribe({
       next: (utente) => {
         this.authS.login(utente);      // registrato = gia' autenticato
         this.router.navigate(['/']);
@@ -73,4 +74,5 @@ export class Registrazione {
       }
     });
   }
+  
 }

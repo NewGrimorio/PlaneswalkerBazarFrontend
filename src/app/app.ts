@@ -19,7 +19,7 @@ export class App implements OnInit {
   errore: string | null = null;
 
   ngOnInit(): void {
-    this.http.get(`${environment.apiUrl}/espansioni`).subscribe({
+    this.http.get(`${environment.apiUrl}/public/espansioni`).subscribe({
       next: (dati) => this.risposta = dati,
       error: (err) => this.errore = `Errore ${err.status}: ${err.message}`
     });

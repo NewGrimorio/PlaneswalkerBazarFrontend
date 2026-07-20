@@ -56,7 +56,7 @@ export class Prodotti {
 
   constructor() {
     this.cambiaTab(this.tipoAttivo());
-    this.http.get<EspansioneDTO[]>(`${BASE}/espansioni`)
+    this.http.get<EspansioneDTO[]>(`${BASE}/public/espansioni`)
       .subscribe({ next: l => this.espansioni.set(l), error: () => {} });
   }
 

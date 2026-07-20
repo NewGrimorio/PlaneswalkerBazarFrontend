@@ -38,7 +38,8 @@ export class SyncScryfall {
   }
 
   private carica(): void {
-    this.http.get<EspansioneDTO[]>(`${BASE}/espansioni`)
+    // /public/espansioni: la lista dei set e' l'endpoint pubblico (Fase A)
+    this.http.get<EspansioneDTO[]>(`${BASE}/public/espansioni`)
       .subscribe({
         next: lista => this.espansioni.set(lista),
         error: err => this.mostraErrore(err)
