@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -16,9 +17,13 @@ type Esito = { testo: string; errore: boolean } | null;
 /**
  * FASE C: l'account non conosce piu' il proprio id. "Chi sono" lo
  * dice il token a ogni chiamata; i dati freschi arrivano da me()
- * (era getById(id)), e nessun utenteId parte piu' da qui. Le chiamate
- * HTTP grezze sono passate ai service Utente/Indirizzo, dove la Fase C
- * ha gia' tolto id e utenteId dalle firme.
+ * (era getById(id)), e nessun utenteId parte piu' da qui.
+ *
+ * RIFINITURA: il cambio password revoca TUTTE le sessioni sul backend
+ * (ogni dispositivo). Per non buttare fuori anche l'utente che sta
+ * cambiando, subito dopo si fa un login SILENZIOSO con la nuova
+ * password: famiglia fresca per QUESTO dispositivo, gli altri restano
+ * fuori. UX intatta, sicurezza piena.
  */
 @Component({
   selector: 'app-account',
@@ -32,6 +37,7 @@ export class Account {
   private authS = inject(AuthServices);
   private utenteS = inject(Utente);
   private indirizzoS = inject(Indirizzo);
+  private router = inject(Router);
 
    // --- Card 0: immagine profilo ---
   immagineProfilo = signal<string | null>(null);
@@ -192,7 +198,7 @@ export class Account {
   }
 
   // ------------------------------------------------------------------
-  // Card 3: password (la vecchia si verifica sul server, come da service)
+  // Card 3: password — revoca globale + rientro silenzioso
   // ------------------------------------------------------------------
 
   salvaPassword(form: NgForm): void {
@@ -200,12 +206,31 @@ export class Account {
     this.inCorso.set(true);
     this.msgPassword.set(null);
 
+    // Fotografati PRIMA del resetForm: dopo, i campi sono null
+    const username = this.authS.utente()!.username;
+    const nuovaPassword = this.fNuova;
+
     this.utenteS.changePassword(this.fVecchia, this.fNuova)
       .subscribe({
         next: () => {
-          form.resetForm();       // azzera valori E stato touched: niente rosso
-          this.msgPassword.set({ testo: 'Password aggiornata.', errore: false });
-          this.inCorso.set(false);
+          form.resetForm();
+          // Il backend ha appena revocato TUTTE le sessioni, compresa
+          // la nostra: login silenzioso con la nuova password ->
+          // famiglia fresca per questo dispositivo, gli altri fuori.
+          this.utenteS.loginUtente(username, nuovaPassword).subscribe({
+            next: () => {
+              this.msgPassword.set({
+                testo: 'Password aggiornata. Le sessioni sugli altri dispositivi sono state disconnesse.',
+                errore: false
+              });
+              this.inCorso.set(false);
+            },
+            error: () => {
+              // improbabile (password appena impostata): fallback pulito
+              this.authS.resetAll();
+              this.router.navigate(['/login']);
+            }
+          });
         },
         error: err => { this.msgPassword.set(this.esitoErrore(err)); this.inCorso.set(false); }
       });
