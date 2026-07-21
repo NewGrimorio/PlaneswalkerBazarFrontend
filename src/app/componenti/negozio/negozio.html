@@ -1,0 +1,137 @@
+<div class="negozio">
+  <header class="testata">
+    <h1>Negozio</h1>
+    <nav class="tipi">
+      @for (t of tipi; track t.v) {
+        <button type="button" class="chip" [class.attivo]="tipoSel() === t.v"
+                (click)="cambiaTipo(t.v)">{{ t.l }}</button>
+      }
+    </nav>
+  </header>
+
+  <div class="corpo">
+    <!-- VETRINA -->
+    <section class="vetrina">
+      @if (caricando()) {
+        <p class="stato">Caricamento…</p>
+      } @else if (prodotti().length === 0) {
+        <p class="stato">Nessun prodotto in questa categoria.</p>
+      } @else {
+        <div class="griglia">
+          @for (p of prodotti(); track p.id) {
+            <article class="card" (click)="apri(p)">
+              <div class="thumb">
+                @if (urlImmagine(p.imageUrl); as u) {
+                  <img [src]="u" [alt]="p.nome" loading="lazy">
+                } @else {
+                  <mat-icon>image</mat-icon>
+                }
+              </div>
+              <h3>{{ p.nome }}</h3>
+              @if (p.espansioneNome) { <small>{{ p.espansioneNome }}</small> }
+            </article>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- CARRELLO -->
+    <aside class="carrello">
+      <h2>
+        <mat-icon>shopping_cart</mat-icon> Carrello
+        @if (carrello(); as c) { <span class="badge">{{ c.numeroArticoli }}</span> }
+      </h2>
+
+      @if (carrello(); as c) {
+        @if (c.voci.length === 0) {
+          <p class="stato">Il carrello è vuoto.</p>
+        } @else {
+          <ul class="voci">
+            @for (v of c.voci; track v.id) {
+              <li [class.non-disp]="!v.disponibile">
+                <div class="riga-top">
+                  <strong>{{ v.nomeProdotto }}</strong>
+                  <button type="button" class="icona" title="Rimuovi" (click)="rimuovi(v)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+                <small class="dett">{{ v.finitura }} · {{ v.condizione }} · {{ v.lingua }}</small>
+                <div class="riga-bottom">
+                  <div class="stepper">
+                    <button type="button" class="icona" (click)="decrementa(v)">
+                      <mat-icon>remove</mat-icon>
+                    </button>
+                    <span>{{ v.quantita }}</span>
+                    <button type="button" class="icona" (click)="incrementa(v)">
+                      <mat-icon>add</mat-icon>
+                    </button>
+                  </div>
+                  <span class="sub">{{ v.subtotale | number:'1.2-2' }} €</span>
+                </div>
+                @if (!v.disponibile) {
+                  <small class="avviso">Quantità non più disponibile</small>
+                }
+              </li>
+            }
+          </ul>
+
+          <div class="totale">
+            <span>Totale</span>
+            <strong>{{ c.totale | number:'1.2-2' }} €</strong>
+          </div>
+
+          <button type="button" class="btn-primario"
+                  [disabled]="c.numeroArticoli === 0" (click)="procedi()">
+            Procedi all'ordine
+          </button>
+          <button type="button" class="btn-testo" (click)="svuota()">Svuota carrello</button>
+        }
+      } @else {
+        <p class="stato">Accedi per vedere il tuo carrello.</p>
+      }
+    </aside>
+    <!-- Logout temporaneo (in attesa della topbar cliente) -->
+<div class="logout-box">
+  <button type="button" class="btn-logout" (click)="esci()">
+    <mat-icon>logout</mat-icon> Esci
+  </button>
+</div>
+  </div>
+
+  <!-- DETTAGLIO PRODOTTO + VARIANTI -->
+  @if (prodottoAperto(); as p) {
+    <div class="modale" (click)="chiudi()">
+      <div class="pannello" (click)="$event.stopPropagation()">
+        <button type="button" class="icona chiudi" (click)="chiudi()">
+          <mat-icon>close</mat-icon>
+        </button>
+        <h2>{{ p.nome }}</h2>
+        @if (p.espansioneNome) { <p class="set">{{ p.espansioneNome }}</p> }
+        @if (p.descrizione) { <p class="descr">{{ p.descrizione }}</p> }
+
+        @if (p.skus && p.skus.length > 0) {
+          <ul class="varianti">
+            @for (s of p.skus; track s.id) {
+              <li>
+                <div class="v-info">
+                  <strong>{{ s.prezzo | number:'1.2-2' }} €</strong>
+                  <small>{{ s.finitura }} · {{ s.condizione }} · {{ s.lingua }}</small>
+                </div>
+                <button type="button" class="btn-primario piccolo"
+                        [disabled]="!s.disponibile" (click)="aggiungi(s)">
+                  {{ s.disponibile ? 'Aggiungi' : 'Esaurito' }}
+                </button>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="stato">Nessuna variante acquistabile al momento.</p>
+        }
+      </div>
+    </div>
+  }
+
+  @if (messaggio(); as m) {
+    <div class="toast" [class.errore]="m.errore">{{ m.testo }}</div>
+  }
+</div>

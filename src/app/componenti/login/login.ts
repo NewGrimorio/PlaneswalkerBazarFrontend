@@ -27,13 +27,18 @@ export class Login {
   errore = signal<string | null>(null);
   inCorso = signal(false);
 
+  // Dove va il cliente dopo il login. TEMPORANEO: finche' la homepage
+  // e' in lavorazione, si atterra sul negozio. Quando la home sara'
+  // pronta, riportare a '/'.
+  private readonly dopoLoginCliente = '/negozio';
+
   constructor() {
     // Utente gia' loggato che finisce sul login (es. F5 su /login):
     // si attende il bootstrap e poi lo si rimanda a casa. Sul server
     // pronta() e' gia' risolta e authS e' vuoto: nessun redirect SSR.
     this.authS.pronta().then(() => {
       if (this.authS.isAutentificated())
-        this.router.navigate([this.authS.isRoleAdmin() ? '/admin' : '/']);
+        this.router.navigate([this.authS.isRoleAdmin() ? '/admin' : this.dopoLoginCliente]);
     });
   }
 
@@ -43,7 +48,7 @@ export class Login {
     this.utenteS.loginUtente(this.identificativo, this.password).subscribe({
       next: (utente) => {
         this.authS.login(utente);
-        this.router.navigate([this.authS.isRoleAdmin() ? '/admin' : '/']);
+        this.router.navigate([this.authS.isRoleAdmin() ? '/admin' : this.dopoLoginCliente]);
       },
       error: (err) => {
         this.errore.set(err.error?.msg ?? 'Errore di comunicazione col server');
@@ -51,4 +56,5 @@ export class Login {
       }
     });
   }
+  
 }

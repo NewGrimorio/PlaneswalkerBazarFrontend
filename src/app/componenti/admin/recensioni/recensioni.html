@@ -1,0 +1,59 @@
+<div class="recensioni-admin">
+  <header>
+    <h1>Recensioni</h1>
+    <nav class="filtri">
+      @for (s of stati; track s.v) {
+        <button type="button" class="chip" [class.attivo]="statoSel() === s.v"
+                (click)="cambiaStato(s.v)">{{ s.l }}</button>
+      }
+    </nav>
+  </header>
+
+  @if (caricando()) {
+    <p class="stato">Caricamento…</p>
+  } @else if (recensioni().length === 0) {
+    <p class="stato">Nessuna recensione in questo stato.</p>
+  } @else {
+    <div class="lista">
+      @for (r of recensioni(); track r.id) {
+        <article class="rec">
+          <div class="testa">
+            <div class="stelle">
+              @for (piena of stelle(r.voto); track $index) {
+                <mat-icon>{{ piena ? 'star' : 'star_border' }}</mat-icon>
+              }
+            </div>
+            <span class="prodotto">{{ r.prodottoNome }}</span>
+            <span class="data">{{ r.creationDate | date:'dd/MM/yyyy' }}</span>
+          </div>
+
+          @if (r.titolo) { <h3>{{ r.titolo }}</h3> }
+          @if (r.testo) { <p class="testo">{{ r.testo }}</p> }
+
+          <div class="pie">
+            <small class="autore">
+              {{ r.autore }}
+              @if (r.acquistoVerificato) { <span class="verificato"><mat-icon>verified</mat-icon> Acquisto verificato</span> }
+            </small>
+
+            <div class="azioni">
+              @if (r.stato === 'APPROVATA') {
+                <button type="button" class="btn nascondi" [disabled]="inCorso() === r.id" (click)="nascondi(r)">
+                  <mat-icon>visibility_off</mat-icon> Nascondi
+                </button>
+              } @else {
+                <button type="button" class="btn ripristina" [disabled]="inCorso() === r.id" (click)="ripristina(r)">
+                  <mat-icon>visibility</mat-icon> Ripristina
+                </button>
+              }
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  @if (messaggio(); as m) {
+    <div class="toast" [class.errore]="m.errore">{{ m.testo }}</div>
+  }
+</div>

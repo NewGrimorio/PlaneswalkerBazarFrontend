@@ -1,0 +1,73 @@
+:host { display: block; }
+
+.ordini-admin { padding: 8px 4px 40px; }
+.ordini-admin h1 { font-size: 1.7rem; margin: 0 0 16px; }
+
+/* Filtri stato */
+.filtri { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+.chip {
+  border: 1px solid #d5d9e0; background: #fff;
+  border-radius: 999px; padding: 6px 16px;
+  cursor: pointer; font-size: .88rem; color: #445;
+  transition: all .15s;
+}
+.chip:hover { border-color: #1565c0; }
+.chip.attivo { background: #1565c0; border-color: #1565c0; color: #fff; }
+
+.stato { color: #8892a0; font-size: .95rem; padding: 20px 0; }
+
+/* Lista ordini */
+.lista { display: flex; flex-direction: column; gap: 12px; }
+.ordine {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px 20px;
+  border: 1px solid #e8eaee;
+  border-radius: 12px;
+  padding: 16px 18px;
+  background: #fff;
+  align-items: center;
+}
+@media (max-width: 700px) { .ordine { grid-template-columns: 1fr; } }
+
+.testa {
+  grid-column: 1 / -1;
+  display: flex; align-items: baseline; gap: 16px;
+  border-bottom: 1px solid #f1f2f5; padding-bottom: 10px;
+}
+.num { font-weight: 700; font-size: 1.05rem; color: #1565c0; }
+.data { color: #8892a0; font-size: .84rem; }
+.tot { margin-left: auto; font-weight: 700; font-size: 1.05rem; }
+
+.dest { display: flex; align-items: center; gap: 12px; }
+.dest mat-icon { color: #9aa4b2; }
+.ind { display: flex; flex-direction: column; }
+.ind strong { font-size: .95rem; }
+.ind small { color: #8892a0; font-size: .82rem; }
+
+.azioni { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
+
+.btn {
+  border: none; border-radius: 8px;
+  padding: 8px 16px; font-size: .88rem; cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+}
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.primario { background: #1565c0; color: #fff; }
+.btn.primario:hover:not(:disabled) { background: #0f4f9c; }
+.btn.pericolo { background: #fff; color: #c0392b; border: 1px solid #e6b0aa; }
+.btn.pericolo:hover:not(:disabled) { background: #fdf3f2; }
+
+.badge-stato {
+  background: #eef1f5; color: #667;
+  border-radius: 6px; padding: 4px 10px; font-size: .8rem;
+}
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #263041; color: #fff;
+  padding: 12px 22px; border-radius: 8px; font-size: .9rem; z-index: 60;
+  box-shadow: 0 6px 20px rgba(0,0,0,.25);
+}
+.toast.errore { background: #c0392b; }

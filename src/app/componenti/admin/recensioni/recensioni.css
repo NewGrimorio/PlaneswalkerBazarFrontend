@@ -1,0 +1,55 @@
+:host { display: block; }
+
+.recensioni-admin { padding: 8px 4px 40px; }
+.recensioni-admin h1 { font-size: 1.7rem; margin: 0 0 16px; }
+
+.filtri { display: flex; gap: 8px; margin-bottom: 24px; }
+.chip {
+  border: 1px solid #d5d9e0; background: #fff;
+  border-radius: 999px; padding: 6px 18px;
+  cursor: pointer; font-size: .88rem; color: #445; transition: all .15s;
+}
+.chip:hover { border-color: #1565c0; }
+.chip.attivo { background: #1565c0; border-color: #1565c0; color: #fff; }
+
+.stato { color: #8892a0; font-size: .95rem; padding: 20px 0; }
+
+.lista { display: flex; flex-direction: column; gap: 12px; }
+.rec {
+  border: 1px solid #e8eaee; border-radius: 10px;
+  padding: 16px 18px; background: #fff;
+}
+
+.testa { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+.stelle { display: inline-flex; color: #f1c40f; }
+.stelle mat-icon { font-size: 20px; width: 20px; height: 20px; }
+.prodotto { font-weight: 600; font-size: .92rem; color: #334; }
+.data { margin-left: auto; color: #8892a0; font-size: .82rem; }
+
+.rec h3 { margin: 4px 0; font-size: 1rem; }
+.testo { margin: 4px 0 12px; color: #556; font-size: .92rem; line-height: 1.45; }
+
+.pie { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.autore { color: #8892a0; font-size: .82rem; display: inline-flex; align-items: center; gap: 10px; }
+.verificato { display: inline-flex; align-items: center; gap: 3px; color: #27ae60; }
+.verificato mat-icon { font-size: 15px; width: 15px; height: 15px; }
+
+.azioni { display: flex; gap: 8px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: none; border-radius: 8px; padding: 7px 14px;
+  font-size: .85rem; cursor: pointer; transition: all .15s;
+}
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn mat-icon { font-size: 17px; width: 17px; height: 17px; }
+.btn.nascondi { background: #fff; color: #c0392b; border: 1px solid #e6b0aa; }
+.btn.nascondi:hover:not(:disabled) { background: #fdf3f2; }
+.btn.ripristina { background: #27ae60; color: #fff; }
+.btn.ripristina:hover:not(:disabled) { background: #219150; }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #263041; color: #fff; padding: 12px 22px; border-radius: 8px;
+  font-size: .9rem; z-index: 60; box-shadow: 0 6px 20px rgba(0,0,0,.25);
+}
+.toast.errore { background: #c0392b; }

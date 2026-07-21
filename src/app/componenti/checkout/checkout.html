@@ -1,0 +1,136 @@
+<div class="checkout">
+
+  <!-- ORDINE CONFERMATO -->
+  @if (ordineCreato(); as o) {
+    <div class="conferma-ok">
+      <mat-icon>check_circle</mat-icon>
+      <h1>Ordine confermato</h1>
+      <p>Il tuo ordine <strong>#{{ o.id }}</strong> è stato creato ({{ o.stato }}).</p>
+      <p class="tot">Totale pagato: <strong>{{ o.totale | number:'1.2-2' }} €</strong></p>
+      <a routerLink="/negozio" class="btn-primario">Torna al negozio</a>
+    </div>
+  } @else {
+
+    <h1>Checkout</h1>
+
+    <!-- RIEPILOGO CARRELLO -->
+    <section class="blocco">
+      <h2>Riepilogo</h2>
+      @if (carrello(); as c) {
+        @if (c.voci.length === 0) {
+          <p class="stato">Il carrello è vuoto. <a routerLink="/negozio">Vai al negozio</a>.</p>
+        } @else {
+          <ul class="voci">
+            @for (v of c.voci; track v.id) {
+              <li>
+                <span>{{ v.nomeProdotto }} <small>× {{ v.quantita }}</small></span>
+                <span>{{ v.subtotale | number:'1.2-2' }} €</span>
+              </li>
+            }
+          </ul>
+          <div class="totale"><span>Totale</span><strong>{{ totale() | number:'1.2-2' }} €</strong></div>
+        }
+      } @else {
+        <p class="stato">Caricamento…</p>
+      }
+    </section>
+
+    <!-- CREDITO -->
+    <section class="blocco">
+      <h2>Credito</h2>
+      <div class="saldo-riga">
+        <span>Saldo disponibile</span>
+        <strong [class.rosso]="!creditoSufficiente()">{{ saldo() | number:'1.2-2' }} €</strong>
+      </div>
+
+      @if (!creditoSufficiente() && !carrelloVuoto()) {
+        <p class="avviso">Ti mancano <strong>{{ mancante() | number:'1.2-2' }} €</strong> per completare l'ordine.</p>
+
+        <div class="ricarica">
+          <div class="campi">
+            <label>
+              Importo (€)
+              <input type="number" min="0.01" step="0.01" [(ngModel)]="importoRicarica" placeholder="0.00">
+            </label>
+            <label>
+              Metodo
+              <select [(ngModel)]="metodoRicarica">
+                <option value="PAYPAL">PayPal (immediato)</option>
+                <option value="BONIFICO">Bonifico (richiede conferma)</option>
+              </select>
+            </label>
+          </div>
+          <div class="ric-azioni">
+            <button type="button" class="btn-testo" (click)="coproIlMancante()">Copri il mancante</button>
+            <button type="button" class="btn-primario" [disabled]="inCorso()" (click)="ricarica()">Ricarica</button>
+          </div>
+          @if (metodoRicarica === 'PAYPAL') {
+            <small class="nota">PayPal applica una commissione del 5% + 0,35 €, accredito immediato.</small>
+          } @else {
+            <small class="nota">Il bonifico va confermato da un amministratore prima di essere disponibile.</small>
+          }
+        </div>
+      } @else if (!carrelloVuoto()) {
+        <p class="ok"><mat-icon>check</mat-icon> Credito sufficiente.</p>
+      }
+    </section>
+
+    <!-- INDIRIZZO -->
+    <section class="blocco">
+      <h2>Spedizione</h2>
+
+      @if (indirizzi().length > 0) {
+        <ul class="indirizzi">
+          @for (i of indirizzi(); track i.id) {
+            <li [class.sel]="indirizzoSel() === i.id" (click)="scegliIndirizzo(i.id)">
+              <input type="radio" name="ind" [checked]="indirizzoSel() === i.id" (change)="scegliIndirizzo(i.id)">
+              <div>
+                <strong>{{ i.destinatario }}</strong>
+                <small>{{ i.via }} {{ i.civico }}, {{ i.cap }} {{ i.citta }}{{ i.provincia ? ' (' + i.provincia + ')' : '' }}</small>
+              </div>
+            </li>
+          }
+        </ul>
+        @if (!mostraFormIndirizzo()) {
+          <button type="button" class="btn-testo" (click)="apriFormIndirizzo()">+ Aggiungi un indirizzo</button>
+        }
+      }
+
+      @if (mostraFormIndirizzo()) {
+        <div class="form-ind">
+          <input placeholder="Destinatario" [(ngModel)]="iDestinatario">
+          <div class="due">
+            <input placeholder="Via" [(ngModel)]="iVia">
+            <input placeholder="Civico" [(ngModel)]="iCivico">
+          </div>
+          <div class="due">
+            <input placeholder="CAP" [(ngModel)]="iCap">
+            <input placeholder="Città" [(ngModel)]="iCitta">
+          </div>
+          <div class="due">
+            <input placeholder="Provincia (facolt.)" [(ngModel)]="iProvincia">
+            <input placeholder="Nazione" [(ngModel)]="iNazione">
+          </div>
+          <button type="button" class="btn-primario" [disabled]="inCorso()" (click)="salvaIndirizzo()">Salva indirizzo</button>
+        </div>
+      }
+    </section>
+
+    <!-- CONFERMA -->
+    <section class="blocco conferma">
+      <button type="button" class="btn-primario grande" [disabled]="!puoConfermare()" (click)="conferma()">
+        Conferma ordine — {{ totale() | number:'1.2-2' }} €
+      </button>
+      @if (!puoConfermare() && !carrelloVuoto()) {
+        <small class="hint">
+          @if (indirizzoSel() === null) { Scegli un indirizzo di spedizione. }
+          @else if (!creditoSufficiente()) { Ricarica il credito per coprire il totale. }
+        </small>
+      }
+    </section>
+  }
+
+  @if (messaggio(); as m) {
+    <div class="toast" [class.errore]="m.errore">{{ m.testo }}</div>
+  }
+</div>

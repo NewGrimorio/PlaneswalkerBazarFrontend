@@ -1,0 +1,64 @@
+<div class="ordini-admin">
+  <header>
+    <h1>Ordini</h1>
+    <nav class="filtri">
+      @for (s of stati; track s.v) {
+        <button type="button" class="chip" [class.attivo]="statoSel() === s.v"
+                (click)="cambiaStato(s.v)">{{ s.l }}</button>
+      }
+    </nav>
+  </header>
+
+  @if (caricando()) {
+    <p class="stato">Caricamento…</p>
+  } @else if (ordini().length === 0) {
+    <p class="stato">Nessun ordine in questo stato.</p>
+  } @else {
+    <div class="lista">
+      @for (o of ordini(); track o.id) {
+        <article class="ordine">
+          <div class="testa">
+            <span class="num">#{{ o.id }}</span>
+            <span class="data">{{ o.creationDate | date:'dd/MM/yyyy HH:mm' }}</span>
+            <span class="tot">{{ o.totale | number:'1.2-2' }} €</span>
+          </div>
+
+          <div class="dest">
+            <mat-icon>local_shipping</mat-icon>
+            <div class="ind">
+              <strong>{{ o.spedDestinatario }}</strong>
+              <small>{{ o.spedVia }} {{ o.spedCivico }}, {{ o.spedCap }} {{ o.spedCitta }}<!--
+                -->{{ o.spedProvincia ? ' (' + o.spedProvincia + ')' : '' }}</small>
+            </div>
+          </div>
+
+          <div class="azioni">
+            @switch (o.stato) {
+              @case ('CREATO') {
+                <button type="button" class="btn primario" [disabled]="inCorso() === o.id"
+                        (click)="spedisci(o)">Spedisci</button>
+                <button type="button" class="btn pericolo" [disabled]="inCorso() === o.id"
+                        (click)="cancella(o)">Cancella</button>
+              }
+              @case ('RESO_RICHIESTO') {
+                <button type="button" class="btn primario" [disabled]="inCorso() === o.id"
+                        (click)="rimborsa(o)">Rimborsa</button>
+              }
+              @case ('NON_CONSEGNATO') {
+                <button type="button" class="btn primario" [disabled]="inCorso() === o.id"
+                        (click)="rimborsa(o)">Rimborsa</button>
+              }
+              @default {
+                <span class="badge-stato">{{ o.stato }}</span>
+              }
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  @if (messaggio(); as m) {
+    <div class="toast" [class.errore]="m.errore">{{ m.testo }}</div>
+  }
+</div>
