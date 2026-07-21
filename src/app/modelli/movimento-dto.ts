@@ -11,4 +11,9 @@ export interface MovimentoDTO {
   contoBancarioId: number | null;
   creationDate: string;
   completionDate: string | null;
+
+  // Popolati solo nella vista admin (storico globale)
+  utenteId?: number | null;
+  utenteUsername?: string | null;
+  utenteNome?: string | null;
 }

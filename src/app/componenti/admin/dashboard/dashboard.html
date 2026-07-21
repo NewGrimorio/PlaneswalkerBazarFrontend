@@ -1,26 +1,80 @@
-<div>
+<div class="dashboard">
   <h1>Dashboard amministratore</h1>
-  @if (stats(); as s) {
-    <div class="riga-stat">
-      <div class="stat"><span class="cerchio verde"><mat-icon>local_shipping</mat-icon></span>
-        <div><strong>{{ s.ordiniDaSpedire }}</strong><small>Ordini da spedire</small></div></div>
-      <div class="stat"><span class="cerchio giallo"><mat-icon>account_balance</mat-icon></span>
-        <div><strong>{{ s.bonificiInAttesa }}</strong><small>Bonifici da confermare</small></div></div>
-      <div class="stat"><span class="cerchio blu"><mat-icon>rate_review</mat-icon></span>
-        <div><strong>{{ s.recensioniDaModerare }}</strong><small>Recensioni da moderare</small></div></div>
-      <div class="stat"><span class="cerchio rosso"><mat-icon>warning</mat-icon></span>
-        <div><strong>{{ s.skuSottoScorta }}</strong><small>SKU sotto scorta</small></div></div>
+
+  <!-- ============ CONTATORI ============ -->
+  @if (erroreStats()) {
+    <p class="stato-errore">Contatori non disponibili al momento.</p>
+  } @else if (contatori().length > 0) {
+    <div class="contatori">
+      @for (c of contatori(); track c.label) {
+        @if (c.tipo === 'pannello') {
+          <!-- SKU sotto scorta: toggle del pannello, non navigazione -->
+          <button type="button" class="contatore come-tessera"
+                  [class.attenzione]="c.azionabile && c.valore > 0"
+                  [class.aperto]="scorteAperte()"
+                  (click)="toggleScorte()">
+            <mat-icon>{{ c.icona }}</mat-icon>
+            <div class="valori">
+              <span class="numero">{{ c.valore }}</span>
+              <span class="label">{{ c.label }}</span>
+            </div>
+            <mat-icon class="freccia">{{ scorteAperte() ? 'expand_less' : 'expand_more' }}</mat-icon>
+          </button>
+        } @else {
+          <a [routerLink]="c.link" class="contatore"
+             [class.attenzione]="c.azionabile && c.valore > 0">
+            <mat-icon>{{ c.icona }}</mat-icon>
+            <div class="valori">
+              <span class="numero">{{ c.valore }}</span>
+              <span class="label">{{ c.label }}</span>
+            </div>
+          </a>
+        }
+      }
     </div>
-  }@else if (erroreStats()) {
-      <p class="avviso">Contatori non disponibili al momento.</p>
+
+    <!-- ============ PANNELLO SOTTO SCORTA ============ -->
+    @if (scorteAperte()) {
+      <div class="pannello-scorte">
+        @if (caricandoScorte()) {
+          <p class="stato">Caricamento…</p>
+        } @else if (scorte().length === 0) {
+          <p class="stato">Nessun prodotto sotto scorta. Tutto rifornito 👍</p>
+        } @else {
+          <div class="riga intestazione">
+            <span>Prodotto</span>
+            <span>Variante</span>
+            <span class="num-col">Prezzo</span>
+            <span class="num-col">Giacenza</span>
+          </div>
+          @for (s of scorte(); track s.id) {
+            <div class="riga" [class.critico]="s.quantita === 0">
+              <span class="nome">{{ s.prodottoNome }}</span>
+              <span class="var">{{ variante(s) || '—' }}</span>
+              <span class="num-col">{{ s.prezzo }} €</span>
+              <span class="num-col giacenza">
+                {{ s.quantita }}
+                @if (s.quantita === 0) { <small class="esaurito">esaurito</small> }
+              </span>
+            </div>
+          }
+          <a routerLink="/admin/magazzino" class="vai-magazzino">
+            <mat-icon>warehouse</mat-icon> Vai al magazzino per rifornire
+          </a>
+        }
+      </div>
+    }
   }
-  <div class="griglia">
+
+  <!-- ============ NAVIGAZIONE ============ -->
+  <h2 class="titolo-sezioni">Gestione</h2>
+  <div class="sezioni">
     @for (s of sezioni; track s.link) {
-      <mat-card class="tessera" [routerLink]="s.link">
-        <mat-icon class="icona">{{ s.icona }}</mat-icon>
-        <mat-card-title>{{ s.titolo }}</mat-card-title>
-        <mat-card-content>{{ s.descrizione }}</mat-card-content>
-      </mat-card>
+      <a [routerLink]="s.link" class="sezione">
+        <mat-icon>{{ s.icona }}</mat-icon>
+        <h3>{{ s.titolo }}</h3>
+        <p>{{ s.descrizione }}</p>
+      </a>
     }
   </div>
 </div>

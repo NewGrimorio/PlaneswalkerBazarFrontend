@@ -8,5 +8,7 @@ export interface MagazzinoSKUDTO {
   quantita: number;
   attivo: boolean;
   disponibile: boolean;
+
+  // Popolato solo nelle viste admin che uniscono il prodotto (es. restock)
+  prodottoNome?: string | null;
 }
-  

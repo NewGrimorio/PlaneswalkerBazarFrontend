@@ -1,43 +1,91 @@
-.griglia {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
-  margin-top: 16px;
-}
-.tessera {
-  padding: 20px;
-  cursor: pointer;
-  text-align: center;
-  transition: box-shadow 0.2s;
-  align-items: center;
-}
-.tessera:hover { box-shadow: var(--mat-sys-level3); }
-.icona {
-  font-size: 40px; width: 40px; height: 40px;
-  color: var(--mat-sys-primary);
-  margin-bottom: 8px;
-}
+:host { display: block; }
 
-.riga-stat {
+.dashboard { padding: 8px 4px 40px; }
+.dashboard h1 { font-size: 1.8rem; margin: 0 0 24px; }
+
+/* ---- Contatori ---- */
+.contatori {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
-  margin: 16px 0 24px;
+  margin-bottom: 16px;
 }
-.stat {
-  background: #fff; border-radius: 8px;
-  padding: 16px 20px;
+.contatore {
   display: flex; align-items: center; gap: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  border: 1px solid #e8eaee; border-radius: 12px;
+  padding: 18px 20px; background: #fff;
+  text-decoration: none; color: inherit;
+  transition: box-shadow .15s, transform .15s, border-color .15s;
 }
-.stat strong { display: block; font-size: 26px; line-height: 1.1; }
-.stat small  { color: #777; }
-.cerchio {
-  width: 48px; height: 48px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; flex-shrink: 0;
+.contatore:hover { box-shadow: 0 6px 18px rgba(0,0,0,.1); transform: translateY(-2px); }
+.contatore mat-icon { font-size: 34px; width: 34px; height: 34px; color: #9aa4b2; }
+.valori { display: flex; flex-direction: column; }
+.numero { font-size: 1.9rem; font-weight: 700; line-height: 1; }
+.label { font-size: .82rem; color: #8892a0; margin-top: 4px; }
+
+/* Il contatore-pannello e' un <button>: azzera lo stile nativo */
+.come-tessera {
+  font: inherit; text-align: left; cursor: pointer; width: 100%;
 }
-.verde  { background: #2ecc71; }
-.giallo { background: #f1b53d; }
-.blu    { background: #2f6fd6; }
-.rosso  { background: #d64541; }
+.come-tessera .freccia { margin-left: auto; font-size: 22px; width: 22px; height: 22px; }
+.come-tessera.aperto { border-color: #1565c0; }
+
+.contatore.attenzione { border-color: #f0b429; background: #fffdf5; }
+.contatore.attenzione mat-icon { color: #d9a015; }
+.contatore.attenzione .numero { color: #b9770e; }
+
+/* ---- Pannello sotto scorta ---- */
+.pannello-scorte {
+  border: 1px solid #f0d9a0; border-radius: 12px;
+  background: #fffdf5; padding: 14px 18px; margin-bottom: 36px;
+}
+.pannello-scorte .stato { color: #8892a0; font-size: .9rem; padding: 8px 0; margin: 0; }
+.riga {
+  display: grid;
+  grid-template-columns: 2fr 1.4fr .8fr .9fr;
+  gap: 10px; padding: 9px 4px; align-items: center;
+  border-bottom: 1px solid #f3ead0; font-size: .88rem;
+}
+.riga:last-of-type { border-bottom: none; }
+.riga.intestazione {
+  font-size: .72rem; text-transform: uppercase; letter-spacing: .4px;
+  color: #b9973e; font-weight: 700;
+}
+.num-col { text-align: right; }
+.nome { font-weight: 600; }
+.var { color: #8892a0; font-size: .82rem; }
+.giacenza { font-weight: 700; }
+.riga.critico .giacenza { color: #c0392b; }
+.esaurito {
+  display: inline-block; margin-left: 6px; color: #c0392b;
+  font-size: .68rem; font-weight: 600; text-transform: uppercase;
+}
+.vai-magazzino {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 12px; color: #1565c0; text-decoration: none; font-size: .86rem;
+}
+.vai-magazzino:hover { text-decoration: underline; }
+.vai-magazzino mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
+/* ---- Navigazione ---- */
+.titolo-sezioni {
+  font-size: .8rem; text-transform: uppercase; letter-spacing: .6px;
+  color: #8892a0; margin: 0 0 14px;
+}
+.sezioni {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+.sezione {
+  border: 1px solid #e8eaee; border-radius: 12px;
+  padding: 22px 20px; background: #fff;
+  text-decoration: none; color: inherit; text-align: center;
+  transition: box-shadow .15s, transform .15s;
+}
+.sezione:hover { box-shadow: 0 6px 18px rgba(0,0,0,.1); transform: translateY(-2px); }
+.sezione mat-icon { font-size: 40px; width: 40px; height: 40px; color: #1565c0; margin-bottom: 8px; }
+.sezione h3 { margin: 4px 0; font-size: 1.05rem; }
+.sezione p { margin: 0; font-size: .82rem; color: #8892a0; }
+
+.stato-errore { color: #8892a0; font-size: .9rem; margin-bottom: 28px; }

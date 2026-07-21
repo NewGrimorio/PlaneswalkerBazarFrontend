@@ -10,14 +10,12 @@ const BASE = environment.apiUrl;
 type Toast = { testo: string; errore: boolean } | null;
 
 /**
- * Sportello bonifici lato ADMIN (rotta /admin/movimenti). Coda dei
- * movimenti IN_ATTESA: bonifici in ENTRATA da confermare (RICARICA) e
- * prelievi da ESEGUIRE (PRELIEVO). Approva o rifiuta; dopo l'azione il
- * movimento esce dalla coda (si ricarica).
- *
- * Attenzione al significato del rifiuto, diverso per tipo (lo dice il
- * backend): ricarica rifiutata = nessun accredito; prelievo rifiutato
- * = ri-accredito di quanto era stato decurtato alla richiesta.
+ * Movimenti admin, DUE sezioni:
+ *  1) IN ATTESA — la coda da lavorare (approva/rifiuta). Bonifici in
+ *     entrata (RICARICA) e prelievi da eseguire (PRELIEVO).
+ *  2) STORICO globale — i movimenti CONCLUSI di TUTTI i clienti, sola
+ *     lettura, con nome cliente. Filtrabile per stato e metodo. Gli
+ *     IN_ATTESA restano fuori (sono nella sezione 1): niente doppioni.
  */
 @Component({
   selector: 'app-movimenti',
@@ -29,27 +27,52 @@ export class Movimenti {
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
 
-  movimenti = signal<MovimentoDTO[]>([]);
-  caricando = signal(false);
+  // --- Sezione 1: in attesa ---
+  inAttesa = signal<MovimentoDTO[]>([]);
+  caricandoAttesa = signal(false);
   inCorso = signal<number | null>(null);
+
+  // --- Sezione 2: storico ---
+  storico = signal<MovimentoDTO[]>([]);
+  caricandoStorico = signal(false);
+  statiStorico = [
+    { v: '',           l: 'Tutti' },
+    { v: 'COMPLETATO', l: 'Completati' },
+    { v: 'RIFIUTATO',  l: 'Rifiutati' },
+  ];
+  metodiStorico = [
+    { v: '',         l: 'Tutti' },
+    { v: 'PAYPAL',   l: 'PayPal' },
+    { v: 'BONIFICO', l: 'Bonifico' },
+    { v: 'INTERNO',  l: 'Interno' },
+  ];
+  statoSel = signal<string>('');
+  metodoSel = signal<string>('');
+
   messaggio = signal<Toast>(null);
 
   constructor() {
-    if (isPlatformBrowser(this.platformId)) this.carica();
+    if (isPlatformBrowser(this.platformId)) {
+      this.caricaAttesa();
+      this.caricaStorico();
+    }
   }
 
-  private carica(): void {
-    this.caricando.set(true);
+  // ============================================================
+  // Sezione 1: in attesa
+  // ============================================================
+
+  private caricaAttesa(): void {
+    this.caricandoAttesa.set(true);
     this.http.get<MovimentoDTO[]>(`${BASE}/admin/movimenti/in-attesa`).subscribe({
-      next: l => { this.movimenti.set(l); this.caricando.set(false); },
+      next: l => { this.inAttesa.set(l); this.caricandoAttesa.set(false); },
       error: err => {
-        this.movimenti.set([]); this.caricando.set(false);
+        this.inAttesa.set([]); this.caricandoAttesa.set(false);
         this.toast(err?.error?.msg ?? 'Errore nel caricamento', true);
       }
     });
   }
 
-  /** Etichetta leggibile del tipo movimento in coda. */
   etichettaTipo(m: MovimentoDTO): string {
     if (m.tipo === 'RICARICA') return 'Ricarica (bonifico in entrata)';
     if (m.tipo === 'PRELIEVO') return 'Prelievo (da eseguire)';
@@ -73,13 +96,46 @@ export class Movimenti {
     this.http.post<MovimentoDTO>(`${BASE}/admin/movimenti/conferma`,
         { movimentoId: m.id, approvato })
       .subscribe({
-        next: () => { this.inCorso.set(null); this.toast(successo, false); this.carica(); },
+        next: () => {
+          this.inCorso.set(null); this.toast(successo, false);
+          this.caricaAttesa();     // esce dalla coda
+          this.caricaStorico();    // entra nello storico
+        },
         error: err => {
           this.inCorso.set(null);
           this.toast(err?.error?.msg ?? 'Operazione non riuscita', true);
         }
       });
   }
+
+  // ============================================================
+  // Sezione 2: storico
+  // ============================================================
+
+  cambiaStato(v: string): void { this.statoSel.set(v); this.caricaStorico(); }
+  cambiaMetodo(v: string): void { this.metodoSel.set(v); this.caricaStorico(); }
+
+  private caricaStorico(): void {
+    this.caricandoStorico.set(true);
+    let params: Record<string, string> = {};
+    if (this.statoSel()) params['stato'] = this.statoSel();
+    if (this.metodoSel()) params['metodo'] = this.metodoSel();
+
+    this.http.get<MovimentoDTO[]>(`${BASE}/admin/movimenti/storico`, { params }).subscribe({
+      next: l => { this.storico.set(l); this.caricandoStorico.set(false); },
+      error: err => {
+        this.storico.set([]); this.caricandoStorico.set(false);
+        this.toast(err?.error?.msg ?? 'Errore nel caricamento storico', true);
+      }
+    });
+  }
+
+  /** Segno del movimento: entrate positive, uscite negative (solo estetica). */
+  isEntrata(m: MovimentoDTO): boolean {
+    return m.tipo === 'RICARICA' || m.tipo === 'RIMBORSO';
+  }
+
+  // ============================================================
 
   private chiedi(msg: string): boolean {
     return isPlatformBrowser(this.platformId) ? window.confirm(msg) : false;

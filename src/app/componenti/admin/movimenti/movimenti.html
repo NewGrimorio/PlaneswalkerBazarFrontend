@@ -1,46 +1,104 @@
 <div class="movimenti-admin">
-  <header>
-    <h1>Movimenti</h1>
-    <p class="sub">Bonifici in attesa di conferma</p>
-  </header>
+  <h1>Movimenti</h1>
 
-  @if (caricando()) {
-    <p class="stato">Caricamento…</p>
-  } @else if (movimenti().length === 0) {
-    <p class="stato">Nessun movimento in attesa.</p>
-  } @else {
-    <div class="lista">
-      @for (m of movimenti(); track m.id) {
-        <article class="mov" [class.prelievo]="m.tipo === 'PRELIEVO'">
-          <div class="testa">
-            <span class="num">#{{ m.id }}</span>
-            <span class="tipo">{{ etichettaTipo(m) }}</span>
-            <span class="data">{{ m.creationDate | date:'dd/MM/yyyy HH:mm' }}</span>
-          </div>
+  <!-- ============ SEZIONE 1: IN ATTESA ============ -->
+  <section class="sezione">
+    <h2>Bonifici in attesa</h2>
 
-          <div class="corpo">
-            <div class="importo">
-              <strong>{{ m.importo | number:'1.2-2' }} €</strong>
-              <small>{{ m.metodo }}</small>
+    @if (caricandoAttesa()) {
+      <p class="stato">Caricamento…</p>
+    } @else if (inAttesa().length === 0) {
+      <p class="stato">Nessun movimento in attesa.</p>
+    } @else {
+      <div class="lista">
+        @for (m of inAttesa(); track m.id) {
+          <article class="mov" [class.prelievo]="m.tipo === 'PRELIEVO'">
+            <div class="testa">
+              <span class="num">#{{ m.id }}</span>
+              <span class="tipo">{{ etichettaTipo(m) }}</span>
+              <span class="data">{{ m.creationDate | date:'dd/MM/yyyy HH:mm' }}</span>
             </div>
-            <div class="dettagli">
-              @if (m.descrizione) { <p>{{ m.descrizione }}</p> }
-              @if (m.riferimentoEsterno) { <small>Rif: {{ m.riferimentoEsterno }}</small> }
+            <div class="corpo">
+              <div class="importo">
+                <strong>{{ m.importo | number:'1.2-2' }} €</strong>
+                <small>{{ m.metodo }}</small>
+              </div>
+              <div class="dettagli">
+                @if (m.descrizione) { <p>{{ m.descrizione }}</p> }
+                @if (m.riferimentoEsterno) { <small>Rif: {{ m.riferimentoEsterno }}</small> }
+              </div>
             </div>
-          </div>
+            <div class="azioni">
+              <button type="button" class="btn approva" [disabled]="inCorso() === m.id" (click)="approva(m)">
+                <mat-icon>check</mat-icon> Approva
+              </button>
+              <button type="button" class="btn rifiuta" [disabled]="inCorso() === m.id" (click)="rifiuta(m)">
+                <mat-icon>close</mat-icon> Rifiuta
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </section>
 
-          <div class="azioni">
-            <button type="button" class="btn approva" [disabled]="inCorso() === m.id" (click)="approva(m)">
-              <mat-icon>check</mat-icon> Approva
-            </button>
-            <button type="button" class="btn rifiuta" [disabled]="inCorso() === m.id" (click)="rifiuta(m)">
-              <mat-icon>close</mat-icon> Rifiuta
-            </button>
-          </div>
-        </article>
-      }
+  <!-- ============ SEZIONE 2: STORICO ============ -->
+  <section class="sezione">
+    <h2>Storico movimenti</h2>
+
+    <div class="filtri">
+      <div class="gruppo">
+        <span class="etichetta">Stato</span>
+        @for (s of statiStorico; track s.v) {
+          <button type="button" class="chip" [class.attivo]="statoSel() === s.v"
+                  (click)="cambiaStato(s.v)">{{ s.l }}</button>
+        }
+      </div>
+      <div class="gruppo">
+        <span class="etichetta">Metodo</span>
+        @for (mt of metodiStorico; track mt.v) {
+          <button type="button" class="chip" [class.attivo]="metodoSel() === mt.v"
+                  (click)="cambiaMetodo(mt.v)">{{ mt.l }}</button>
+        }
+      </div>
     </div>
-  }
+
+    @if (caricandoStorico()) {
+      <p class="stato">Caricamento…</p>
+    } @else if (storico().length === 0) {
+      <p class="stato">Nessun movimento con questi filtri.</p>
+    } @else {
+      <div class="tabella">
+        <div class="riga intestazione">
+          <span>Cliente</span>
+          <span>Tipo</span>
+          <span>Metodo</span>
+          <span class="num-col">Importo</span>
+          <span class="num-col">Commiss.</span>
+          <span>Stato</span>
+          <span>Data</span>
+        </div>
+        @for (m of storico(); track m.id) {
+          <div class="riga">
+            <span class="cliente">
+              <strong>{{ m.utenteNome }}</strong>
+              <small>{{ m.utenteUsername }}</small>
+            </span>
+            <span>{{ m.tipo }}</span>
+            <span>{{ m.metodo }}</span>
+            <span class="num-col importo" [class.entrata]="isEntrata(m)" [class.uscita]="!isEntrata(m)">
+              {{ isEntrata(m) ? '+' : '−' }}{{ m.importo | number:'1.2-2' }} €
+            </span>
+            <span class="num-col comm">
+              @if (m.commissione > 0) { {{ m.commissione | number:'1.2-2' }} € } @else { — }
+            </span>
+            <span class="stato-cell" [class]="'st-' + m.stato">{{ m.stato }}</span>
+            <span class="data">{{ m.creationDate | date:'dd/MM/yy HH:mm' }}</span>
+          </div>
+        }
+      </div>
+    }
+  </section>
 
   @if (messaggio(); as m) {
     <div class="toast" [class.errore]="m.errore">{{ m.testo }}</div>

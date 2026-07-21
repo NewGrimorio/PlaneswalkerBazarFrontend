@@ -1,26 +1,24 @@
 :host { display: block; }
 
 .movimenti-admin { padding: 8px 4px 40px; }
-.movimenti-admin h1 { font-size: 1.7rem; margin: 0 0 4px; }
-.sub { color: #8892a0; margin: 0 0 24px; font-size: .9rem; }
+.movimenti-admin h1 { font-size: 1.7rem; margin: 0 0 20px; }
 
-.stato { color: #8892a0; font-size: .95rem; padding: 20px 0; }
+.sezione { margin-bottom: 36px; }
+.sezione h2 { font-size: 1.15rem; margin: 0 0 14px; color: #223; }
 
+.stato { color: #8892a0; font-size: .92rem; padding: 16px 0; }
+
+/* ---- Sezione 1: coda in attesa ---- */
 .lista { display: flex; flex-direction: column; gap: 12px; }
 .mov {
-  border: 1px solid #e8eaee;
-  border-left: 4px solid #27ae60;   /* ricarica in entrata: verde */
-  border-radius: 10px;
-  padding: 14px 18px;
-  background: #fff;
+  border: 1px solid #e8eaee; border-left: 4px solid #27ae60;
+  border-radius: 10px; padding: 14px 18px; background: #fff;
 }
-.mov.prelievo { border-left-color: #e67e22; }   /* prelievo in uscita: arancio */
-
+.mov.prelievo { border-left-color: #e67e22; }
 .testa { display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px; }
 .num { font-weight: 700; color: #445; }
 .tipo { font-size: .88rem; color: #667; }
-.data { margin-left: auto; color: #8892a0; font-size: .82rem; }
-
+.testa .data { margin-left: auto; color: #8892a0; font-size: .82rem; }
 .corpo { display: flex; gap: 20px; align-items: flex-start; justify-content: space-between; }
 .importo { display: flex; flex-direction: column; }
 .importo strong { font-size: 1.3rem; }
@@ -28,12 +26,10 @@
 .dettagli { flex: 1; text-align: right; }
 .dettagli p { margin: 0; font-size: .88rem; color: #556; }
 .dettagli small { color: #9aa4b2; font-size: .78rem; }
-
 .azioni { display: flex; gap: 10px; margin-top: 14px; }
 .btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  border: none; border-radius: 8px;
-  padding: 8px 18px; font-size: .88rem; cursor: pointer; transition: all .15s;
+  display: inline-flex; align-items: center; gap: 6px; border: none;
+  border-radius: 8px; padding: 8px 18px; font-size: .88rem; cursor: pointer; transition: all .15s;
 }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 .btn mat-icon { font-size: 18px; width: 18px; height: 18px; }
@@ -41,6 +37,52 @@
 .btn.approva:hover:not(:disabled) { background: #219150; }
 .btn.rifiuta { background: #fff; color: #c0392b; border: 1px solid #e6b0aa; }
 .btn.rifiuta:hover:not(:disabled) { background: #fdf3f2; }
+
+/* ---- Sezione 2: storico ---- */
+.filtri { display: flex; flex-wrap: wrap; gap: 22px; margin-bottom: 16px; }
+.gruppo { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.etichetta { font-size: .78rem; color: #8892a0; text-transform: uppercase; letter-spacing: .5px; }
+.chip {
+  border: 1px solid #d5d9e0; background: #fff; border-radius: 999px;
+  padding: 5px 14px; cursor: pointer; font-size: .84rem; color: #445; transition: all .15s;
+}
+.chip:hover { border-color: #1565c0; }
+.chip.attivo { background: #1565c0; border-color: #1565c0; color: #fff; }
+
+.tabella { border: 1px solid #e8eaee; border-radius: 10px; overflow: hidden; }
+.riga {
+  display: grid;
+  grid-template-columns: 1.6fr .9fr .8fr 1fr .8fr .9fr 1fr;
+  gap: 10px; padding: 10px 14px; align-items: center;
+  border-bottom: 1px solid #f1f2f5; font-size: .86rem;
+}
+.riga:last-child { border-bottom: none; }
+.riga.intestazione {
+  background: #f7f8fa; font-size: .74rem; text-transform: uppercase;
+  letter-spacing: .4px; color: #8892a0; font-weight: 600;
+}
+.num-col { text-align: right; }
+.cliente { display: flex; flex-direction: column; }
+.cliente strong { font-size: .88rem; }
+.cliente small { color: #9aa4b2; font-size: .76rem; }
+.importo.entrata { color: #27ae60; font-weight: 700; }
+.importo.uscita { color: #c0392b; font-weight: 700; }
+.comm { color: #8892a0; }
+.data { color: #8892a0; font-size: .8rem; }
+
+.stato-cell {
+  justify-self: start; padding: 3px 9px; border-radius: 6px;
+  font-size: .74rem; font-weight: 600;
+}
+.st-COMPLETATO { background: #e6f6ec; color: #1e8449; }
+.st-RIFIUTATO  { background: #fdecea; color: #c0392b; }
+.st-IN_ATTESA  { background: #fef5e7; color: #b9770e; }
+
+@media (max-width: 820px) {
+  .riga { grid-template-columns: 1fr 1fr; gap: 4px 12px; }
+  .riga.intestazione { display: none; }
+  .num-col { text-align: left; }
+}
 
 .toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
