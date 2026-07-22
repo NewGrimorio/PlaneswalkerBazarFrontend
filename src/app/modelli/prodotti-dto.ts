@@ -10,6 +10,7 @@ export interface ProdottoDTO {
   attivo: boolean;
   espansioneId: number | null;
   espansioneNome: string | null;
+  stampaId: number | null;
 
   /**
    * Varianti acquistabili: presenti SOLO nel dettaglio (getBySlug),
