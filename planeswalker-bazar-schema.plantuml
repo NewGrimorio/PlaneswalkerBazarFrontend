@@ -1,0 +1,212 @@
+@startuml PlaneswalkerBazar
+hide circle
+skinparam linetype ortho
+skinparam roundcorner 6
+left to right direction
+
+' ===================== AREA UTENTI =====================
+package "Utenti" #EAF2FB {
+  entity utente {
+    * id : bigint <<PK>>
+    --
+    * email : varchar <<UK>>
+    * username : varchar <<UK, V8>>
+    * password_hash : varchar
+    * ruolo : varchar
+    nome / cognome : varchar
+    codice_fiscale : varchar <<UK>>
+    indirizzo_predefinito_id : bigint <<FK>>
+    immagine_profilo : varchar <<V10>>
+    * attivo : boolean
+  }
+  entity indirizzo {
+    * id : bigint <<PK>>
+    --
+    * utente_id : bigint <<FK>>
+    * destinatario, via, civico, cap, citta
+    provincia, nazione
+    * attivo : boolean
+  }
+  entity refresh_token {
+    * id : bigint <<PK>>
+    --
+    * utente_id : bigint <<FK>>
+    * token_hash : varchar <<UK, SHA-256>>
+    * famiglia : varchar
+    * scadenza : timestamp
+    * revocato : boolean
+  }
+}
+
+' ===================== AREA PORTAFOGLIO =====================
+package "Portafoglio" #EAFBEF {
+  entity portafoglio {
+    * id : bigint <<PK>>
+    --
+    * utente_id : bigint <<UK, FK>>
+    * saldo : numeric <<CHECK >= 0>>
+    valuta : varchar
+  }
+  entity conto_bancario {
+    * id : bigint <<PK>>
+    --
+    * utente_id : bigint <<FK>>
+    * intestatario, iban
+    bic : varchar
+    * attivo : boolean
+  }
+  entity movimento_portafoglio {
+    * id : bigint <<PK>>
+    --
+    * portafoglio_id : bigint <<FK>>
+    * tipo, metodo, stato : varchar
+    * importo : numeric <<CHECK > 0>>
+    commissione : numeric
+    conto_bancario_id : bigint <<FK>>
+    ordine_id : bigint <<FK>>
+    riferimento_esterno : varchar
+  }
+}
+
+' ===================== CATALOGO CARTE =====================
+package "Catalogo Carte (Scryfall)" #FBF6EA {
+  entity espansione {
+    * id : bigint <<PK>>
+    --
+    * codice : varchar <<UK>>
+    * nome, tipo_set
+    scryfall_id : uuid <<UK>>
+    data_ultima_sincronizzazione <<V4>>
+  }
+  entity carta {
+    * id : bigint <<PK>>
+    --
+    * oracle_id : uuid <<UK>>
+    * nome : varchar
+    colori, identita_colore
+    legal, card_faces : text <<JSON>>
+  }
+  entity stampa {
+    * id : bigint <<PK>>
+    --
+    * carta_id : bigint <<FK>>
+    * espansione_id : bigint <<FK>>
+    * numero_collezione, rarita
+    scryfall_id : uuid <<UK>>
+    * attivo, orfana : boolean <<V4>>
+  }
+  entity prezzo_riferimento {
+    * id : bigint <<PK>>
+    --
+    * stampa_id : bigint <<FK>>
+    * fonte, finitura
+    prezzo_trend/medio/min : numeric
+  }
+}
+
+' ===================== CATALOGO COMMERCIALE =====================
+package "Catalogo Commerciale" #FBEAF2 {
+  entity prodotto {
+    * id : bigint <<PK>>
+    --
+    * tipo_prodotto : varchar
+    * nome : varchar
+    * slug : varchar <<UK>>
+    espansione_id : bigint <<FK>>
+    stampa_id : bigint <<UK, FK, solo SINGLE>>
+    * attivo : boolean
+  }
+  entity magazzino_sku {
+    * id : bigint <<PK>>
+    --
+    * prodotto_id : bigint <<FK>>
+    * condizione, lingua, finitura
+    * prezzo : numeric <<CHECK >= 0>>
+    * quantita : integer <<CHECK >= 0>>
+    * attivo : boolean
+  }
+}
+
+' ===================== CARRELLO E ORDINI =====================
+package "Carrello e Ordini" #F0EAFB {
+  entity carrello {
+    * id : bigint <<PK>>
+    --
+    * utente_id : bigint <<UK, FK>>
+  }
+  entity voce_carrello {
+    * id : bigint <<PK>>
+    --
+    * carrello_id : bigint <<FK>>
+    * sku_id : bigint <<FK>>
+    * quantita : integer <<CHECK > 0>>
+  }
+  entity ordine {
+    * id : bigint <<PK>>
+    --
+    * utente_id : bigint <<FK>>
+    * stato : varchar <<8 stati>>
+    * totale : numeric
+    sped_* : varchar <<snapshot indirizzo>>
+  }
+  entity voce_ordine {
+    * id : bigint <<PK>>
+    --
+    * ordine_id : bigint <<FK>>
+    * sku_id : bigint <<FK>>
+    * descrizione, prezzo_unitario <<snapshot>>
+    * quantita : integer
+  }
+  entity storico_stato_ordine {
+    * id : bigint <<PK>>
+    --
+    * ordine_id : bigint <<FK>>
+    stato_da, stato_a : varchar
+    eseguito_da : bigint <<FK>>
+  }
+}
+
+' ===================== RECENSIONI =====================
+package "Recensioni" #EAFBFB {
+  entity recensione {
+    * id : bigint <<PK>>
+    --
+    * utente_id : bigint <<FK>>
+    * prodotto_id : bigint <<FK>>
+    * ordine_id : bigint <<FK>>
+    * voto : smallint <<CHECK 1..5>>
+    * stato : varchar
+    -- UK (utente_id, prodotto_id) --
+  }
+}
+
+' ===================== RELAZIONI =====================
+utente ||..o| indirizzo
+utente ||--o{ indirizzo
+utente ||--o{ refresh_token
+utente ||--|| portafoglio
+utente ||--o{ conto_bancario
+utente ||--|| carrello
+utente ||--o{ ordine
+utente ||--o{ recensione
+
+portafoglio ||--o{ movimento_portafoglio
+conto_bancario ||--o{ movimento_portafoglio
+ordine ||--o{ movimento_portafoglio
+
+espansione ||--o{ stampa
+carta ||--o{ stampa
+stampa ||--o{ prezzo_riferimento
+stampa ||..o| prodotto
+espansione ||--o{ prodotto
+prodotto ||--o{ magazzino_sku
+
+magazzino_sku ||--o{ voce_carrello
+magazzino_sku ||--o{ voce_ordine
+carrello ||--o{ voce_carrello
+ordine ||--o{ voce_ordine
+ordine ||--o{ storico_stato_ordine
+prodotto ||--o{ recensione
+ordine ||--o{ recensione
+
+@enduml
