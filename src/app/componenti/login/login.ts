@@ -32,8 +32,19 @@ export class Login {
     this.inCorso.set(true);
     this.utenteS.loginUtente(this.identificativo, this.password).subscribe({   // ← qui
       next: (utente) => {
+        //this.authS.login(utente);
+        //this.router.navigate([this.authS.isRoleAdmin() ? '/admin' : '/user']);
+
+        console.log('Utente loggato:', utente);
+        console.log('Ruolo:', utente.ruolo);
+
         this.authS.login(utente);
-        this.router.navigate([this.authS.isRoleAdmin() ? '/admin' : '/']);
+
+        if (utente.ruolo === 'ADMIN') {
+          this.router.navigate(['/admin']);
+        } else {
+          this.router.navigate(['/user']);
+        }
       },
       error: (err) => {
         this.errore.set(err.error?.msg ?? 'Errore di comunicazione col server');

@@ -25,6 +25,7 @@ export class AuthServices {
     // Nomi compatibili coi tuoi guard: nessuna modifica necessaria li'
     isAutentificated(): boolean { return this.utente() !== null; }
     isRoleAdmin(): boolean { return this.utente()?.ruolo === 'ADMIN'; }
+    
 
     private restore(): UtenteDTO | null {
         if (!isPlatformBrowser(this.platformId)) return null;

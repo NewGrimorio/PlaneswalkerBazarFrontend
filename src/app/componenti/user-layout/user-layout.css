@@ -1,14 +1,4 @@
-.btn-rosso {
-  --mat-button-filled-container-color: #c62828;
-  --mat-button-filled-label-text-color: #ffffff;
-}
-
-.btn-giallo {
-  --mat-button-filled-container-color: #f9a825;
-  --mat-button-filled-label-text-color: #212121;
-}
-
-.menu-home {
+.menu-user {
   height: 72px;
   display: flex;
   align-items: center;
@@ -40,16 +30,36 @@
   color: #1976d2;
 }
 
-.pulsante-accedi {
+.pulsante-utente {
   margin-left: auto;
-  padding: 10px 18px;
+  height: 42px;
+  padding: 0 14px;
   border-radius: 6px;
   background-color: #1976d2;
   color: white;
-  text-decoration: none;
   font-weight: 600;
 }
 
-.pulsante-accedi:hover {
+.contenuto-pulsante-utente {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nome-utente {
+  white-space: nowrap;
+  color: white;
+}
+
+.pulsante-utente mat-icon {
+  color: white;
+}
+
+.pulsante-utente:hover {
   background-color: #125aa0;
+}
+
+.contenuto-user {
+  min-height: calc(100vh - 72px);
+  background-color: #f7f7f7;
 }

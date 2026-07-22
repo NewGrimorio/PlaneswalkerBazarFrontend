@@ -1,4 +1,29 @@
-<router-outlet>
+<!--<header class="barra-superiore">
+  <a routerLink="/" class="logo-link">
+    <img src="logo.png" alt="Planeswalker Bazar" class="logo" />
+  </a>
+
+  <a routerLink="/login" class="pulsante-accedi">
+    Accedi
+  </a>
+</header>-->
+@if (mostraBarra()) {
+  <nav class="menu-home">
+    <a routerLink="/" class="logo-link">
+      <img src="logo.png" alt="Planeswalker Bazar" class="logo" />
+    </a>
+
+    <a routerLink="/carte-singole" class="link-menu">Carte singole</a>
+    <a routerLink="/bustine" class="link-menu">Bustine</a>
+    <a routerLink="/box" class="link-menu">Box</a>
+    <a routerLink="/mazzi" class="link-menu">Mazzi</a>
+    <a routerLink="/lotti" class="link-menu">Lotti</a>
+    <a routerLink="/sigillato" class="link-menu">Sigillato</a>
+
+    <a routerLink="/login" class="pulsante-accedi">Accedi</a>
+  </nav>
+}
+<router-outlet></router-outlet>
 <!-- 
 <div class="container mt-4">
   <h1>Test connessione backend</h1>
@@ -15,5 +40,3 @@
   <button matButton="filled" class="btn-rosso">Bottone rosso</button>
   <button matButton="filled" class="btn-giallo">Bottone giallo</button>
 </div> -->
-
-</router-outlet>

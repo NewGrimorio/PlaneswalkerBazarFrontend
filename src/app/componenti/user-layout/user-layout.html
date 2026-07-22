@@ -1,0 +1,41 @@
+<nav class="menu-user">
+  <a routerLink="/user" class="logo-link">
+    <img src="logo.png" alt="Planeswalker Bazar" class="logo" />
+  </a>
+
+  <a routerLink="/user/carte-singole" class="link-menu">Carte singole</a>
+  <a routerLink="/user/bustine" class="link-menu">Bustine</a>
+  <a routerLink="/user/box" class="link-menu">Box</a>
+  <a routerLink="/user/mazzi" class="link-menu">Mazzi</a>
+  <a routerLink="/user/lotti" class="link-menu">Lotti</a>
+  <a routerLink="/user/sigillato" class="link-menu">Sigillato</a>
+
+  <!--<button mat-button [matMenuTriggerFor]="menuUtente" class="pulsante-utente">
+    <mat-icon>account_circle</mat-icon>
+    <span>Ciao, {{ authS.utente()?.nome }}</span>
+    <mat-icon>expand_more</mat-icon>
+  </button>-->
+
+  <!--bottone utente-->
+  <button mat-button [matMenuTriggerFor]="menuUtente" class="pulsante-utente">
+    <span class="contenuto-pulsante-utente">
+      <mat-icon>account_circle</mat-icon>
+      <span class="nome-utente">Ciao, {{ authS.utente()?.nome }}</span>
+      <mat-icon>expand_more</mat-icon>
+    </span>
+  </button>
+
+  <mat-menu #menuUtente="matMenu">
+    <button mat-menu-item routerLink="/user/account">
+      <mat-icon>person</mat-icon>
+      <span>Account</span>
+    </button>
+
+    <button mat-menu-item (click)="esci()">
+      <mat-icon>logout</mat-icon>
+      <span>Esci</span>
+    </button>
+  </mat-menu>
+</nav>
+
+<router-outlet></router-outlet>
