@@ -36,6 +36,16 @@ app-admin-layout .pannello-ricerca {
   display: flex; align-items: center; gap: 12px;
   padding: 16px 20px 4px;
 }
+
+app-admin-layout .pannello-ricerca.pannello-cardtrader {
+  margin-bottom: 40px;
+  padding-bottom: 16px;   /* da 16 a 24: più respiro sotto il blocco testo */
+}
+
+app-admin-layout .pannello-cardtrader .sottotitolo {
+  margin-top: 4px;   /* niente -8px qui: dà aria tra titolo e sottotitolo */
+}
+
 app-admin-layout .riga {
   display: flex; gap: 12px; flex-wrap: wrap;
   align-items: flex-start;   /* niente stretch: ogni campo alto il suo */

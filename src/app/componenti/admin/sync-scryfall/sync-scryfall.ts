@@ -9,12 +9,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { EspansioneDTO } from '../../../modelli/espansione-dto';
 import { SincronizzazioneDTO } from '../../../modelli/sincronizzazione-dto';
+import { CardtraderSyncDTO } from '../../../modelli/cardtrader-sync-dto';
 import { environment } from '../../../../environments/environment';
 
 const BASE = environment.apiUrl;
 
 type TipoMessaggio = 'ok' | 'avviso' | 'errore';
-
 
 @Component({
   selector: 'app-sync-scryfall',
@@ -23,7 +23,6 @@ type TipoMessaggio = 'ok' | 'avviso' | 'errore';
   templateUrl: './sync-scryfall.html',
   styleUrl: './sync-scryfall.css',
 })
-
 export class SyncScryfall {
 
   private http = inject(HttpClient);
@@ -31,6 +30,7 @@ export class SyncScryfall {
   espansioni = signal<EspansioneDTO[]>([]);
   codice = '';
   inCorso = signal<string | null>(null);
+  inCorsoCardtrader = signal(false);
   messaggio = signal<{ testo: string; tipo: TipoMessaggio } | null>(null);
 
   constructor() {
@@ -38,7 +38,6 @@ export class SyncScryfall {
   }
 
   private carica(): void {
-    // /public/espansioni: la lista dei set e' l'endpoint pubblico (Fase A)
     this.http.get<EspansioneDTO[]>(`${BASE}/public/espansioni`)
       .subscribe({
         next: lista => this.espansioni.set(lista),
@@ -48,12 +47,11 @@ export class SyncScryfall {
 
   sincronizza(codice: string): void {
     const cod = codice.trim().toLowerCase();
-    if (!cod || this.inCorso() !== null) return;
+    if (!cod || this.inCorso() !== null || this.inCorsoCardtrader()) return;
 
     this.messaggio.set(null);
     this.inCorso.set(cod);
 
-    // Path variable, nessun body: POST /api/admin/sync/mh3
     this.http.post<SincronizzazioneDTO>(
         `${BASE}/admin/sync/${encodeURIComponent(cod)}`, null)
       .subscribe({
@@ -70,11 +68,41 @@ export class SyncScryfall {
           });
           this.codice = '';
           this.inCorso.set(null);
-          this.carica();   // il report non porta la riga: si ricarica la lista
+          this.carica();
         },
         error: err => {
           this.mostraErrore(err);
           this.inCorso.set(null);
+        }
+      });
+  }
+
+  /** Arricchimento Cardtrader: aggancia i blueprint_id sulle stampe gia' importate. */
+  sincronizzaCardtrader(): void {
+    if (this.inCorso() !== null || this.inCorsoCardtrader()) return;
+
+    this.messaggio.set(null);
+    this.inCorsoCardtrader.set(true);
+
+    // POST /api/admin/sync/cardtrader, nessun body
+    this.http.post<CardtraderSyncDTO>(`${BASE}/admin/sync/cardtrader`, null)
+      .subscribe({
+        next: report => {
+          const sec = (report.millisecondiImpiegati / 1000).toFixed(1);
+          const senza = report.blueprintSenzaCorrispondenza > 0
+              ? ` — ${report.blueprintSenzaCorrispondenza} stampe ancora senza blueprint`
+              : '';
+          this.messaggio.set({
+            testo: `Blueprint Cardtrader agganciati in ${sec}s: `
+                 + `${report.stampeAggiornate} stampe su ${report.espansioniElaborate} set`
+                 + senza,
+            tipo: report.blueprintSenzaCorrispondenza > 0 ? 'avviso' : 'ok'
+          });
+          this.inCorsoCardtrader.set(false);
+        },
+        error: err => {
+          this.mostraErrore(err);
+          this.inCorsoCardtrader.set(false);
         }
       });
   }
@@ -85,6 +113,4 @@ export class SyncScryfall {
       tipo: 'errore'
     });
   }
-
-
 }

@@ -1,21 +1,38 @@
-<h1>Sincronizza set</h1>
-<p class="sottotitolo">Importa o aggiorna espansioni e carte dal database Scryfall.</p>
+<h1>Sincronizzazioni</h1>
+<p class="sottotitolo">Importa espansioni e carte da Scryfall, poi aggancia i blueprint di Cardtrader.</p>
 
 <div class="pannello-ricerca">
   <mat-form-field appearance="outline" class="campo-codice">
     <mat-label>Codice set</mat-label>
     <input matInput [(ngModel)]="codice" placeholder="es. mh3"
-           [disabled]="inCorso() !== null"
+           [disabled]="inCorso() !== null || inCorsoCardtrader()"
            (keyup.enter)="sincronizza(codice)">
   </mat-form-field>
   <button mat-flat-button (click)="sincronizza(codice)"
-          [disabled]="!codice.trim() || inCorso() !== null">
+          [disabled]="!codice.trim() || inCorso() !== null || inCorsoCardtrader()">
     @if (inCorso() !== null) {
       <mat-spinner diameter="18" class="spinner-bottone" />
       Sincronizzazione in corso…
     } @else {
-      Sincronizza
+      Sincronizza da Scryfall
     }
+  </button>
+</div>
+
+<div class="pannello-ricerca pannello-cardtrader">
+  <div>
+    <strong>Blueprint Cardtrader</strong>
+    <p class="sottotitolo">Aggancia il blueprint_id alle stampe già importate, tramite lo scryfall_id.</p>
+  </div>
+  <span class="spazio"></span>
+  <button matButton="outlined" (click)="sincronizzaCardtrader()"
+          [disabled]="inCorso() !== null || inCorsoCardtrader()">
+    @if (inCorsoCardtrader()) {
+      <mat-spinner diameter="18" class="spinner-bottone" />
+    } @else {
+      <mat-icon>link</mat-icon>
+    }
+    {{ inCorsoCardtrader() ? 'Aggancio in corso…' : 'Aggancia blueprint' }}
   </button>
 </div>
 
@@ -47,7 +64,7 @@
         </td>
         <td class="azioni">
           <button mat-icon-button title="Risincronizza"
-                  [disabled]="inCorso() !== null"
+                  [disabled]="inCorso() !== null || inCorsoCardtrader()"
                   (click)="sincronizza(e.codice)">
             @if (inCorso() === e.codice) {
               <mat-spinner diameter="20" />
