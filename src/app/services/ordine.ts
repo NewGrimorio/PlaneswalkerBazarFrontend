@@ -15,8 +15,11 @@ const BASE = environment.apiUrl;
 export class Ordine {
   private http = inject(HttpClient);
 
-  checkout(indirizzoId: number): Observable<OrdineDTO> {
-    return this.http.post<OrdineDTO>(`${BASE}/ordini/checkout`, { indirizzoId });
+  /** Il tipoSpedizione e' una PREFERENZA: il server ricalcola sempre
+   *  (sopra soglia diventa express offerta, qualunque cosa mandiamo). */
+  checkout(indirizzoId: number, tipoSpedizione: string): Observable<OrdineDTO> {
+    return this.http.post<OrdineDTO>(`${BASE}/ordini/checkout`,
+        { indirizzoId, tipoSpedizione });
   }
 
   list(): Observable<OrdineDTO[]> {

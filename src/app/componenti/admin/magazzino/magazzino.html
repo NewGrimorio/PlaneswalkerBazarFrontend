@@ -70,7 +70,6 @@
 
 @if (prodotto(); as p) {
 
-  <!-- SEZIONE RICOSTRUITA: confronta con la tua testata prima di sostituire -->
   <div class="testata-prodotto">
     @if (urlImmagine(p.imageUrl); as img) {
       <img class="miniatura" [src]="img" alt="">
@@ -93,7 +92,6 @@
     </button>
   </div>
 
-  <!-- SEZIONE RICOSTRUITA: confronta con il tuo form prima di sostituire -->
   @if (formAperto()) {
     <div class="pannello-form">
       <h2>{{ isSingle ? 'Nuova variante' : 'Inserisci scorte' }}</h2>
@@ -159,8 +157,14 @@
         @if (isSingle) { <th>Finitura</th> }
         <th class="num">Prezzo €</th>
         @if (isSingle) {
-          <th class="num">Cardtrader</th>
-          <th class="num">Cardmarket</th>
+          <th class="num"
+              title="Offerta più bassa su Cardtrader per questa variante (condizione, lingua, finitura)">
+            Cardtrader
+          </th>
+          <th class="num"
+              title="Prezzo Cardmarket per finitura: non distingue la condizione, quindi è identico su tutte">
+            Cardmarket
+          </th>
         }
         <th class="num">Quantità</th>
         <th>Stato</th>

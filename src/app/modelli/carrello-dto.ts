@@ -1,9 +1,20 @@
 import { VoceCarrelloDTO } from './voce-carrello-dto';
 
-/** Il totale e numeroArticoli li calcola il backend: mai il client. */
+export interface OpzioneSpedizioneDTO {
+  tipo: string;              // STANDARD | EXPRESS
+  etichetta: string;
+  tempi: string;
+  costo: number;             // 0 se offerta
+  totaleConSpedizione: number;
+}
+
 export interface CarrelloDTO {
   id: number;
   voci: VoceCarrelloDTO[];
-  totale: number;
+  totale: number;            // solo MERCE, spedizione esclusa
   numeroArticoli: number;
+
+  spedizioneOfferta: boolean;
+  mancaPerSpedizioneGratuita: number;
+  opzioniSpedizione: OpzioneSpedizioneDTO[];
 }

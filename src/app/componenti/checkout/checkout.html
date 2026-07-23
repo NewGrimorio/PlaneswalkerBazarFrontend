@@ -7,6 +7,13 @@
       <h1>Ordine confermato</h1>
       <p>Il tuo ordine <strong>#{{ o.id }}</strong> è stato creato ({{ o.stato }}).</p>
       <p class="tot">Totale pagato: <strong>{{ o.totale | number:'1.2-2' }} €</strong></p>
+      @if (o.speseSpedizione !== undefined) {
+        <p class="stato">
+          Spedizione {{ o.tipoSpedizione }}:
+          @if (o.speseSpedizione > 0) { {{ o.speseSpedizione | number:'1.2-2' }} € }
+          @else { offerta }
+        </p>
+      }
       <a routerLink="/negozio" class="btn-primario">Torna al negozio</a>
     </div>
   } @else {
@@ -28,6 +35,14 @@
               </li>
             }
           </ul>
+          <div class="totale"><span>Merce</span><strong>{{ merce() | number:'1.2-2' }} €</strong></div>
+          <div class="totale">
+            <span>Spedizione</span>
+            <strong>
+              @if (speseSpedizione() > 0) { {{ speseSpedizione() | number:'1.2-2' }} € }
+              @else { offerta }
+            </strong>
+          </div>
           <div class="totale"><span>Totale</span><strong>{{ totale() | number:'1.2-2' }} €</strong></div>
         }
       } @else {
@@ -75,9 +90,36 @@
       }
     </section>
 
+    <!-- METODO DI SPEDIZIONE -->
+    <section class="blocco">
+      <h2>Metodo di spedizione</h2>
+
+      @if (spedizioneOfferta()) {
+        <p class="ok"><mat-icon>check</mat-icon>
+          Spedizione <strong>express offerta</strong> — consegna in 1-2 giorni lavorativi.</p>
+      } @else if (!carrelloVuoto()) {
+        <ul class="indirizzi">
+          @for (o of opzioni(); track o.tipo) {
+            <li [class.sel]="tipoSpedizione() === o.tipo" (click)="scegliSpedizione(o.tipo)">
+              <input type="radio" name="sped" [checked]="tipoSpedizione() === o.tipo"
+                     (change)="scegliSpedizione(o.tipo)">
+              <div>
+                <strong>{{ o.etichetta }} — {{ o.costo | number:'1.2-2' }} €</strong>
+                <small>{{ o.tempi }}</small>
+              </div>
+            </li>
+          }
+        </ul>
+        @if (mancaPerGratuita() > 0) {
+          <p class="avviso">Aggiungi <strong>{{ mancaPerGratuita() | number:'1.2-2' }} €</strong>
+            di merce e la spedizione express è offerta.</p>
+        }
+      }
+    </section>
+
     <!-- INDIRIZZO -->
     <section class="blocco">
-      <h2>Spedizione</h2>
+      <h2>Indirizzo di spedizione</h2>
 
       @if (indirizzi().length > 0) {
         <ul class="indirizzi">

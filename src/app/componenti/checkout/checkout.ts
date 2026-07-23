@@ -18,7 +18,8 @@ type Toast = { testo: string; errore: boolean } | null;
  * Checkout MINIMO (temporaneo). Autosufficiente perche' un cliente
  * oggi non ha altre pagine per credito e indirizzi (l'account vive
  * sotto /admin). Quindi qui dentro: riepilogo carrello, ricarica
- * credito (PAYPAL = immediata), scelta/creazione indirizzo, conferma.
+ * credito (PAYPAL = immediata), scelta/creazione indirizzo, scelta
+ * della spedizione, conferma.
  *
  * Tutto richiede il token: si carica solo nel browser. In SSR la
  * pagina resta un guscio (il guard si astiene, il client completa).
@@ -44,6 +45,7 @@ export class Checkout {
   ordineCreato = signal<OrdineDTO | null>(null);
   messaggio = signal<Toast>(null);
   inCorso = signal(false);
+  tipoSpedizione = signal<string>('STANDARD');
 
   // --- Ricarica ---
   importoRicarica: number | null = null;
@@ -54,7 +56,27 @@ export class Checkout {
   iDestinatario = ''; iVia = ''; iCivico = '';
   iCap = ''; iCitta = ''; iProvincia = ''; iNazione = 'IT';
 
-  totale = computed(() => this.carrello()?.totale ?? 0);
+  // ---------------- Spedizione ----------------
+  // Costi e regola della soglia arrivano gia' calcolati dal backend:
+  // qui si legge e basta, cosi' l'anteprima non puo' divergere
+  // dall'addebito.
+
+  opzioni = computed(() => this.carrello()?.opzioniSpedizione ?? []);
+  spedizioneOfferta = computed(() => this.carrello()?.spedizioneOfferta ?? false);
+  mancaPerGratuita = computed(() => this.carrello()?.mancaPerSpedizioneGratuita ?? 0);
+
+  /** Opzione scelta; se non c'e' (sopra soglia resta solo express)
+   *  ripiega sulla prima disponibile. */
+  opzioneSel = computed(() =>
+    this.opzioni().find(o => o.tipo === this.tipoSpedizione())
+    ?? this.opzioni()[0] ?? null);
+
+  // ---------------- Totali ----------------
+
+  merce = computed(() => this.carrello()?.totale ?? 0);
+  speseSpedizione = computed(() => this.opzioneSel()?.costo ?? 0);
+  totale = computed(() => this.merce() + this.speseSpedizione());
+
   saldo = computed(() => this.portafoglio()?.saldo ?? 0);
   mancante = computed(() => Math.max(0, this.totale() - this.saldo()));
   creditoSufficiente = computed(() => this.saldo() >= this.totale());
@@ -94,6 +116,10 @@ export class Checkout {
       error: () => {}
     });
   }
+
+  // ---------------- Spedizione ----------------
+
+  scegliSpedizione(tipo: string): void { this.tipoSpedizione.set(tipo); }
 
   // ---------------- Ricarica ----------------
 
@@ -182,7 +208,9 @@ export class Checkout {
     this.inCorso.set(true);
     this.messaggio.set(null);
 
-    this.ordineS.checkout(indId).subscribe({
+    // Il metodo e' una preferenza: sopra soglia il server lo sostituisce
+    // comunque con EXPRESS offerta.
+    this.ordineS.checkout(indId, this.tipoSpedizione()).subscribe({
       next: ordine => {
         this.inCorso.set(false);
         this.ordineCreato.set(ordine);

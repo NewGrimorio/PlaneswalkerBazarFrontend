@@ -23,6 +23,7 @@ export interface OrdineDTO {
 
   creationDate?: string;
   updateDate?: string;
+  tipoSpedizione?: string;
 
   voci?: VoceOrdineDTO[];
 }
