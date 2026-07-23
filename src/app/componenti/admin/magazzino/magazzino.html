@@ -22,6 +22,10 @@
   }
 </div>
 
+@if (messaggio(); as m) {
+  <p class="messaggio" [class.errore]="m.errore">{{ m.testo }}</p>
+}
+
 @if (tipoSfoglia() === 'SINGLE' && !espansioneSel()) {
   <div class="griglia-espansioni">
     @for (e of espansioni(); track e.id) {
@@ -64,30 +68,36 @@
   </p>
 }
 
-@if (messaggio(); as m) {
-  <p class="messaggio" [class.errore]="m.errore">{{ m.testo }}</p>
-}
-
 @if (prodotto(); as p) {
+
+  <!-- SEZIONE RICOSTRUITA: confronta con la tua testata prima di sostituire -->
   <div class="testata-prodotto">
     @if (urlImmagine(p.imageUrl); as img) {
       <img class="miniatura" [src]="img" alt="">
     }
-    <div>
-      <h2>{{ p.nome }}</h2>
-      <span class="tipo">{{ p.tipoProdotto }}</span>
-      @if (p.espansioneNome) { <span class="tipo">· {{ p.espansioneNome }}</span> }
-    </div>
+    <h2>{{ p.nome }}</h2>
     <span class="spazio"></span>
-    @if (isSingle || righe().length === 0) {
-      <button mat-flat-button (click)="apriForm()">
-        <mat-icon>add</mat-icon> {{ etichettaBottoneNuova }}
+    @if (isSingle) {
+      <button matButton="outlined" (click)="caricaTendenze()"
+              [disabled]="tendenzeInCorso()">
+        @if (tendenzeInCorso()) {
+          <mat-spinner diameter="18" class="spinner-bottone" />
+        } @else {
+          <mat-icon>trending_up</mat-icon>
+        }
+        {{ tendenzeInCorso() ? 'Rilevo i prezzi…' : 'Tendenze prezzi' }}
       </button>
     }
+    <button mat-flat-button (click)="apriForm()" [disabled]="formAperto()">
+      <mat-icon>add</mat-icon> {{ etichettaBottoneNuova }}
+    </button>
   </div>
 
+  <!-- SEZIONE RICOSTRUITA: confronta con il tuo form prima di sostituire -->
   @if (formAperto()) {
     <div class="pannello-form">
+      <h2>{{ isSingle ? 'Nuova variante' : 'Inserisci scorte' }}</h2>
+
       <div class="riga">
         @if (isSingle) {
           <mat-form-field appearance="outline">
@@ -98,6 +108,18 @@
               }
             </mat-select>
           </mat-form-field>
+        }
+
+        <mat-form-field appearance="outline">
+          <mat-label>Lingua</mat-label>
+          <mat-select [(ngModel)]="fLingua">
+            @for (l of lingue; track l) {
+              <mat-option [value]="l">{{ l.toUpperCase() }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (isSingle) {
           <mat-form-field appearance="outline">
             <mat-label>Finitura</mat-label>
             <mat-select [(ngModel)]="fFinitura">
@@ -107,28 +129,22 @@
             </mat-select>
           </mat-form-field>
         }
-        <mat-form-field appearance="outline">
-          <mat-label>Lingua</mat-label>
-          <mat-select [(ngModel)]="fLingua">
-            @for (l of lingue; track l) {
-              <mat-option [value]="l">{{ l.toUpperCase() }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+
         <mat-form-field appearance="outline" class="campo-num">
           <mat-label>Prezzo €</mat-label>
           <input matInput type="number" min="0" step="0.01" [(ngModel)]="fPrezzo">
         </mat-form-field>
+
         <mat-form-field appearance="outline" class="campo-num">
           <mat-label>Quantità</mat-label>
           <input matInput type="number" min="0" step="1" [(ngModel)]="fQuantita">
         </mat-form-field>
       </div>
+
       <div class="azioni-form">
         <button mat-button (click)="formAperto.set(false)">Annulla</button>
-        <button mat-flat-button
-                [disabled]="fPrezzo === null || fQuantita === null || inCorso()"
-                (click)="salvaVariante()">
+        <button mat-flat-button (click)="salvaVariante()"
+                [disabled]="fPrezzo === null || fQuantita === null || inCorso()">
           {{ inCorso() ? 'Salvataggio…' : (isSingle ? 'Crea variante' : 'Conferma') }}
         </button>
       </div>
@@ -142,6 +158,10 @@
         <th>Lingua</th>
         @if (isSingle) { <th>Finitura</th> }
         <th class="num">Prezzo €</th>
+        @if (isSingle) {
+          <th class="num">Cardtrader</th>
+          <th class="num">Cardmarket</th>
+        }
         <th class="num">Quantità</th>
         <th>Stato</th>
         <th class="azioni"></th>
@@ -171,6 +191,38 @@
               {{ r.sku.prezzo }}
             }
           </td>
+          @if (isSingle) {
+            <td class="num">
+              @if (r.tendenza?.ctLowest != null) {
+                <span class="prezzo-fonte">{{ r.tendenza!.ctLowest | number:'1.2-2' }} €</span>
+                @let fCt = freccia(r.tendenza!.ctLowest, r.tendenza!.ctPrecedente);
+                @if (fCt.verso) {
+                  <span class="freccia" [class.su]="fCt.verso === 'su'"
+                                        [class.giu]="fCt.verso === 'giu'">
+                    {{ fCt.verso === 'su' ? '▲' : fCt.verso === 'giu' ? '▼' : '=' }}
+                    {{ fCt.pct! | number:'1.0-1' }}%
+                  </span>
+                }
+              } @else if (r.tendenza) {
+                <span class="prezzo-vuoto">n/d</span>
+              }
+            </td>
+            <td class="num">
+              @if (r.tendenza?.cardmarket != null) {
+                <span class="prezzo-fonte">{{ r.tendenza!.cardmarket | number:'1.2-2' }} €</span>
+                @let fCm = freccia(r.tendenza!.cardmarket, r.tendenza!.cardmarketPrecedente);
+                @if (fCm.verso) {
+                  <span class="freccia" [class.su]="fCm.verso === 'su'"
+                                        [class.giu]="fCm.verso === 'giu'">
+                    {{ fCm.verso === 'su' ? '▲' : fCm.verso === 'giu' ? '▼' : '=' }}
+                    {{ fCm.pct! | number:'1.0-1' }}%
+                  </span>
+                }
+              } @else if (r.tendenza) {
+                <span class="prezzo-vuoto">n/d</span>
+              }
+            </td>
+          }
           <td class="num">
             @if (inModifica(r)) {
               <input class="cella-input" type="number" min="0" step="1"
@@ -211,7 +263,7 @@
           </td>
         </tr>
       } @empty {
-        <tr><td [attr.colspan]="isSingle ? 7 : 5" class="vuoto">
+        <tr><td [attr.colspan]="isSingle ? 9 : 5" class="vuoto">
           {{ isSingle ? 'Nessuna variante. Crea la prima con «Nuova variante».'
                       : 'Non in vendita. Usa «Inserisci scorte» per creare lo SKU.' }}
         </td></tr>

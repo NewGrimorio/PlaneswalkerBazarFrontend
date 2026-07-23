@@ -11,6 +11,9 @@ import { ProdottoDTO } from '../../../modelli/prodotti-dto';
 import { MagazzinoSKUDTO } from '../../../modelli/magazzino-sku-dto';
 import { MagazzinoSKUReq } from '../../../modelli/magazzino-sku-req';
 import { EspansioneDTO } from '../../../modelli/espansione-dto';
+import { DecimalPipe } from '@angular/common';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { TendenzaPrezzoCartaDTO, TendenzaSkuDTO } from '../../../modelli/tendenza-prezzo-dto';
 
 const BASE = environment.apiUrl;
 const HOST = environment.serverUrl;
@@ -21,6 +24,7 @@ interface RigaSku {
   lingua: string;
   prezzo: number;
   quantita: number;
+  tendenza?: TendenzaSkuDTO;
 }
 
 const CONDIZIONI = [
@@ -39,13 +43,14 @@ const FINITURE = ['NONFOIL', 'FOIL', 'ETCHED'] as const;
 @Component({
   selector: 'app-magazzino',
   imports: [FormsModule, MatButtonModule, MatFormFieldModule,
-            MatInputModule, MatSelectModule, MatIconModule],
+            MatInputModule, MatSelectModule, MatIconModule, MatProgressSpinnerModule, DecimalPipe],
   templateUrl: './magazzino.html',
   styleUrl: './magazzino.css',
 })
 export class Magazzino {
 
   private http = inject(HttpClient);
+  tendenzeInCorso = signal(false);
 
   /** Tab per lo sfoglia: SINGLE ha il flusso a due passi via espansione */
   tipiSfoglia = [
@@ -93,6 +98,27 @@ export class Magazzino {
   /** Etichetta contestuale: le "varianti" sono gergo da singole */
   get etichettaBottoneNuova(): string {
     return this.isSingle ? 'Nuova variante' : 'Inserisci scorte';
+  }
+
+  private mostraErrore(err: any): void {
+    this.messaggio.set({
+      testo: err.error?.msg ?? 'Errore di comunicazione col server',
+      errore: true
+    });
+  }
+
+  // ============================================================
+  // Presentazione
+  // ============================================================
+
+  etichettaCondizione(codice: string): string {
+    if (codice === 'NA') return '—';
+    return CONDIZIONI.find(c => c.valore === codice)?.etichetta ?? codice;
+  }
+
+  urlImmagine(percorso: string | null): string | null {
+    if (!percorso) return null;
+    return percorso.startsWith('http') ? percorso : HOST + percorso;
   }
 
   // ============================================================
@@ -246,10 +272,12 @@ export class Magazzino {
       });
   }
 
+  /** Lo spread conserva la tendenza gia' caricata: senza, le colonne
+   *  Cardtrader/Cardmarket si svuoterebbero a ogni salvataggio di riga. */
   private aggiornaRiga(agg: MagazzinoSKUDTO): void {
     this.righe.update(lista => lista.map(r =>
       r.sku.id === agg.id
-        ? { sku: agg, lingua: agg.lingua, prezzo: agg.prezzo, quantita: agg.quantita }
+        ? { ...r, sku: agg, lingua: agg.lingua, prezzo: agg.prezzo, quantita: agg.quantita }
         : r));
     this.rigaInModifica.set(null);
   }
@@ -324,23 +352,65 @@ export class Magazzino {
   }
 
   // ============================================================
-  // Presentazione
+  // Tendenze prezzi (Cardtrader + Cardmarket)
   // ============================================================
 
-  etichettaCondizione(codice: string): string {
-    if (codice === 'NA') return '—';
-    return CONDIZIONI.find(c => c.valore === codice)?.etichetta ?? codice;
+  /** Tendenze prezzi CT/Cardmarket per tutti gli SKU della carta (solo SINGLE). */
+  caricaTendenze(): void {
+    const p = this.prodotto();
+    console.log('caricaTendenze →', p?.id, 'stampaId =', p?.stampaId, 'inCorso =', this.tendenzeInCorso());
+    if (!p || this.tendenzeInCorso()) return;
+
+    // Guardia PARLANTE: senza stampaId non c'e' carta da interrogare.
+    // Capita se il prodotto in memoria arriva da una risposta precedente
+    // all'aggiunta del campo nel DTO: basta rifare la ricerca.
+    if (p.stampaId == null) {
+      this.messaggio.set({
+        testo: 'Nessuna stampa collegata al prodotto: tendenze non disponibili. '
+             + 'Se hai appena aggiornato il backend, rifai la ricerca.',
+        errore: true
+      });
+      return;
+    }
+
+    this.tendenzeInCorso.set(true);
+    this.messaggio.set(null);
+
+    // Risposta lenta: una fetch Scryfall + una chiamata Cardtrader per ogni
+    // combinazione (finitura, lingua), con ~1s di pausa tra i gruppi per il
+    // rate limit. HttpClient non ha timeout di default: lo spinner copre l'attesa.
+    this.http.get<TendenzaPrezzoCartaDTO>(
+        `${BASE}/admin/magazzino/stampa/${p.stampaId}/tendenze`)
+      .subscribe({
+        next: dto => {
+          const perSku = new Map(dto.righe.map(r => [r.skuId, r]));
+          this.righe.update(lista => lista.map(r =>
+            ({ ...r, tendenza: perSku.get(r.sku.id) })));
+
+          const conPrezzo = dto.righe.filter(r => r.ctLowest != null || r.cardmarket != null).length;
+          this.messaggio.set({
+            testo: conPrezzo === 0
+              ? 'Nessun prezzo trovato per queste varianti su Cardtrader e Cardmarket.'
+              : `Prezzi rilevati per ${conPrezzo} varianti su ${dto.righe.length} `
+                + `in ${(dto.millisecondiImpiegati / 1000).toFixed(1)}s.`,
+            errore: conPrezzo === 0
+          });
+          this.tendenzeInCorso.set(false);
+        },
+        error: err => { this.mostraErrore(err); this.tendenzeInCorso.set(false); }
+      });
   }
 
-  urlImmagine(percorso: string | null): string | null {
-    if (!percorso) return null;
-    return percorso.startsWith('http') ? percorso : HOST + percorso;
+  /** Direzione e variazione % tra prezzo corrente e precedente snapshot. */
+  freccia(corrente: number | null, precedente: number | null):
+      { verso: 'su' | 'giu' | 'pari' | null; pct: number | null } {
+    if (corrente == null || precedente == null || precedente === 0)
+      return { verso: null, pct: null };
+    const diff = corrente - precedente;
+    return {
+      verso: diff > 0 ? 'su' : diff < 0 ? 'giu' : 'pari',
+      pct: (diff / precedente) * 100
+    };
   }
 
-  private mostraErrore(err: any): void {
-    this.messaggio.set({
-      testo: err.error?.msg ?? 'Errore di comunicazione col server',
-      errore: true
-    });
-  }
 }
