@@ -1,5 +1,31 @@
-<div class="div-login">
-  <h1>Planeswalker Bazar</h1>
-  <p>Il più grande mercato del multiverso</p>
-  <a matButton="filled" routerLink="/login">Login</a>
-</div>
+<header class="hero">
+  <div class="container text-center py-5">
+    <img src="/logo.png" alt="Planeswalker Bazar" class="hero-logo mb-4">
+    <p class="hero-claim">Il più grande mercato del multiverso</p>
+    <p class="hero-sub">
+      Carte singole, buste, box e accessori — prezzi allineati al mercato,
+      spedizione express offerta sopra i 70&nbsp;€.
+    </p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap mt-4">
+      <a routerLink="/carte-singole" class="btn-oro">Esplora il catalogo</a>
+      @if (!authS.isAutentificated()) {
+        <a routerLink="/login" class="btn-fantasma">Accedi</a>
+      }
+    </div>
+  </div>
+</header>
+
+<section class="container py-5">
+  <h2 class="titolo-sezione text-center mb-4">Cosa trovi da noi</h2>
+  <div class="row g-4">
+    @for (c of vetrine; track c.path) {
+      <div class="col-6 col-md-4 col-lg-3">
+        <a [routerLink]="['/', c.path]" class="card-cat">
+          <mat-icon>{{ c.icona }}</mat-icon>
+          <h3>{{ c.label }}</h3>
+          <p>{{ c.testo }}</p>
+        </a>
+      </div>
+    }
+  </div>
+</section>

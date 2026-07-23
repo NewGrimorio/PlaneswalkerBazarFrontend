@@ -1,6 +1,7 @@
-import { Component, inject, signal, PLATFORM_ID } from '@angular/core';
+import { Component, computed, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, DecimalPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Prodotto } from '../../services/prodotto';
 import { Carrello } from '../../services/carrello';
 import { ProdottoDTO } from '../../modelli/prodotti-dto';
@@ -8,24 +9,27 @@ import { CarrelloDTO } from '../../modelli/carrello-dto';
 import { VoceCarrelloDTO } from '../../modelli/voce-carrello-dto';
 import { MagazzinoSKUDTO } from '../../modelli/magazzino-sku-dto';
 import { urlImmagine } from '../../utils/url-immagine';
-import { Router } from '@angular/router';
 import { AuthServices } from '../../auth/auth-services';
-import { Utente } from '../../services/utente';
 
 type Toast = { testo: string; errore: boolean } | null;
 
 /**
- * Pagina NEGOZIO (temporanea): vetrina prodotti + carrello, il minimo
- * per iniziare un ordine mentre la homepage e' in lavorazione altrove.
+ * Vetrina + carrello. Vive dentro UserLayout: la nav e il logout
+ * stanno nella shell, qui resta solo il catalogo.
+ *
+ * La CATEGORIA arriva dalla rotta (data.tipo), non da filtri locali:
+ * ogni categoria ha un suo URL condivisibile e indicizzabile.
+ *
+ * Il catalogo e' PUBBLICO: i prodotti caricano anche in SSR e per un
+ * ospite. Il carrello invece richiede il token, quindi si popola solo
+ * nel browser e solo da autenticati.
  *
  * Flusso: la lista (listByTipo) NON porta le varianti -> click sul
- * prodotto -> dettaglio (getBySlug) con gli skus -> "Aggiungi" mette
- * lo sku nel carrello. Il carrello si popola solo nel browser (serve
- * il token); i prodotti sono pubblici e caricano anche in SSR.
+ * prodotto -> dettaglio (getBySlug) con gli skus -> "Aggiungi".
  */
 @Component({
   selector: 'app-negozio',
-  imports: [DecimalPipe, MatIconModule],
+  imports: [DecimalPipe, MatIconModule, RouterLink],
   templateUrl: './negozio.html',
   styleUrl: './negozio.css',
 })
@@ -34,20 +38,23 @@ export class Negozio {
   private carrelloS = inject(Carrello);
   private platformId = inject(PLATFORM_ID);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
-  //logout temporaneo
-  private authS = inject(AuthServices);
-  private utenteS = inject(Utente); 
+  /** Pubblico: il template lo interroga per distinguere ospite e cliente. */
+  authS = inject(AuthServices);
 
   /** Esposta al template: le funzioni importate non sono visibili da sole. */
   protected readonly urlImmagine = urlImmagine;
 
-  tipi = [
-    { v: 'SINGLE',      l: 'Carte singole' },
-    { v: 'BOOSTER_BOX', l: 'Box' },
-    { v: 'MAZZO',       l: 'Mazzi' },
-    { v: 'ACCESSORIO',  l: 'Accessori' },
-  ];
+  private etichette: Record<string, string> = {
+    SINGLE: 'Carte singole',
+    BOOSTER: 'Bustine',
+    BOOSTER_BOX: 'Box',
+    MAZZO: 'Mazzi',
+    SET_LOTTO: 'Lotti',
+    SIGILLATO: 'Sigillato',
+    ACCESSORIO: 'Accessori',
+  };
 
   prodotti = signal<ProdottoDTO[]>([]);
   tipoSel = signal<string>('SINGLE');
@@ -57,20 +64,23 @@ export class Negozio {
   carrello = signal<CarrelloDTO | null>(null);
   messaggio = signal<Toast>(null);
 
+  titolo = computed(() => this.etichette[this.tipoSel()] ?? 'Catalogo');
+
   constructor() {
-    this.caricaProdotti(this.tipoSel());
-    // Il carrello richiede il token: solo nel browser. In SSR non c'e'
-    // sessione, quindi qui non si tenta nemmeno (niente 401 nel render).
-    if (isPlatformBrowser(this.platformId)) this.caricaCarrello();
+    // subscribe, non snapshot: navigando tra categorie sorelle il
+    // componente viene RIUSATO e il costruttore non gira di nuovo.
+    this.route.data.subscribe(d => {
+      this.tipoSel.set(d['tipo'] ?? 'SINGLE');
+      this.caricaProdotti(this.tipoSel());
+    });
+
+    // Il carrello richiede il token: niente chiamata da ospite o in SSR,
+    // altrimenti si spara una 401 a ogni apertura di pagina.
+    if (isPlatformBrowser(this.platformId) && this.authS.isAutentificated())
+      this.caricaCarrello();
   }
 
   // ---------------- Vetrina ----------------
-
-  cambiaTipo(tipo: string): void {
-    if (this.tipoSel() === tipo) return;
-    this.tipoSel.set(tipo);
-    this.caricaProdotti(tipo);
-  }
 
   private caricaProdotti(tipo: string): void {
     this.caricando.set(true);
@@ -95,11 +105,18 @@ export class Negozio {
   private caricaCarrello(): void {
     this.carrelloS.get().subscribe({
       next: c => this.carrello.set(c),
-      error: () => {}   // ospite/SSR: silenzio, il client riprova dopo l'hydration
+      error: () => {}
     });
   }
 
   aggiungi(sku: MagazzinoSKUDTO): void {
+    // Sfogliare e' libero, comprare no: l'ospite viene mandato al login
+    // invece di sbattere contro un 401 incomprensibile.
+    if (!this.authS.isAutentificated()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
     // Deterministico a prescindere dalla semantica di addVoce: se lo
     // sku e' gia' nel carrello, si imposta quantita+1; altrimenti 1.
     const c = this.carrello();
@@ -143,9 +160,7 @@ export class Negozio {
     });
   }
 
-   procedi(): void {
-    // Il carrello e' pronto: si va al checkout (riepilogo, credito,
-    // indirizzo, conferma). Il backend fa il resto.
+  procedi(): void {
     this.router.navigate(['/checkout']);
   }
 
@@ -154,19 +169,4 @@ export class Negozio {
     if (isPlatformBrowser(this.platformId))
       setTimeout(() => this.messaggio.set(null), 2800);
   }
-  
-  //Logout temporaneo
-  esci(): void {
-    this.utenteS.logout().subscribe({
-      next: () => this.chiudiSessione(),
-      error: () => this.chiudiSessione()
-    });
-  }
- 
-  private chiudiSessione(): void {
-    this.authS.resetAll();
-    this.router.navigate(['/login']);
-  }
-
-
 }

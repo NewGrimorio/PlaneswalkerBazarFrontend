@@ -7,3 +7,39 @@
   gap: 8px;
   text-align: center;
 }
+
+:host { display: block; }
+
+.hero {
+  background: radial-gradient(ellipse at center, #3a2a1c 0%, #150f0b 70%);
+  color: #f5e6c8;
+  border-bottom: 3px solid #d4a24c;
+}
+.hero-logo { width: min(380px, 70vw); filter: drop-shadow(0 8px 24px rgba(0,0,0,.6)); }
+.hero-claim { font-size: 1.5rem; color: #d4a24c; margin: 0 0 8px; font-weight: 600; }
+.hero-sub { color: #cbbfae; max-width: 620px; margin: 0 auto; }
+
+.btn-oro, .btn-fantasma {
+  display: inline-block; padding: 12px 28px; border-radius: 8px;
+  text-decoration: none; font-weight: 700; transition: all .15s;
+}
+.btn-oro { background: #d4a24c; color: #1a1410; }
+.btn-oro:hover { background: #e8c579; transform: translateY(-2px); }
+.btn-fantasma { border: 2px solid #d4a24c; color: #d4a24c; }
+.btn-fantasma:hover { background: rgba(212,162,76,.12); }
+
+.titolo-sezione { font-size: 1.6rem; color: #2a1f16; }
+
+.card-cat {
+  display: block; height: 100%; padding: 24px 18px; text-align: center;
+  border: 1px solid #e8e2d6; border-radius: 12px; background: #fff;
+  text-decoration: none; color: inherit;
+  transition: box-shadow .15s, transform .15s, border-color .15s;
+}
+.card-cat:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,.1); transform: translateY(-3px);
+  border-color: #d4a24c;
+}
+.card-cat mat-icon { font-size: 42px; width: 42px; height: 42px; color: #d4a24c; }
+.card-cat h3 { font-size: 1.05rem; margin: 10px 0 6px; }
+.card-cat p  { font-size: .85rem; color: #8a8175; margin: 0; }

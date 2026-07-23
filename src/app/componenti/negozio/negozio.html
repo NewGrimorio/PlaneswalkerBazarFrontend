@@ -1,12 +1,6 @@
 <div class="negozio">
   <header class="testata">
-    <h1>Negozio</h1>
-    <nav class="tipi">
-      @for (t of tipi; track t.v) {
-        <button type="button" class="chip" [class.attivo]="tipoSel() === t.v"
-                (click)="cambiaTipo(t.v)">{{ t.l }}</button>
-      }
-    </nav>
+    <h1>{{ titolo() }}</h1>
   </header>
 
   <div class="corpo">
@@ -42,7 +36,12 @@
         @if (carrello(); as c) { <span class="badge">{{ c.numeroArticoli }}</span> }
       </h2>
 
-      @if (carrello(); as c) {
+      @if (!authS.isAutentificated()) {
+        <p class="stato">
+          <a routerLink="/login" class="link-accedi">Accedi</a>
+          per aggiungere prodotti al carrello.
+        </p>
+      } @else if (carrello(); as c) {
         @if (c.voci.length === 0) {
           <p class="stato">Il carrello è vuoto.</p>
         } @else {
@@ -76,9 +75,17 @@
           </ul>
 
           <div class="totale">
-            <span>Totale</span>
+            <span>Merce</span>
             <strong>{{ c.totale | number:'1.2-2' }} €</strong>
           </div>
+          @if (c.spedizioneOfferta) {
+            <p class="promo">Spedizione express offerta.</p>
+          } @else if (c.mancaPerSpedizioneGratuita > 0) {
+            <p class="promo">
+              Aggiungi {{ c.mancaPerSpedizioneGratuita | number:'1.2-2' }} €
+              per la spedizione express offerta.
+            </p>
+          }
 
           <button type="button" class="btn-primario"
                   [disabled]="c.numeroArticoli === 0" (click)="procedi()">
@@ -87,15 +94,9 @@
           <button type="button" class="btn-testo" (click)="svuota()">Svuota carrello</button>
         }
       } @else {
-        <p class="stato">Accedi per vedere il tuo carrello.</p>
+        <p class="stato">Caricamento…</p>
       }
     </aside>
-    <!-- Logout temporaneo (in attesa della topbar cliente) -->
-<div class="logout-box">
-  <button type="button" class="btn-logout" (click)="esci()">
-    <mat-icon>logout</mat-icon> Esci
-  </button>
-</div>
   </div>
 
   <!-- DETTAGLIO PRODOTTO + VARIANTI -->

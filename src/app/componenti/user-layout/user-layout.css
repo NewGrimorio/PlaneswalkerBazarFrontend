@@ -1,0 +1,50 @@
+:host { display: block; }
+
+.menu-user {
+  height: 72px;
+  display: flex; align-items: center; gap: 20px;
+  padding: 0 24px;
+  background: #1a1410;                 /* bruno scuro del logo */
+  border-bottom: 2px solid #d4a24c;    /* filo d'oro */
+  position: sticky; top: 0; z-index: 10;
+}
+.logo-link { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.logo { width: 44px; height: 44px; object-fit: contain; }
+.marchio { color: #f5e6c8; font-weight: 700; letter-spacing: .4px; white-space: nowrap; }
+.marchio-oro { color: #d4a24c; margin-left: 4px; }
+
+.link-wrap { display: flex; gap: 18px; flex-wrap: wrap; }
+.link-menu {
+  color: #cbbfae; text-decoration: none;
+  font-size: 14px; font-weight: 600;
+  padding: 6px 0; border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s;
+}
+.link-menu:hover { color: #f5e6c8; }
+.link-menu.attivo { color: #d4a24c; border-bottom-color: #d4a24c; }
+
+.pulsante-utente {
+  margin-left: auto; height: 42px; padding: 0 14px;
+  border-radius: 6px; background: #d4a24c; color: #1a1410; font-weight: 700;
+}
+.pulsante-utente { --mat-text-button-label-text-color: #1a1410; }
+.pulsante-utente .nome-utente,
+.pulsante-utente mat-icon { color: #1a1410; }
+
+.pulsante-utente:hover { background: #e8c579; }
+.contenuto-pulsante-utente { display: inline-flex; align-items: center; gap: 8px; }
+.nome-utente { white-space: nowrap; }
+
+/* Da ospite il bottone e' un <a>, non un <button> Material:
+   servono allineamento e reset del sottolineato. */
+.pulsante-accedi {
+  display: inline-flex; align-items: center; gap: 8px;
+  text-decoration: none;
+}
+
+.contenuto-user { min-height: calc(100vh - 72px); background: #faf8f4; }
+
+@media (max-width: 900px) {
+  .menu-user { height: auto; flex-wrap: wrap; padding: 12px 16px; }
+  .marchio { display: none; }
+}

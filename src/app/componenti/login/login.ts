@@ -21,6 +21,7 @@ export class Login {
   private utenteS = inject(Utente);
   private authS = inject(AuthServices);
   private router = inject(Router);
+  
 
   identificativo = '';
   password = '';
@@ -30,7 +31,7 @@ export class Login {
   // Dove va il cliente dopo il login. TEMPORANEO: finche' la homepage
   // e' in lavorazione, si atterra sul negozio. Quando la home sara'
   // pronta, riportare a '/'.
-  private readonly dopoLoginCliente = '/negozio';
+  private readonly dopoLoginCliente = '/';
 
   constructor() {
     // Utente gia' loggato che finisce sul login (es. F5 su /login):

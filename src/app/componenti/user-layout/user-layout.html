@@ -1,0 +1,43 @@
+<nav class="menu-user">
+  <a routerLink="/" class="logo-link">
+    <img src="/logo.png" alt="Planeswalker Bazar" class="logo">
+    <span class="marchio">Planeswalker<span class="marchio-oro">Bazar</span></span>
+  </a>
+
+  <div class="link-wrap">
+    @for (c of categorie; track c.path) {
+      <a [routerLink]="['/', c.path]" routerLinkActive="attivo" class="link-menu">
+        {{ c.label }}
+      </a>
+    }
+  </div>
+
+  <!-- Catalogo pubblico: la nav deve reggere anche senza sessione -->
+  @if (authS.isAutentificated()) {
+    <button mat-button [matMenuTriggerFor]="menuUtente" class="pulsante-utente">
+      <span class="contenuto-pulsante-utente">
+        <mat-icon>account_circle</mat-icon>
+        <span class="nome-utente">Ciao, {{ authS.utente()?.username ?? 'utente' }}</span>
+        <mat-icon>expand_more</mat-icon>
+      </span>
+    </button>
+
+    <mat-menu #menuUtente="matMenu">
+      <button mat-menu-item routerLink="/checkout">
+        <mat-icon>shopping_cart</mat-icon><span>Carrello</span>
+      </button>
+      <button mat-menu-item (click)="esci()">
+        <mat-icon>logout</mat-icon><span>Esci</span>
+      </button>
+    </mat-menu>
+  } @else {
+    <a routerLink="/login" class="pulsante-utente pulsante-accedi">
+      <mat-icon>login</mat-icon>
+      <span class="nome-utente">Accedi</span>
+    </a>
+  }
+</nav>
+
+<main class="contenuto-user">
+  <router-outlet />
+</main>
