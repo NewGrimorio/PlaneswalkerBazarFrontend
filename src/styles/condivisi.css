@@ -1,0 +1,41 @@
+/* ============================================================
+   Stili condivisi (form, pannelli, messaggi) — usati sia in
+   admin che in user. Nessuno scoping: disponibili ovunque.
+   ============================================================ */
+
+:root {
+  --colore-plancia: #1d2b4f;
+}
+
+.sottotitolo { color: #777; margin-top: -8px; }
+
+.pannello-form {
+  background: #fff; border-radius: 8px;
+  padding: 20px; margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.pannello-form h2 { margin: 0 0 16px; font-size: 18px; }
+
+.riga {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  align-items: flex-start;
+}
+.riga + .riga { margin-top: 10px; }
+.riga mat-form-field { min-width: 150px; }
+.cresce { flex: 1; }
+.pieno { width: 100%; }
+.stretto { max-width: 140px; }
+.spazio { flex: 1; }
+.nota { color: #666; margin: -8px 0 16px; }
+.rosso { color: #b3261e; }
+
+.azioni-form { display: flex; justify-content: flex-end; gap: 8px; }
+
+.messaggio {
+  padding: 10px 16px; border-radius: 6px;
+  background: #e6f6ec; color: #1e7a43;
+}
+.messaggio.errore { background: #fdecea; color: #b3261e; }
+.messaggio.avviso { background: #fdf4e3; color: #8a5a00; }
+
+.vuoto { text-align: center; color: #999; padding: 32px; }

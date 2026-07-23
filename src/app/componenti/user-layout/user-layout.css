@@ -14,9 +14,14 @@
 }
 
 .logo {
-  width: 42px;
-  height: 42px;
+  width: 56px;
+  height: 56px;
   object-fit: contain;
+}
+
+.menu-container {
+  display: flex;
+  width: 100%;          /* Occupa tutta la larghezza della pagina */
 }
 
 .link-menu {
@@ -24,6 +29,9 @@
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
+  flex: 1;              /* Costringe ogni bottone a espandersi equamente */
+  text-align: center;   /* Centra il testo dentro il bottone allargato */
+  padding: 10px 0; 
 }
 
 .link-menu:hover {
