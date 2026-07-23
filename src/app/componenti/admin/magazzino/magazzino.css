@@ -71,3 +71,9 @@
 }
 .cella-select:focus { outline: 2px solid var(--colore-plancia); border-color: transparent; }
 .salva-riga { color: #1e7a43; }
+
+.prezzo-fonte { font-variant-numeric: tabular-nums; }
+.prezzo-vuoto { color: #aaa; font-style: italic; }
+.freccia { margin-left: 6px; font-size: 12px; white-space: nowrap; }
+.freccia.su  { color: #1e7a43; }   /* prezzo in salita */
+.freccia.giu { color: #b3261e; }   /* prezzo in discesa */
