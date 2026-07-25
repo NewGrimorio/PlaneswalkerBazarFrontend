@@ -1,15 +1,21 @@
 import { Component, computed, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, DecimalPipe } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { combineLatest } from 'rxjs';
 import { Prodotto } from '../../services/prodotto';
 import { Carrello } from '../../services/carrello';
 import { ProdottoDTO } from '../../modelli/prodotti-dto';
 import { CarrelloDTO } from '../../modelli/carrello-dto';
 import { VoceCarrelloDTO } from '../../modelli/voce-carrello-dto';
 import { MagazzinoSKUDTO } from '../../modelli/magazzino-sku-dto';
+import { EspansioneDTO } from '../../modelli/espansione-dto';
 import { urlImmagine } from '../../utils/url-immagine';
 import { AuthServices } from '../../auth/auth-services';
+import { environment } from '../../../environments/environment';
+
+const BASE = environment.apiUrl;
 
 type Toast = { testo: string; errore: boolean } | null;
 
@@ -17,15 +23,17 @@ type Toast = { testo: string; errore: boolean } | null;
  * Vetrina + carrello. Vive dentro UserLayout: la nav e il logout
  * stanno nella shell, qui resta solo il catalogo.
  *
- * La CATEGORIA arriva dalla rotta (data.tipo), non da filtri locali:
- * ogni categoria ha un suo URL condivisibile e indicizzabile.
+ * Due modalita', decise dalla rotta:
+ *  - /bustine, /box, ...        -> categoria da data.tipo
+ *  - /carte-singole/:codice     -> i prodotti di UN set
+ * In entrambi i casi l'URL e' condivisibile e indicizzabile.
  *
  * Il catalogo e' PUBBLICO: i prodotti caricano anche in SSR e per un
  * ospite. Il carrello invece richiede il token, quindi si popola solo
  * nel browser e solo da autenticati.
  *
- * Flusso: la lista (listByTipo) NON porta le varianti -> click sul
- * prodotto -> dettaglio (getBySlug) con gli skus -> "Aggiungi".
+ * Flusso: la lista NON porta le varianti -> click sul prodotto ->
+ * dettaglio (getBySlug) con gli skus -> "Aggiungi".
  */
 @Component({
   selector: 'app-negozio',
@@ -39,6 +47,7 @@ export class Negozio {
   private platformId = inject(PLATFORM_ID);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private http = inject(HttpClient);
 
   /** Pubblico: il template lo interroga per distinguere ospite e cliente. */
   authS = inject(AuthServices);
@@ -57,6 +66,7 @@ export class Negozio {
   };
 
   prodotti = signal<ProdottoDTO[]>([]);
+  espansione = signal<EspansioneDTO | null>(null);
   tipoSel = signal<string>('SINGLE');
   caricando = signal(false);
 
@@ -64,14 +74,23 @@ export class Negozio {
   carrello = signal<CarrelloDTO | null>(null);
   messaggio = signal<Toast>(null);
 
-  titolo = computed(() => this.etichette[this.tipoSel()] ?? 'Catalogo');
+  /** Dentro un set vince il nome del set: e' l'informazione piu' utile. */
+  titolo = computed(() =>
+    this.espansione()?.nome ?? this.etichette[this.tipoSel()] ?? 'Catalogo');
 
   constructor() {
-    // subscribe, non snapshot: navigando tra categorie sorelle il
-    // componente viene RIUSATO e il costruttore non gira di nuovo.
-    this.route.data.subscribe(d => {
+    // data (categoria) e paramMap (codice set) insieme: navigando tra
+    // rotte sorelle il componente e' RIUSATO e il costruttore non gira
+    // di nuovo, quindi servono gli stream e non lo snapshot.
+    combineLatest([this.route.data, this.route.paramMap]).subscribe(([d, p]) => {
       this.tipoSel.set(d['tipo'] ?? 'SINGLE');
-      this.caricaProdotti(this.tipoSel());
+      const codice = p.get('codice');
+      if (codice) {
+        this.caricaEspansione(codice);
+      } else {
+        this.espansione.set(null);
+        this.caricaProdotti(this.tipoSel());
+      }
     });
 
     // Il carrello richiede il token: niente chiamata da ospite o in SSR,
@@ -88,6 +107,37 @@ export class Negozio {
       next: l => { this.prodotti.set(l); this.caricando.set(false); },
       error: () => { this.prodotti.set([]); this.caricando.set(false); }
     });
+  }
+
+  /**
+   * Set -> prodotti del set. Due chiamate in sequenza: la prima serve
+   * anche a dare il nome vero alla pagina (il codice in URL non basta).
+   */
+  private caricaEspansione(codice: string): void {
+    this.caricando.set(true);
+    this.http.get<EspansioneDTO>(`${BASE}/public/espansioni/${codice}`)
+      .subscribe({
+        next: e => {
+          this.espansione.set(e);
+          this.http.get<ProdottoDTO[]>(`${BASE}/public/prodotti/espansione/${e.id}`)
+            .subscribe({
+              next: l => {
+                // L'endpoint pubblico non filtra per tipo (quello con
+                // ?tipo= esiste solo lato admin): qui teniamo le sole
+                // singole, perche' un set contiene anche buste e box.
+                this.prodotti.set(l.filter(p => p.tipoProdotto === 'SINGLE'));
+                this.caricando.set(false);
+              },
+              error: () => { this.prodotti.set([]); this.caricando.set(false); }
+            });
+        },
+        error: () => {
+          this.espansione.set(null);
+          this.prodotti.set([]);
+          this.caricando.set(false);
+          this.toast('Espansione non trovata', true);
+        }
+      });
   }
 
   apri(p: ProdottoDTO): void {

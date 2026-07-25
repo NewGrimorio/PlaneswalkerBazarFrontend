@@ -1,5 +1,10 @@
 <div class="negozio">
   <header class="testata">
+    @if (espansione(); as e) {
+      <a routerLink="/carte-singole" class="briciola">
+        <mat-icon>arrow_back</mat-icon> Tutte le espansioni
+      </a>
+    }
     <h1>{{ titolo() }}</h1>
   </header>
 

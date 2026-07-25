@@ -44,6 +44,15 @@
       <mat-icon>arrow_back</mat-icon> Espansioni
     </button>
     <span class="dove">Singole di {{ esp.nome }}</span>
+    <span class="spazio"></span>
+    <button matButton="outlined" [disabled]="bulkInCorso()" (click)="caricoBulk(esp)">
+      @if (bulkInCorso()) {
+        <mat-spinner diameter="18" class="spinner-bottone" />
+      } @else {
+        <mat-icon>library_add</mat-icon>
+      }
+      {{ bulkInCorso() ? 'Carico in corso…' : 'Carica 10× NM (test)' }}
+    </button>
   </div>
 }
 

@@ -16,6 +16,7 @@ import { Ordini } from './componenti/admin/ordini/ordini';
 import { Movimenti } from './componenti/admin/movimenti/movimenti';
 import { Recensioni } from './componenti/admin/recensioni/recensioni';
 import { UserLayout } from './componenti/user-layout/user-layout';
+import { Espansioni } from './componenti/espansioni/espansioni';
 
 export const routes: Routes = [
 
@@ -39,7 +40,8 @@ export const routes: Routes = [
         component: UserLayout,
         children: [
             { path: '',              component: Homepage },
-            { path: 'carte-singole', component: Negozio, data: { tipo: 'SINGLE' } },
+            { path: 'carte-singole',          component: Espansioni },
+            { path: 'carte-singole/:codice',  component: Negozio, data: { tipo: 'SINGLE' } },
             { path: 'bustine',       component: Negozio, data: { tipo: 'BOOSTER' } },
             { path: 'box',           component: Negozio, data: { tipo: 'BOOSTER_BOX' } },
             { path: 'mazzi',         component: Negozio, data: { tipo: 'MAZZO' } },

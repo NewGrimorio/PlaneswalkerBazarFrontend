@@ -14,6 +14,7 @@ import { EspansioneDTO } from '../../../modelli/espansione-dto';
 import { DecimalPipe } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TendenzaPrezzoCartaDTO, TendenzaSkuDTO } from '../../../modelli/tendenza-prezzo-dto';
+import { CaricoBulkDTO } from '../../../modelli/carico-bulk-dto';
 
 const BASE = environment.apiUrl;
 const HOST = environment.serverUrl;
@@ -411,6 +412,34 @@ export class Magazzino {
       verso: diff > 0 ? 'su' : diff < 0 ? 'giu' : 'pari',
       pct: (diff / precedente) * 100
     };
+  }
+
+  //Carico bulk
+  bulkInCorso = signal(false);
+
+  /** Carico di test: 10 NM/EN per finitura reale, prezzi dal trend Cardmarket. */
+  caricoBulk(esp: EspansioneDTO): void {
+    if (this.bulkInCorso()) return;
+    this.bulkInCorso.set(true);
+    this.messaggio.set(null);
+
+    this.http.post<CaricoBulkDTO>(`${BASE}/admin/sku/carico-bulk/${esp.id}`, null)
+      .subscribe({
+        next: r => {
+          this.bulkInCorso.set(false);
+          const extra = [
+            r.saltatiEsistenti ? `${r.saltatiEsistenti} già presenti` : '',
+            r.prezziFallback ? `${r.prezziFallback} a prezzo base` : '',
+            r.esclusiDigitali ? `${r.esclusiDigitali} digitali escluse` : '',
+          ].filter(Boolean).join(', ');
+          this.messaggio.set({
+            testo: `«${esp.nome}»: create ${r.skuCreatiNonfoil} varianti nonfoil `
+                 + `e ${r.skuCreatiFoil} foil` + (extra ? ` (${extra})` : '') + '.',
+            errore: false
+          });
+        },
+        error: err => { this.bulkInCorso.set(false); this.mostraErrore(err); }
+      });
   }
 
 }

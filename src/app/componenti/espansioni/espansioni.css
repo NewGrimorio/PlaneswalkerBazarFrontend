@@ -1,0 +1,67 @@
+:host { display: block; }
+
+.pagina { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
+.testata h1 { margin: 0 0 4px; font-size: 1.8rem; color: #2a1f16; }
+.sottotitolo { color: #8a8175; margin: 0 0 24px; font-size: .95rem; }
+.stato { color: #a09786; padding: 40px 0; text-align: center; }
+
+.griglia {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 18px;
+}
+
+/* Angoli squadrati (raggio minimo): la tessera e' un "cartiglio",
+   non una card morbida — coerente con il lettering del logo. */
+.tessera {
+  display: block;
+  border-radius: 4px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid #e0d7c6;
+  background: #fff;
+  transition: transform .15s, box-shadow .15s, border-color .15s;
+}
+.tessera:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 26px rgba(42,31,22,.18);
+  border-color: #d4a24c;
+}
+
+/* Fascia superiore: gradiente bruno/oro + simbolo del set */
+.simbolo {
+  height: 120px;
+  display: flex; align-items: center; justify-content: center;
+  background:
+    radial-gradient(circle at 50% 120%, rgba(212,162,76,.45) 0%, transparent 60%),
+    linear-gradient(135deg, #2c2118 0%, #150f0b 100%);
+  border-bottom: 2px solid #d4a24c;
+}
+/* L'SVG di Scryfall e' nero: invertito diventa avorio sul fondo scuro. */
+.simbolo img {
+  width: 56px; height: 56px; object-fit: contain;
+  filter: invert(1) sepia(.35) saturate(180%) hue-rotate(2deg);
+  opacity: .92;
+}
+.simbolo mat-icon { color: #d4a24c; transform: scale(1.8); }
+
+.info { padding: 14px 16px 16px; }
+.codice {
+  display: inline-block;
+  font-family: monospace; font-size: .72rem; font-weight: 700;
+  letter-spacing: .6px; color: #a8792e;
+  background: #fdf6e7; border-radius: 3px;
+  padding: 2px 6px; margin-bottom: 6px;
+}
+.info h2 {
+  margin: 0 0 10px; font-size: 1rem; line-height: 1.25; color: #2a1f16;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.meta { display: flex; flex-wrap: wrap; gap: 12px; }
+.meta span {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: .78rem; color: #8a8175;
+}
+.meta mat-icon { font-size: 15px; width: 15px; height: 15px; }

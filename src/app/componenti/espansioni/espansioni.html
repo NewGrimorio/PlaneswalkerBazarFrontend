@@ -1,0 +1,40 @@
+<div class="pagina">
+  <header class="testata">
+    <h1>Carte singole</h1>
+    <p class="sottotitolo">Scegli un'espansione per sfogliarne le carte.</p>
+  </header>
+
+  @if (caricando()) {
+    <p class="stato">Caricamento…</p>
+  } @else if (espansioni().length === 0) {
+    <p class="stato">Nessuna espansione disponibile.</p>
+  } @else {
+    <div class="griglia">
+      @for (e of espansioni(); track e.id) {
+        <a [routerLink]="['/carte-singole', e.codice]" class="tessera">
+          <div class="simbolo">
+            @if (e.iconUrl) {
+              <img [src]="e.iconUrl" [alt]="e.nome" loading="lazy">
+            } @else {
+              <mat-icon>auto_awesome</mat-icon>
+            }
+          </div>
+
+          <div class="info">
+            <span class="codice">{{ e.codice.toUpperCase() }}</span>
+            <h2>{{ e.nome }}</h2>
+            <div class="meta">
+              @if (e.dataUscita) {
+                <span><mat-icon>event</mat-icon>{{ e.dataUscita | date:'dd MMM yyyy' }}</span>
+              }
+              @if (e.numeroCarte) {
+                <span><mat-icon>style</mat-icon>{{ e.numeroCarte }} carte</span>
+              }
+            </div>
+          </div>
+        </a>
+      }
+    </div>
+  }
+  
+</div>
