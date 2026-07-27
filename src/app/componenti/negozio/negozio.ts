@@ -10,10 +10,12 @@ import { ProdottoDTO } from '../../modelli/prodotti-dto';
 import { CarrelloDTO } from '../../modelli/carrello-dto';
 import { VoceCarrelloDTO } from '../../modelli/voce-carrello-dto';
 import { MagazzinoSKUDTO } from '../../modelli/magazzino-sku-dto';
+import { CartaVetrinaDTO } from '../../modelli/carta-vetrina-dto';
 import { EspansioneDTO } from '../../modelli/espansione-dto';
 import { urlImmagine } from '../../utils/url-immagine';
 import { AuthServices } from '../../auth/auth-services';
 import { environment } from '../../../environments/environment';
+import { FormsModule } from '@angular/forms';
 
 const BASE = environment.apiUrl;
 
@@ -37,7 +39,7 @@ type Toast = { testo: string; errore: boolean } | null;
  */
 @Component({
   selector: 'app-negozio',
-  imports: [DecimalPipe, MatIconModule, RouterLink],
+  imports: [DecimalPipe, MatIconModule, RouterLink, FormsModule],
   templateUrl: './negozio.html',
   styleUrl: './negozio.css',
 })
@@ -78,6 +80,11 @@ export class Negozio {
   titolo = computed(() =>
     this.espansione()?.nome ?? this.etichette[this.tipoSel()] ?? 'Catalogo');
 
+  carte = signal<CartaVetrinaDTO[]>([]);
+  ordinamento = signal<string>('numero-asc');
+  pagina = signal(1);
+  readonly PER_PAGINA = 20;
+  
   constructor() {
     // data (categoria) e paramMap (codice set) insieme: navigando tra
     // rotte sorelle il componente e' RIUSATO e il costruttore non gira
@@ -110,8 +117,11 @@ export class Negozio {
   }
 
   /**
-   * Set -> prodotti del set. Due chiamate in sequenza: la prima serve
-   * anche a dare il nome vero alla pagina (il codice in URL non basta).
+   * Set -> vetrina carte del set. Due chiamate in sequenza: la prima
+   * serve anche a dare il nome vero alla pagina (il codice in URL non
+   * basta). La seconda usa l'endpoint dedicato: solo SINGLE, digitali
+   * escluse e prezzo "a partire da" gia' aggregato — il filtro
+   * client-side non serve piu'.
    */
   private caricaEspansione(codice: string): void {
     this.caricando.set(true);
@@ -119,30 +129,33 @@ export class Negozio {
       .subscribe({
         next: e => {
           this.espansione.set(e);
-          this.http.get<ProdottoDTO[]>(`${BASE}/public/prodotti/espansione/${e.id}`)
+          this.http.get<CartaVetrinaDTO[]>(`${BASE}/public/prodotti/espansione/${e.id}/singole`)
             .subscribe({
               next: l => {
-                // L'endpoint pubblico non filtra per tipo (quello con
-                // ?tipo= esiste solo lato admin): qui teniamo le sole
-                // singole, perche' un set contiene anche buste e box.
-                this.prodotti.set(l.filter(p => p.tipoProdotto === 'SINGLE'));
+                this.carte.set(l);
+                this.pagina.set(1);      // set nuovo -> si riparte dalla prima pagina
                 this.caricando.set(false);
               },
-              error: () => { this.prodotti.set([]); this.caricando.set(false); }
+              error: () => { this.carte.set([]); this.caricando.set(false); }
             });
         },
         error: () => {
           this.espansione.set(null);
-          this.prodotti.set([]);
+          this.carte.set([]);
           this.caricando.set(false);
           this.toast('Espansione non trovata', true);
         }
       });
   }
 
-  apri(p: ProdottoDTO): void {
-    // Il dettaglio (slug) porta gli skus: senza, non c'e' nulla da aggiungere.
-    this.prodottoS.getBySlug(p.slug).subscribe({
+  /**
+   * Apre il dettaglio (modale). Prende lo SLUG, non il DTO: serve sia
+   * alla griglia carte (CartaVetrinaDTO) sia a quella generica
+   * (ProdottoDTO), e il dettaglio via getBySlug porta gli skus —
+   * senza, non c'e' nulla da aggiungere.
+   */
+  apri(slug: string): void {
+    this.prodottoS.getBySlug(slug).subscribe({
       next: dett => this.prodottoAperto.set(dett),
       error: err => this.toast(err?.error?.msg ?? 'Prodotto non disponibile', true)
     });
@@ -219,4 +232,62 @@ export class Negozio {
     if (isPlatformBrowser(this.platformId))
       setTimeout(() => this.messaggio.set(null), 2800);
   }
+
+
+  /** Rango per l'ordinamento C -> M; sconosciute in coda. */
+  private readonly RANGO_RARITA: Record<string, number> = {
+    COMMON: 0, UNCOMMON: 1, RARE: 2, MYTHIC: 3, SPECIAL: 4, BONUS: 5,
+  };
+
+  /** Etichette leggibili sulla tessera. */
+  readonly ETICHETTA_RARITA: Record<string, string> = {
+    COMMON: 'Comune', UNCOMMON: 'Non comune', RARE: 'Rara',
+    MYTHIC: 'Mitica', SPECIAL: 'Speciale', BONUS: 'Bonus',
+  };
+
+  /** Numero di collezione: ordinamento NATURALE ("2" < "10"; "382z" dopo "382"). */
+  private numColl(n: string): number {
+    const m = n.match(/\d+/);
+    return m ? parseInt(m[0], 10) : Number.MAX_SAFE_INTEGER;
+  }
+  /** Prezzi null sempre IN CODA, in entrambe le direzioni. */
+  private prezzoOrd(p: number | null, vuoto: number): number {
+    return p == null ? vuoto : p;
+  }
+
+  // Mappa di comparatori: niente switch, coerente con lo stile del progetto.
+  private readonly confronti: Record<string, (a: CartaVetrinaDTO, b: CartaVetrinaDTO) => number> = {
+    'nome-asc':    (a, b) => a.nome.localeCompare(b.nome),
+    'nome-desc':   (a, b) => b.nome.localeCompare(a.nome),
+    'prezzo-asc':  (a, b) => this.prezzoOrd(a.prezzoDa, Infinity) - this.prezzoOrd(b.prezzoDa, Infinity),
+    'prezzo-desc': (a, b) => this.prezzoOrd(b.prezzoDa, -Infinity) - this.prezzoOrd(a.prezzoDa, -Infinity),
+    'numero-asc':  (a, b) => this.numColl(a.numeroCollezione) - this.numColl(b.numeroCollezione)
+                           || a.numeroCollezione.localeCompare(b.numeroCollezione),
+    'numero-desc': (a, b) => this.numColl(b.numeroCollezione) - this.numColl(a.numeroCollezione)
+                           || b.numeroCollezione.localeCompare(a.numeroCollezione),
+    'rarita-asc':  (a, b) => (this.RANGO_RARITA[a.rarita] ?? 99) - (this.RANGO_RARITA[b.rarita] ?? 99),
+    'rarita-desc': (a, b) => (this.RANGO_RARITA[b.rarita] ?? 99) - (this.RANGO_RARITA[a.rarita] ?? 99),
+  };
+
+  ordinate = computed(() => {
+    const cmp = this.confronti[this.ordinamento()] ?? this.confronti['numero-asc'];
+    return [...this.carte()].sort(cmp);
+  });
+  totalePagine = computed(() =>
+    Math.max(1, Math.ceil(this.ordinate().length / this.PER_PAGINA)));
+  visibili = computed(() => {
+    const da = (this.pagina() - 1) * this.PER_PAGINA;
+    return this.ordinate().slice(da, da + this.PER_PAGINA);
+  });
+
+  cambiaOrdinamento(v: string): void {
+    this.ordinamento.set(v);
+    this.pagina.set(1);
+  }
+  vaiPagina(p: number): void {
+    if (p < 1 || p > this.totalePagine()) return;
+    this.pagina.set(p);
+    if (isPlatformBrowser(this.platformId)) window.scrollTo({ top: 0 });
+  }
+
 }

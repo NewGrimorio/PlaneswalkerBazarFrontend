@@ -1,0 +1,89 @@
+<div class="pagina">
+  @if (prodotto(); as p) {
+    @if (p.stampa; as s) {
+      <a [routerLink]="['/carte-singole', s.espansioneCodice]" class="briciola">
+        <mat-icon>arrow_back</mat-icon> {{ s.espansioneNome }}
+      </a>
+    }
+
+    <div class="corpo">
+      <div class="colonna-img">
+        @if (urlImmagine(p.imageUrl); as u) {
+          <img [src]="u" [alt]="p.nome" class="carta-img">
+        }
+      </div>
+
+      <div class="colonna-info">
+        <h1>{{ p.carta?.nome ?? p.nome }}</h1>
+        @if (p.stampa; as s) {
+          <p class="meta">
+            {{ s.espansioneNome }} · #{{ s.numeroCollezione }} · {{ s.rarita }}
+            @if (s.artista) { · <mat-icon class="mini">brush</mat-icon> {{ s.artista }} }
+          </p>
+        }
+
+        @if (p.carta; as c) {
+          <div class="oracle">
+            <p class="riga-tipo">
+              <span>{{ c.tipoRiga }}</span>
+              @if (c.costoMana) {
+                <span class="mana" [innerHTML]="c.costoMana | simboliMana"></span>
+              }
+            </p>
+            @if (c.testoOracle) {
+              <p class="testo" [innerHTML]="c.testoOracle | simboliMana"></p>
+            }
+            @if (c.forza || c.costituzione) {
+              <p class="ft">{{ c.forza }}/{{ c.costituzione }}</p>
+            }
+          </div>
+
+          @if (legalita().length > 0) {
+            <h2>Legalità</h2>
+            <ul class="legalita">
+              @for (l of legalita(); track l.formato) {
+                <li>
+                  <span class="stato-badge" [class]="l.stato">
+                    {{ STATO_LEGALE[l.stato] ?? l.stato }}
+                  </span>
+                  {{ l.formato }}
+                </li>
+              }
+            </ul>
+          }
+        }
+
+        <h2>Disponibili in negozio</h2>
+        @if (p.skus && p.skus.length > 0) {
+          <ul class="varianti">
+            @for (v of p.skus; track v.id) {
+              <li>
+                <div class="v-info">
+                  <strong>{{ v.prezzo | number:'1.2-2' }} €</strong>
+                  <small>{{ v.finitura }} · {{ v.condizione }} · {{ v.lingua.toUpperCase() }}
+                    @if (v.disponibile) { · {{ v.quantita }} pz }
+                  </small>
+                </div>
+                <button type="button" class="btn-primario piccolo"
+                        [disabled]="!v.disponibile" (click)="aggiungi(v)">
+                  {{ v.disponibile ? 'Aggiungi' : 'Esaurito' }}
+                </button>
+              </li>
+            }
+          </ul>
+          @if (!authS.isAutentificated()) {
+            <p class="nota"><a routerLink="/login">Accedi</a> per completare l'acquisto.</p>
+          }
+        } @else {
+          <p class="stato">Nessuna variante disponibile al momento.</p>
+        }
+      </div>
+    </div>
+  } @else {
+    <p class="stato">Caricamento…</p>
+  }
+
+  @if (messaggio(); as m) {
+    <div class="toast" [class.errore]="m.errore">{{ m.testo }}</div>
+  }
+</div>

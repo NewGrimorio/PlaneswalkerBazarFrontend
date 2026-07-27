@@ -1,4 +1,6 @@
 import { MagazzinoSKUDTO } from './magazzino-sku-dto';
+import { StampaDTO } from './stampa-dto';
+import { CartaDTO } from './carta-dto';
 
 export interface ProdottoDTO {
   id: number;
@@ -17,4 +19,7 @@ export interface ProdottoDTO {
    * assenti nelle liste (listByTipo). Per questo sono opzionali.
    */
   skus?: MagazzinoSKUDTO[];
+  stampa?: StampaDTO;
+  carta?: CartaDTO;
+  
 }

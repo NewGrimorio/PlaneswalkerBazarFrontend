@@ -6,12 +6,31 @@
   padding: 24px 20px 60px;
 }
 
-/* --- Testata (i filtri sono nella nav della shell) --- */
+/* --- Testata --- */
 .testata h1 { margin: 0 0 20px; font-size: 1.8rem; color: #2a1f16; }
+.briciola {
+  display: inline-flex; align-items: center; gap: 4px;
+  color: #a8792e; text-decoration: none; font-size: .88rem; margin-bottom: 8px;
+}
+.briciola:hover { text-decoration: underline; }
+.briciola mat-icon { font-size: 18px; width: 18px; height: 18px; }
 
 /* --- Layout a due colonne: vetrina + carrello --- */
 .corpo { display: grid; grid-template-columns: 1fr 320px; gap: 28px; align-items: start; }
 @media (max-width: 860px) { .corpo { grid-template-columns: 1fr; } }
+
+/* --- Barra ordinamento (vetrina carte) --- */
+.barra-ordina {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; gap: 12px; flex-wrap: wrap;
+}
+.barra-ordina label { font-size: .85rem; color: #6b6355; }
+.barra-ordina select {
+  margin-left: 8px; padding: 6px 10px;
+  border: 1px solid #e0d7c6; border-radius: 6px; background: #fff;
+  font: inherit; color: #2a1f16;
+}
+.conta { font-size: .82rem; color: #a09786; }
 
 /* --- Vetrina --- */
 .griglia {
@@ -41,6 +60,23 @@
 .thumb mat-icon { color: #c9bfae; transform: scale(1.6); }
 .card h3 { margin: 0; font-size: .92rem; line-height: 1.25; }
 .card small { color: #8a8175; font-size: .78rem; }
+
+/* --- Tessera carta: numero/rarita' e prezzo "a partire da" --- */
+.meta-carta { color: #a09786; font-size: .74rem; display: block; }
+.prezzo-da { display: block; margin-top: 4px; font-weight: 700; color: #a8792e; font-size: .9rem; }
+.prezzo-nd { display: block; margin-top: 4px; color: #c0392b; font-size: .78rem; font-style: italic; }
+
+/* --- Paginazione --- */
+.paginazione {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  margin-top: 20px; font-size: .9rem; color: #6b6355;
+}
+.paginazione button {
+  width: 36px; height: 36px; border-radius: 8px; cursor: pointer;
+  border: 1px solid #e0d7c6; background: #fff; font-size: 1.1rem;
+}
+.paginazione button:hover:not(:disabled) { border-color: #d4a24c; color: #a8792e; }
+.paginazione button:disabled { opacity: .4; cursor: not-allowed; }
 
 /* --- Carrello --- */
 .carrello {
@@ -129,6 +165,15 @@
 .chiudi { position: absolute; top: 12px; right: 12px; }
 .set { color: #a8792e; font-size: .85rem; margin: 0 0 8px; }
 .descr { color: #6b6355; font-size: .88rem; margin: 0 0 16px; }
+
+.btn-dettaglio {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: #a8792e; font-weight: 600; font-size: .88rem;
+  text-decoration: none; margin-bottom: 14px;
+}
+.btn-dettaglio:hover { text-decoration: underline; }
+.btn-dettaglio mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
 .varianti { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 .varianti li {
   display: flex; align-items: center; justify-content: space-between;
@@ -147,9 +192,3 @@
   box-shadow: 0 6px 20px rgba(0,0,0,.25);
 }
 .toast.errore { background: #c0392b; color: #fff; }
-.briciola {
-  display: inline-flex; align-items: center; gap: 4px;
-  color: #a8792e; text-decoration: none; font-size: .88rem; margin-bottom: 8px;
-}
-.briciola:hover { text-decoration: underline; }
-.briciola mat-icon { font-size: 18px; width: 18px; height: 18px; }

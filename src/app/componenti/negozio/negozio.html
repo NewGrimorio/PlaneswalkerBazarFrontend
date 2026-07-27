@@ -13,12 +13,70 @@
     <section class="vetrina">
       @if (caricando()) {
         <p class="stato">Caricamento…</p>
+      } @else if (espansione()) {
+
+        <!-- ============ VETRINA CARTE DEL SET ============ -->
+        <div class="barra-ordina">
+          <label>Ordina per
+            <select [ngModel]="ordinamento()" (ngModelChange)="cambiaOrdinamento($event)">
+              <option value="numero-asc">Numero (crescente)</option>
+              <option value="numero-desc">Numero (decrescente)</option>
+              <option value="nome-asc">Nome (A → Z)</option>
+              <option value="nome-desc">Nome (Z → A)</option>
+              <option value="prezzo-asc">Prezzo (dal più basso)</option>
+              <option value="prezzo-desc">Prezzo (dal più alto)</option>
+              <option value="rarita-asc">Rarità (C → M)</option>
+              <option value="rarita-desc">Rarità (M → C)</option>
+            </select>
+          </label>
+          <span class="conta">{{ ordinate().length }} carte</span>
+        </div>
+
+        @if (ordinate().length === 0) {
+          <p class="stato">Nessuna carta disponibile in questo set.</p>
+        } @else {
+          <div class="griglia">
+            @for (c of visibili(); track c.id) {
+              <article class="card" (click)="apri(c.slug)">
+                <div class="thumb">
+                  @if (urlImmagine(c.imageUrl); as u) {
+                    <img [src]="u" [alt]="c.nome" loading="lazy">
+                  } @else {
+                    <mat-icon>image</mat-icon>
+                  }
+                </div>
+                <h3>{{ c.nome }}</h3>
+                <small class="meta-carta">
+                  #{{ c.numeroCollezione }} · {{ ETICHETTA_RARITA[c.rarita] ?? c.rarita }}
+                </small>
+                @if (c.prezzoDa != null) {
+                  <span class="prezzo-da">da {{ c.prezzoDa | number:'1.2-2' }} €</span>
+                } @else {
+                  <span class="prezzo-nd">Non disponibile</span>
+                }
+              </article>
+            }
+          </div>
+
+          @if (totalePagine() > 1) {
+            <nav class="paginazione">
+              <button type="button" (click)="vaiPagina(pagina() - 1)"
+                      [disabled]="pagina() === 1">‹</button>
+              <span>Pagina {{ pagina() }} di {{ totalePagine() }}</span>
+              <button type="button" (click)="vaiPagina(pagina() + 1)"
+                      [disabled]="pagina() === totalePagine()">›</button>
+            </nav>
+          }
+        }
+
       } @else if (prodotti().length === 0) {
         <p class="stato">Nessun prodotto in questa categoria.</p>
       } @else {
+
+        <!-- ============ GRIGLIA GENERICA (bustine, box, ...) ============ -->
         <div class="griglia">
           @for (p of prodotti(); track p.id) {
-            <article class="card" (click)="apri(p)">
+            <article class="card" (click)="apri(p.slug)">
               <div class="thumb">
                 @if (urlImmagine(p.imageUrl); as u) {
                   <img [src]="u" [alt]="p.nome" loading="lazy">
@@ -104,7 +162,7 @@
     </aside>
   </div>
 
-  <!-- DETTAGLIO PRODOTTO + VARIANTI -->
+  <!-- DETTAGLIO PRODOTTO + VARIANTI (modale) -->
   @if (prodottoAperto(); as p) {
     <div class="modale" (click)="chiudi()">
       <div class="pannello" (click)="$event.stopPropagation()">
@@ -114,6 +172,12 @@
         <h2>{{ p.nome }}</h2>
         @if (p.espansioneNome) { <p class="set">{{ p.espansioneNome }}</p> }
         @if (p.descrizione) { <p class="descr">{{ p.descrizione }}</p> }
+
+        @if (p.tipoProdotto === 'SINGLE') {
+          <a class="btn-dettaglio" [routerLink]="['/carta', p.slug]">
+            <mat-icon>zoom_in</mat-icon> Dettaglio carta
+          </a>
+        }
 
         @if (p.skus && p.skus.length > 0) {
           <ul class="varianti">
