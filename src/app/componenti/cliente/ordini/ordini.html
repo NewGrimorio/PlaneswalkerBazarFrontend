@@ -1,0 +1,101 @@
+<div class="pagina">
+  <a routerLink="/account" class="briciola">
+    <mat-icon>arrow_back</mat-icon> Il mio account
+  </a>
+  <h1>I miei ordini</h1>
+
+  @if (caricando()) {
+    <p class="stato">Caricamento…</p>
+  } @else if (ordini().length === 0) {
+    <p class="stato">
+      Non hai ancora effettuato ordini.
+      <a routerLink="/carte-singole" class="link">Vai al catalogo</a>.
+    </p>
+  } @else {
+    <ul class="lista">
+      @for (o of ordini(); track o.id) {
+        <li class="ordine">
+          <div class="riga" (click)="apri(o)">
+            <div class="col-id">
+              <strong>Ordine #{{ o.id }}</strong>
+              <small>{{ o.creationDate | date:'dd/MM/yyyy HH:mm' }}</small>
+            </div>
+            <span class="chip stato-{{ o.stato.toLowerCase() }}">
+              {{ ETICHETTA_STATO[o.stato] ?? o.stato }}
+            </span>
+            <span class="col-tot">{{ o.totale | number:'1.2-2' }} €</span>
+            <mat-icon class="freccia">
+              {{ apertoId() === o.id ? 'expand_less' : 'expand_more' }}
+            </mat-icon>
+          </div>
+
+          @if (apertoId() === o.id) {
+            <div class="dettaglio">
+              @if (dettaglio(); as d) {
+                <h3>Articoli</h3>
+                <ul class="voci">
+                  @for (v of d.voci; track v.id) {
+                    <li>
+                      <span>{{ v.descrizione }} <small>× {{ v.quantita }}</small></span>
+                      <span>{{ v.prezzoUnitario | number:'1.2-2' }} €</span>
+                    </li>
+                  }
+                </ul>
+
+                <div class="riepilogo">
+                  <span>Spedizione {{ d.tipoSpedizione }}</span>
+                  <span>
+                    @if (d.speseSpedizione > 0) {
+                      {{ d.speseSpedizione | number:'1.2-2' }} €
+                    } @else { offerta }
+                  </span>
+                </div>
+
+                <h3>Spedito a</h3>
+                <p class="indirizzo">
+                  {{ d.spedDestinatario }}<br>
+                  {{ d.spedVia }} {{ d.spedCivico }}, {{ d.spedCap }} {{ d.spedCitta }}
+                </p>
+              } @else {
+                <p class="stato">Caricamento dettaglio…</p>
+              }
+
+              @if (timeline().length > 0) {
+                <h3>Stato</h3>
+                <ol class="timeline">
+                  @for (t of timeline(); track t.id) {
+                    <li>
+                      <span class="punto"></span>
+                      <div>
+                        <strong>{{ ETICHETTA_STATO[t.statoA] ?? t.statoA }}</strong>
+                        <small>{{ t.creationDate | date:'dd/MM/yyyy HH:mm' }}</small>
+                      </div>
+                    </li>
+                  }
+                </ol>
+              }
+
+              @if (azioniDi(o).length > 0) {
+                <div class="azioni">
+                  @for (a of azioniDi(o); track a.path) {
+                    <button type="button"
+                            [class.distruttiva]="a.distruttiva"
+                            [disabled]="inCorso() === o.id"
+                            (click)="esegui(o, a)">
+                      <mat-icon>{{ a.icona }}</mat-icon>
+                      {{ a.label }}
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </li>
+      }
+    </ul>
+  }
+
+  @if (messaggio(); as m) {
+    <div class="toast" [class.errore]="m.errore">{{ m.testo }}</div>
+  }
+</div>

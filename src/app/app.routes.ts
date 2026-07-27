@@ -6,7 +6,7 @@ import { UserLayout } from './componenti/user-layout/user-layout';
 import { Espansioni } from './componenti/espansioni/espansioni';
 import { Negozio } from './componenti/negozio/negozio';
 import { CartaDettaglio } from './componenti/carta-dettaglio/carta-dettaglio';
-import { Checkout } from './componenti/checkout/checkout';
+import { Checkout } from './componenti/cliente/checkout/checkout';
 import { AdminLayout } from './componenti/admin-layout/admin-layout';
 import { Dashboard } from './componenti/admin/dashboard/dashboard';
 import { SyncScryfall } from './componenti/admin/sync-scryfall/sync-scryfall';
@@ -18,6 +18,8 @@ import { Recensioni } from './componenti/admin/recensioni/recensioni';
 import { Account } from './componenti/admin/account/account';
 import { adminGuard } from './auth/admin-guard';
 import { autentificateGuard } from './auth/autentificate-guard';
+import { AccountCliente } from './componenti/cliente/account/account-cliente';
+import { OrdiniCliente } from './componenti/cliente/ordini/ordini';
 
 export const routes: Routes = [
 
@@ -38,6 +40,9 @@ export const routes: Routes = [
         component: UserLayout,
         children: [
             { path: '', component: Homepage },
+
+            { path: 'account', component: AccountCliente, canActivate: [autentificateGuard] },
+            { path: 'account/ordini', component: OrdiniCliente, canActivate: [autentificateGuard] },
 
             // Carte singole: due passi — griglia set, poi carte del set
             { path: 'carte-singole',         component: Espansioni },

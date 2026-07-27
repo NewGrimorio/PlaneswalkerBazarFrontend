@@ -1,0 +1,71 @@
+/* Sfondo a tutta larghezza: l'illustrazione del planeswalker verso il
+   bazar, con velo scuro per la leggibilita'. FALLBACK: se l'immagine
+   manca, resta il gradiente bruno — la pagina regge. */
+:host {
+  display: block;
+  min-height: calc(100vh - 72px);
+  background:
+    linear-gradient(rgba(21, 15, 11, .74), rgba(21, 15, 11, .84)),
+    url('/sfondo-account.webp') center / cover no-repeat,
+    linear-gradient(135deg, #2c2118 0%, #150f0b 100%);
+}
+
+.pagina { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+
+/* Testi chiari sul fondo scuro */
+.pagina h1 { margin: 0 0 4px; font-size: 1.8rem; color: #f5e6c8; }
+.sottotitolo { color: #cbbfae; margin: 0 0 28px; font-size: .95rem; }
+.sottotitolo strong { color: #d4a24c; }
+
+.griglia {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 18px;
+}
+
+/* Le tessere restano chiare: "cartigli" che galleggiano sull'illustrazione */
+.tessera {
+  display: block;
+  background: #fdfbf6;
+  border: 1px solid rgba(212, 162, 76, .35);
+  border-radius: 12px;
+  padding: 20px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+  transition: transform .15s, box-shadow .15s, border-color .15s;
+}
+a.tessera:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .45);
+  border-color: #d4a24c;
+}
+
+.icona-tessera {
+  color: #a8792e;
+  font-size: 34px; width: 34px; height: 34px;
+  margin-bottom: 10px;
+  transition: color .15s;
+}
+a.tessera:hover .icona-tessera { color: #d4a24c; }
+
+.tessera h2 {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin: 0 0 6px; font-size: 1.05rem; color: #2a1f16;
+}
+.tessera p { margin: 0; font-size: .85rem; color: #8a8175; line-height: 1.4; }
+
+/* Saldo in evidenza, come il Wallet di Cardtrader */
+.saldo-pill {
+  background: #d4a24c; color: #1a1410;
+  border-radius: 999px; padding: 2px 10px;
+  font-size: .78rem; font-weight: 700;
+}
+
+/* Sezione non ancora costruita: si vede, non naviga */
+.tessera.disattiva { cursor: default; opacity: .8; }
+.chip-arrivo {
+  background: #f2ede3; color: #a09786;
+  border-radius: 4px; padding: 2px 8px;
+  font-size: .68rem; font-weight: 700; text-transform: uppercase;
+}

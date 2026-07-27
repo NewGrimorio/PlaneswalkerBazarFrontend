@@ -1,0 +1,36 @@
+<div class="pagina">
+  <h1>Il mio account</h1>
+  <p class="sottotitolo">
+    Ciao <strong>{{ authS.utente()?.username }}</strong> — da qui gestisci
+    profilo, credito e ordini.
+  </p>
+
+  <div class="griglia">
+    @for (s of sezioni; track s.link) {
+      @if (s.pronta) {
+        <a [routerLink]="s.link" class="tessera">
+          <mat-icon class="icona-tessera">{{ s.icona }}</mat-icon>
+          <h2>
+            {{ s.titolo }}
+            @if (s.mostraSaldo && saldo() !== null) {
+              <span class="saldo-pill">{{ saldo() | number:'1.2-2' }} €</span>
+            }
+          </h2>
+          <p>{{ s.descrizione }}</p>
+        </a>
+      } @else {
+        <div class="tessera disattiva">
+          <mat-icon class="icona-tessera">{{ s.icona }}</mat-icon>
+          <h2>
+            {{ s.titolo }}
+            @if (s.mostraSaldo && saldo() !== null) {
+              <span class="saldo-pill">{{ saldo() | number:'1.2-2' }} €</span>
+            }
+            <span class="chip-arrivo">In arrivo</span>
+          </h2>
+          <p>{{ s.descrizione }}</p>
+        </div>
+      }
+    }
+  </div>
+</div>

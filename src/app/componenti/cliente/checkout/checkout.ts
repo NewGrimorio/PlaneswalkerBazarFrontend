@@ -3,14 +3,15 @@ import { isPlatformBrowser, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { Carrello } from '../../services/carrello';
-import { Portafoglio } from '../../services/portafoglio';
-import { Indirizzo } from '../../services/indirizzo';
-import { Ordine } from '../../services/ordine';
-import { CarrelloDTO } from '../../modelli/carrello-dto';
-import { PortafoglioDTO } from '../../modelli/portafoglio-dto';
-import { IndirizzoDTO } from '../../modelli/indirizzo-dto';
-import { OrdineDTO } from '../../modelli/ordine-dto';
+import { Carrello } from '../../../services/carrello';
+import { Portafoglio } from '../../../services/portafoglio';
+import { Indirizzo } from '../../../services/indirizzo';
+import { Ordine } from '../../../services/ordine';
+import { CarrelloDTO } from '../../../modelli/carrello-dto';
+import { PortafoglioDTO } from '../../../modelli/portafoglio-dto';
+import { IndirizzoDTO } from '../../../modelli/indirizzo-dto';
+import { OrdineDTO } from '../../../modelli/ordine-dto';
+
 
 type Toast = { testo: string; errore: boolean } | null;
 

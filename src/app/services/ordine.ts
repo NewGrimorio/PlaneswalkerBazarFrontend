@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { OrdineDTO } from '../modelli/ordine-dto';
+import {StoricoStatoOrdineDTO} from '../modelli/storico-stato-ordine-dto';
 
 const BASE = environment.apiUrl;
 
@@ -22,7 +23,24 @@ export class Ordine {
         { indirizzoId, tipoSpedizione });
   }
 
+
+  /** Lista dei miei ordini, dal piu' recente (senza voci). */
   list(): Observable<OrdineDTO[]> {
     return this.http.get<OrdineDTO[]>(`${BASE}/ordini`);
   }
+
+  /** Dettaglio con le voci (ownership check nel service backend). */
+  dettaglio(id: number): Observable<OrdineDTO> {
+    return this.http.get<OrdineDTO>(`${BASE}/ordini/${id}`);
+  }
+
+  timeline(id: number): Observable<StoricoStatoOrdineDTO[]> {
+    return this.http.get<StoricoStatoOrdineDTO[]>(`${BASE}/ordini/${id}/timeline`);
+  }
+
+  /** Transizioni cliente: path kebab-case, identita' dal token. */
+  transizione(id: number, azione: string): Observable<OrdineDTO> {
+    return this.http.post<OrdineDTO>(`${BASE}/ordini/${id}/${azione}`, null);
+  }
+
 }
