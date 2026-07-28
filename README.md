@@ -49,14 +49,17 @@ src/app/
 │   └── autentificate-guard.ts
 ├── interceptors/
 │   └── auth-interceptor.ts
-├── services/              un service per area (utente, carrello, ordine, …)
+├── services/              un service per area (utente, carrello, ordine, recensione, …)
 ├── modelli/               interfacce dei DTO (in italiano)
 ├── utils/
 │   └── url-immagine.ts
 └── componenti/
     ├── homepage/ login/ registrazione/
-    ├── negozio/ checkout/          vetrina e acquisto (temporanei)
-    ├── admin-layout/               sidebar + topbar + <router-outlet>
+    ├── negozio/ checkout/           vetrina per categoria/set e acquisto
+    ├── cliente/
+    │   ├── account/                 profilo, avatar, CRUD indirizzi
+    │   └── ordini/                  "I miei ordini": dettaglio, timeline, reso, recensioni
+    ├── admin-layout/                sidebar + topbar + <router-outlet>
     └── admin/
         ├── dashboard/ sync-scryfall/ prodotti/ magazzino/
         └── ordini/ movimenti/ recensioni/ account/
@@ -65,15 +68,14 @@ src/app/
 Convenzione: cartelle `componenti/` e `modelli/` in italiano, `services/` in inglese;
 selettori con prefisso `app-`.
 
-### Rotte
+### Aree
 
-| Path | Componente | Accesso |
+| Area | Accesso | Note |
 |---|---|---|
-| `/` | `Homepage` | pubblico |
-| `/login`, `/registrazione` | `Login`, `Registrazione` | pubblico |
-| `/negozio`, `/checkout` | `Negozio`, `Checkout` | `autentificateGuard` |
-| `/admin/**` | `AdminLayout` + figli | `adminGuard` (anche `canActivateChild`) |
-| `**` | → `/` | — |
+| Homepage, login, registrazione | pubblico | registrazione con auto-login |
+| Negozio (categorie: bustine, box, mazzi, lotti, sigillato, accessori; `/carte-singole/:codice` per i set) | catalogo pubblico, carrello autenticato | il tipo arriva da `route.data`, riuso del componente via `combineLatest` |
+| Area cliente (account, ordini) | `autentificateGuard` | |
+| `/admin/**` | `adminGuard` (anche `canActivateChild`) | CSS scoped sotto `app-admin-layout` |
 
 ---
 
@@ -83,116 +85,68 @@ Il modello è **access token in memoria + refresh in cookie `HttpOnly`**: nessun
 in `localStorage`, quindi nulla di leggibile da JavaScript di terze parti.
 
 `AuthServices` è l'unica fonte di verità: espone il signal `utente` (null = ospite) e
-custodisce l'access token in un campo privato, letto solo dall'interceptor.
-
-### Il bootstrap di sessione
-
-Al primo caricamento nel browser, un `provideAppInitializer` avvia una `/refresh` e ne
-deposita la `Promise` in `AuthServices`. Il punto delicato — imparato sul campo — è che
-**gli initializer di Angular girano in parallelo**, e con SSR + hydration la *initial
-navigation* del router è essa stessa un initializer: attendere lì dentro non basta.
-
-Per questo l'attesa vive **nei guard**, cioè dentro chi deve davvero decidere:
-
-```typescript
-await authServices.pronta();   // la sessione ha avuto la sua occasione
-if (authServices.isRoleAdmin()) return true;
-```
-
-Senza quell'`await`, un F5 su una pagina admin rimbalzava su login e poi tornava
-indietro. Le pagine pubbliche invece non aspettano nessuno.
-
-### L'interceptor
-
-Tre comportamenti, ognuno con la sua ragione:
-
-- **In SSR è un passacarte.** Il server non ha sessione e non deve fingerla; in più
-  la variabile di modulo che traccia il refresh sarebbe *condivisa tra richieste di
-  utenti diversi*.
-- **Una sola rotazione condivisa.** Se più chiamate ricevono 401 nello stesso istante,
-  una sola esegue il refresh e le altre si accodano (`shareReplay(1)`), poi riprovano
-  col token nuovo.
-- **`/api/auth` non è tutto uguale.** Login, refresh, registrazione e logout sono
-  pubblici e un loro 401 è una risposta *definitiva*; tutto il resto — `/me` compreso —
-  riceve il Bearer ed è soggetto a retry.
+custodisce l'access token in un campo privato, letto solo dall'interceptor. Al primo
+caricamento nel browser, un `provideAppInitializer` avvia una `/refresh` che ripristina
+la sessione; `aggiornaSessione` propaga gli aggiornamenti live (es. l'avatar dopo
+l'upload).
 
 ---
 
-## SSR: regole di sopravvivenza
+## Flussi cliente
 
-Il codice gira in due ambienti, quindi ogni accesso a `window`, `document` o
-`localStorage` va protetto:
+### "I miei ordini" (`componenti/cliente/ordini`)
 
-```typescript
-if (isPlatformBrowser(this.platformId)) { /* solo browser */ }
-```
+Lista con chip di stato, dettaglio a scomparsa che carica on-demand voci
+(**snapshot** del checkout + `prodottoId`/`prodottoNome` come identità viva),
+timeline dei cambi di stato — **note delle transizioni incluse**, come il motivo del
+reso — e le azioni legali per lo stato corrente. Le azioni rispecchiano i `Set.of`
+del backend: qui si *nascondono* quelle illegali per gentilezza, la verità resta il
+server.
 
-I dati pubblici (catalogo prodotti) caricano anche in SSR; quelli che richiedono il
-token (carrello, portafoglio, pannello admin) si popolano solo nel browser — in SSR la
-pagina resta un guscio che il client completa.
+- **Richiedi reso**: apre un `<dialog>` nativo con la motivazione obbligatoria
+  (max 300, contatore). Disponibile solo entro la finestra di reso (14 giorni dalla
+  consegna, derivata dalla timeline già caricata — `RESO_GIORNI` speculare alla
+  property backend); oltre, il bottone sparisce e una riga spiega perché.
+- **Recensioni**: bottone su ordini ricevuti (`CONSEGNATO`/`RESO_RICHIESTO`/
+  `RIMBORSATO`); dialog con stelle, titolo e testo facoltativi, chip di scelta se
+  l'ordine ha più prodotti (spunta sui già recensiti), form **precompilato** in
+  modifica. Dopo l'invio, il toast avvisa della **moderazione preventiva**: la
+  recensione sarà visibile solo dopo l'approvazione, e ogni modifica torna in coda.
 
----
+### Pattern `<dialog>` nativo
 
-## Stili
-
-Il tema Material 3 è personalizzato in SCSS. Con Material 3 si usa `matButton="filled"`
-(non `mat-raised-button`) e i colori si impostano via CSS variables
-(`--mat-button-filled-container-color`), non con `color="primary"`.
-
-Gli stili del pannello admin vivono in **`src/styles/admin.css`**, importato solo da
-`styles.css`. Ogni regola è prefissata con il selettore `app-admin-layout`: essendo un
-foglio **globale** raggiunge tutta la pagina, e il prefisso serve a limitarne l'effetto
-al sottoalbero DOM del layout admin — lo storefront pubblico non ne vede nulla.
-
----
-
-## Pannello admin
-
-| Pagina | Funzione |
-|---|---|
-| **Dashboard** | Contatori azionabili (ordini da spedire, bonifici in attesa, SKU sotto scorta) |
-| **Sincronizza set** | Import da Scryfall per codice set; aggancio blueprint Cardtrader |
-| **Prodotti** | Sigillato, accessori e lotti; upload immagini |
-| **Magazzino** | Master-detail su varianti, prezzi, giacenze — con **tendenze prezzi** |
-| **Ordini / Movimenti / Recensioni** | Code di lavorazione e moderazione |
-| **Account** | Profilo e avatar dell'admin |
-
-### Tendenze prezzi (magazzino)
-
-Sulle carte singole, il bottone *Tendenze prezzi* interroga il backend e affianca a
-ogni SKU il prezzo di riferimento delle due fonti, con la variazione rispetto alla
-rilevazione precedente:
-
-- **Cardtrader** — per-SKU vero (condizione × lingua × finitura)
-- **Cardmarket** — per-finitura (la fonte non distingue la condizione: lo stesso valore
-  compare su tutte le condizioni di quella finitura)
-
-La chiamata può durare qualche secondo (il backend interroga Scryfall e Cardtrader,
-rispettando il rate limit): il bottone mostra uno spinner e resta disabilitato.
+I flussi che chiedono input (reso, recensione) usano `<dialog>` + `showModal()`:
+focus trap, ESC e backdrop gratis, niente MatDialog. Il dialog sta *sempre* nel DOM
+(chiuso è invisibile → SSR-safe, nessuna API browser fuori dai click), lo stato vive
+in signal, l'evento `(close)` pulisce anche la chiusura con ESC, e in caso di errore
+il dialog **resta aperto** con il messaggio dentro: l'utente non perde ciò che ha
+scritto.
 
 ---
 
-## UX: principi applicati
+## Area admin
 
-**Linguaggio contestuale.** Le "varianti" sono gergo da carte singole: per gli altri
-prodotti il bottone dice *Inserisci scorte*, non *Nuova variante*.
+Code di lavoro per stato, stesso schema ovunque (chip di stato → lista → azioni):
 
-**Colonne che spariscono.** Condizione e finitura non compaiono affatto sui non-SINGLE,
-invece di mostrare un "—" che occuperebbe spazio senza informare.
-
-**Errori dal backend.** I messaggi risalgono da `messaggi_sistema` → `GlobalExceptionHandler`
-→ interfaccia: nessun testo d'errore è scritto a mano nel frontend.
+- **Ordini**: da spedire, spedite, resi da rimborsare (con il **motivo del reso in
+  riga**), non consegnate, rimborsate.
+- **Recensioni**: tab primario **"Da moderare"** (`IN_ATTESA`, Approva/Rifiuta), poi
+  "Pubblicate" (Nascondi) e "Nascoste" (Ripristina) — quattro azioni, due endpoint.
+- **Movimenti**, **Magazzino**, **Prodotti**, **Sync Scryfall/Cardtrader**,
+  **Dashboard** con contatori.
 
 ---
 
-## Note di sviluppo
+## Convenzioni tecniche
 
-Angular v22 è **zoneless**: mutare una proprietà dentro un callback di `subscribe` non
-scatena il change detection. Lo stato asincrono va in un `signal`.
-
-Con Material e il control flow (`@if` / `@else`), un ramo deve contenere **un solo nodo
-proiettabile**. Icona e testo insieme dentro un `@else` producono un warning: si tiene
-il nodo nel ramo e si porta il testo fuori come interpolazione.
+- **Zoneless**: lo stato asincrono passa dai signal; mutare proprietà semplici nei
+  callback `subscribe` non triggera la change detection.
+- **SSR**: tutto ciò che tocca `localStorage`/`window`/`document` richiede
+  `isPlatformBrowser` o `afterNextRender`.
+- **Material 3**: `matButton="filled"` e token CSS
+  (`--mat-button-filled-container-color`), non `mat-raised-button`/`color="primary"`.
+- Icona e testo insieme dentro un `@else` producono un warning: si tiene il nodo nel
+  ramo e si porta il testo fuori come interpolazione.
 
 ```html
 @if (inCorso()) { <mat-spinner diameter="18" /> } @else { <mat-icon>link</mat-icon> }
@@ -203,7 +157,7 @@ il nodo nel ramo e si porta il testo fuori come interpolazione.
 
 ## Lavori aperti
 
-- Homepage definitiva: `/negozio` e `/checkout` sono pagine temporanee, e il logout
-  cliente vive ancora dentro il negozio in attesa di una topbar dedicata.
-- Dashboard admin a tema Magic, visivamente rifinita.
-- Endpoint REST per i contatori della dashboard (deliberatamente rinviato).
+- Homepage definitiva e rifinitura del flusso di checkout.
+- Dashboard admin a tema Magic, con il contatore azionabile "recensioni da moderare".
+- Pagina prodotto pubblica: recensioni approvate e statistiche già esposte dal
+  backend (`/api/public/recensioni/...`), da integrare nella vetrina.
