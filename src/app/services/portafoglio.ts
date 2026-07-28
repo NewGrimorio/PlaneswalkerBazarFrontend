@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { PortafoglioDTO } from '../modelli/portafoglio-dto';
+import { MovimentoDTO } from '../modelli/movimento-dto';
 
 const BASE = environment.apiUrl;
 
@@ -15,9 +16,16 @@ export interface RicaricaEsito {
 }
 
 /**
- * Portafoglio — FASE C: id dal token. PAYPAL accredita SUBITO il netto
- * (movimento COMPLETATO); BONIFICO resta IN_ATTESA della conferma admin.
- * Per il self-service temporaneo si usa PAYPAL.
+ * Portafoglio — FASE C: id dal token.
+ *
+ * TRE comportamenti diversi, tutti decisi dal SERVER:
+ *  - ricarica PAYPAL   -> accredito immediato del NETTO (commissione
+ *                         5% + 0,35 calcolata dal backend), COMPLETATO
+ *  - ricarica BONIFICO -> movimento IN_ATTESA: il saldo si muove solo
+ *                         alla conferma admin
+ *  - prelievo          -> decurtazione IMMEDIATA + movimento IN_ATTESA
+ *                         (cosi' un doppio click non preleva due volte);
+ *                         se l'admin rifiuta, l'importo torna indietro
  */
 @Injectable({ providedIn: 'root' })
 export class Portafoglio {
@@ -29,5 +37,16 @@ export class Portafoglio {
 
   ricarica(importo: number, metodo: string): Observable<RicaricaEsito> {
     return this.http.post<RicaricaEsito>(`${BASE}/portafoglio/ricarica`, { importo, metodo });
+  }
+
+  /** Ritiro credito sul proprio conto (ownership verificata lato server). */
+  preleva(importo: number, contoBancarioId: number): Observable<MovimentoDTO> {
+    return this.http.post<MovimentoDTO>(`${BASE}/portafoglio/prelievo`,
+        { importo, contoBancarioId });
+  }
+
+  /** Il ledger dell'utente, dal movimento piu' recente. */
+  storico(): Observable<MovimentoDTO[]> {
+    return this.http.get<MovimentoDTO[]>(`${BASE}/portafoglio/storico`);
   }
 }

@@ -1,0 +1,68 @@
+:host { display: block; }
+
+.top-venduti {
+  max-width: 900px; margin: 0 auto; padding: 28px 20px;
+  background: #fdfbf6; border: 1px solid #e8e2d6; border-radius: 14px;
+}
+
+.top-venduti header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
+}
+.top-venduti header mat-icon { color: #a8792e; }
+.top-venduti h2 { margin: 0; font-size: 1.35rem; color: #2a1f16; }
+
+/* ---------- Podio ---------- */
+.podio {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  margin-bottom: 18px;
+}
+@media (max-width: 640px) { .podio { grid-template-columns: 1fr; } }
+
+.posto {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: #fff; border: 1px solid #e8e2d6; border-radius: 10px;
+  padding: 16px 12px 14px; text-align: center;
+}
+.cornice {
+  width: 130px; height: 180px; display: flex; align-items: center;
+  justify-content: center; overflow: hidden; border-radius: 8px;
+}
+.cornice img { max-width: 100%; max-height: 100%; object-fit: contain;
+               border-radius: 8px; }
+.segnaposto {
+  width: 100%; height: 100%; display: flex; align-items: center;
+  justify-content: center; background: #f2ede3; border-radius: 8px;
+}
+.segnaposto mat-icon { font-size: 42px; width: 42px; height: 42px; color: #d4a24c; }
+
+.medaglia {
+  position: absolute; top: 10px; left: 10px;
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: #2a1f16; color: #f5e6c8; font-weight: 700; font-size: .95rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,.25);
+}
+.posto:first-child .medaglia { background: #d4a24c; color: #2a1f16; }
+
+.nome { font-size: .92rem; color: #2a1f16; line-height: 1.25; }
+.nome small { display: block; font-weight: 400; color: #a09786; font-size: .74rem; }
+.copie { font-weight: 700; color: #a8792e; font-size: .9rem; }
+
+/* ---------- Righe 4+ con barre ---------- */
+.righe { list-style: none; margin: 0; padding: 0;
+         display: flex; flex-direction: column; gap: 8px; }
+.righe li {
+  display: flex; align-items: center; gap: 12px;
+  background: #fff; border: 1px solid #e8e2d6; border-radius: 8px;
+  padding: 8px 14px;
+}
+.pos { width: 22px; font-weight: 700; color: #a09786; font-size: .9rem; }
+.info { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.nome-riga { font-size: .88rem; color: #2a1f16;
+             overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nome-riga small { color: #a09786; font-size: .74rem; margin-left: 4px; }
+.barra { height: 7px; background: #f2ede3; border-radius: 999px; overflow: hidden; }
+.barra span { display: block; height: 100%; border-radius: 999px;
+              background: linear-gradient(90deg, #d4a24c, #a8792e); }
+.copie-riga { font-weight: 700; color: #a8792e; font-size: .9rem; }

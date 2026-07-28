@@ -1,0 +1,104 @@
+<div class="pagina">
+  <a routerLink="/account" class="briciola">
+    <mat-icon>arrow_back</mat-icon> Il mio account
+  </a>
+  <h1>Le mie recensioni</h1>
+  <p class="intro">
+    Le recensioni che hai scritto sui prodotti acquistati. Prima di
+    comparire sulla pagina del prodotto passano da un controllo.
+  </p>
+
+  @if (inAttesa() > 0) {
+    <p class="avviso">
+      <mat-icon>hourglass_top</mat-icon>
+      {{ inAttesa() === 1
+          ? 'Una recensione è in attesa di approvazione.'
+          : inAttesa() + ' recensioni sono in attesa di approvazione.' }}
+    </p>
+  }
+
+  @if (caricando()) {
+    <p class="stato">Caricamento…</p>
+  } @else if (recensioni().length === 0) {
+    <div class="vuoto">
+      <mat-icon>rate_review</mat-icon>
+      <p>Non hai ancora scritto recensioni.</p>
+      <small>
+        Puoi recensire i prodotti degli ordini che hai ricevuto:
+        li trovi in <a routerLink="/account/ordini" class="link">I miei ordini</a>.
+      </small>
+    </div>
+  } @else {
+    <ul class="lista">
+      @for (r of recensioni(); track r.id) {
+        <li class="rec stato-{{ r.stato.toLowerCase() }}">
+          <div class="testa">
+            <div class="stelle">
+              @for (piena of stelle(r.voto); track $index) {
+                <mat-icon>{{ piena ? 'star' : 'star_border' }}</mat-icon>
+              }
+            </div>
+            <span class="prodotto">{{ r.prodottoNome }}</span>
+            <span class="data">{{ r.updateDate | date:'dd/MM/yyyy' }}</span>
+          </div>
+
+          @if (r.titolo) { <h3>{{ r.titolo }}</h3> }
+          @if (r.testo) { <p class="testo">{{ r.testo }}</p> }
+
+          <div class="pie">
+            <div class="stato-box">
+              <span class="chip">{{ ETICHETTA_STATO[r.stato] ?? r.stato }}</span>
+              <small>{{ SPIEGA_STATO[r.stato] }}</small>
+            </div>
+            @if (modificabile(r)) {
+              <button type="button" class="btn-testo" [disabled]="inCorso()"
+                      (click)="apriModifica(r)">
+                <mat-icon>edit</mat-icon> Modifica
+              </button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (messaggio(); as m) {
+    <div class="toast" [class.errore]="m.errore">{{ m.testo }}</div>
+  }
+
+  <!-- Stesso pattern del dialog nel dettaglio ordine: la modifica usa
+       lo stesso POST (upsert) e torna in moderazione. -->
+  <dialog #dialogModifica class="dialog" (close)="inModifica.set(null)">
+    @if (inModifica(); as r) {
+      <h2><mat-icon>rate_review</mat-icon> Modifica recensione</h2>
+      <p class="prodotto-dialog">{{ r.prodottoNome }}</p>
+      <p class="nota avviso-testo">
+        Salvando, la recensione torna in attesa di approvazione: sarà di
+        nuovo visibile dopo il controllo.
+      </p>
+
+      <div class="stelle-input" role="radiogroup" aria-label="Voto">
+        @for (n of [1, 2, 3, 4, 5]; track n) {
+          <button type="button" class="stella" [attr.aria-label]="n + ' stelle'"
+                  (click)="votoSel.set(n)">
+            <mat-icon>{{ n <= votoSel() ? 'star' : 'star_border' }}</mat-icon>
+          </button>
+        }
+      </div>
+
+      <input type="text" maxlength="150" placeholder="Titolo (facoltativo)"
+             [value]="titolo()" (input)="aggiornaTitolo($event)">
+      <textarea rows="4" maxlength="4000" placeholder="Com'è andata? (facoltativo)"
+                [value]="testo()" (input)="aggiornaTesto($event)"></textarea>
+      <div class="contatore">{{ testo().length }}/4000</div>
+
+      @if (erroreDialog(); as e) { <p class="nota errore">{{ e }}</p> }
+
+      <div class="dialog-azioni">
+        <button type="button" class="btn-secondario" (click)="chiudiModifica()">Annulla</button>
+        <button type="button" class="btn-primario"
+                [disabled]="votoSel() === 0 || inCorso()" (click)="salva()">Salva</button>
+      </div>
+    }
+  </dialog>
+</div>

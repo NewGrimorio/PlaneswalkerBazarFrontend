@@ -1,0 +1,119 @@
+<div class="pagina">
+  <a routerLink="/account" class="briciola">
+    <mat-icon>arrow_back</mat-icon> Il mio account
+  </a>
+  <h1>Conti bancari</h1>
+  <p class="intro">
+    I conti su cui ricevere il credito che ritiri dal
+    <a routerLink="/account/portafoglio" class="link">portafoglio</a>.
+    Devono essere intestati a te.
+  </p>
+
+  @if (caricando()) {
+    <p class="stato">Caricamento…</p>
+  } @else if (conti().length === 0 && !formAperto()) {
+    <div class="vuoto">
+      <mat-icon>account_balance</mat-icon>
+      <p>Non hai ancora registrato nessun conto.</p>
+      <button type="button" class="btn-primario" (click)="apriForm()">
+        <mat-icon>add</mat-icon> Aggiungi un conto
+      </button>
+    </div>
+  } @else {
+    <ul class="lista">
+      @for (c of conti(); track c.id) {
+        <li class="conto">
+          <mat-icon class="icona">account_balance</mat-icon>
+          <div class="dati">
+            <strong>{{ c.intestatario }}</strong>
+            <!-- Mascherato dal server: l'IBAN completo non esce mai -->
+            <span class="iban">{{ c.ibanMascherato }}</span>
+            @if (c.bic) { <small>BIC {{ c.bic }}</small> }
+          </div>
+          <button type="button" class="btn-icona" title="Rimuovi"
+                  [disabled]="inCorso()" (click)="chiediRimozione(c)">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </li>
+      }
+    </ul>
+
+    @if (!formAperto()) {
+      <button type="button" class="btn-secondario" (click)="apriForm()">
+        <mat-icon>add</mat-icon> Aggiungi un conto
+      </button>
+    }
+  }
+
+  <!-- Il form vive IN PAGINA, non in un dialog: qui si compone un
+       dato lungo che si incolla dall'home banking, e un modale
+       stretto renderebbe l'operazione più scomoda. -->
+  @if (formAperto()) {
+    <section class="form-conto">
+      <h2>Nuovo conto</h2>
+
+      <label class="campo">
+        <span>Intestatario</span>
+        <input type="text" maxlength="200" placeholder="Nome e cognome come sul conto"
+               [value]="intestatario()" (input)="aggiornaIntestatario($event)">
+      </label>
+
+      <label class="campo">
+        <span>IBAN</span>
+        <input type="text" placeholder="IT60 X054 2811 1010 0000 0123 456"
+               [value]="iban()" (input)="aggiornaIban($event)">
+        @if (iban().length > 0 && !ibanValido()) {
+          <small class="errore">Formato IBAN non valido.</small>
+        } @else {
+          <small class="aiuto">Puoi incollarlo con gli spazi: li togliamo noi.</small>
+        }
+      </label>
+
+      <label class="campo">
+        <span>BIC / SWIFT <em>(facoltativo)</em></span>
+        <input type="text" maxlength="11" placeholder="BPMOIT22"
+               [value]="bic()" (input)="aggiornaBic($event)">
+        @if (bic().length > 0 && !bicValido()) {
+          <small class="errore">Il BIC ha 8 o 11 caratteri alfanumerici.</small>
+        }
+      </label>
+
+      <p class="nota">
+        Un conto registrato non si può modificare: se sbagli l'IBAN,
+        rimuovi il conto e aggiungine uno nuovo — così i ritiri già
+        effettuati continuano a indicare il conto realmente usato.
+      </p>
+
+      @if (erroreForm(); as e) { <p class="nota errore">{{ e }}</p> }
+
+      <div class="azioni-form">
+        <button type="button" class="btn-secondario" (click)="chiudiForm()">Annulla</button>
+        <button type="button" class="btn-primario"
+                [disabled]="!formValido() || inCorso()" (click)="salva()">Salva conto</button>
+      </div>
+    </section>
+  }
+
+  @if (messaggio(); as m) {
+    <div class="toast" [class.errore]="m.errore">{{ m.testo }}</div>
+  }
+
+  <!-- Conferma rimozione: <dialog> nativo, Annulla per primo. -->
+  <dialog #dialogRimozione class="dialog" (close)="contoDaRimuovere.set(null)">
+    @if (contoDaRimuovere(); as c) {
+      <h2><mat-icon>delete_outline</mat-icon> Rimuovere il conto?</h2>
+      <p class="testo-dialog">
+        <strong>{{ c.ibanMascherato }}</strong> — {{ c.intestatario }}
+      </p>
+      <p class="nota">
+        Non potrai più usarlo per ritirare credito. I ritiri già
+        effettuati su questo conto restano nello storico.
+      </p>
+      <div class="dialog-azioni">
+        <button type="button" class="btn-secondario" (click)="chiudiRimozione()">Annulla</button>
+        <button type="button" class="btn-pericolo" [disabled]="inCorso()"
+                (click)="confermaRimozione()">Rimuovi</button>
+      </div>
+    }
+  </dialog>
+</div>

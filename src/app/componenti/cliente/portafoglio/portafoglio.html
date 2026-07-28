@@ -1,0 +1,173 @@
+<div class="pagina">
+  <a routerLink="/account" class="briciola">
+    <mat-icon>arrow_back</mat-icon> Il mio account
+  </a>
+  <h1>Portafoglio</h1>
+
+  <!-- Il saldo e' l'informazione principale: sta in cima, grande. -->
+  <section class="saldo-card">
+    <span class="etichetta">Credito disponibile</span>
+    @if (caricando()) {
+      <strong class="cifra">—</strong>
+    } @else {
+      <strong class="cifra">{{ saldo() | number:'1.2-2' }} €</strong>
+    }
+    <small>Usalo per pagare i tuoi ordini, oppure ritiralo sul tuo conto.</small>
+  </section>
+
+  <div class="colonne">
+    <!-- ============ RICARICA ============ -->
+    <section class="pannello">
+      <h2><mat-icon>add_card</mat-icon> Ricarica</h2>
+
+      <div class="metodi">
+        <button type="button" class="metodo" [class.attivo]="metodoRicarica() === 'PAYPAL'"
+                (click)="scegliMetodo('PAYPAL')">
+          <strong>PayPal</strong>
+          <small>Subito disponibile</small>
+        </button>
+        <button type="button" class="metodo" [class.attivo]="metodoRicarica() === 'BONIFICO'"
+                (click)="scegliMetodo('BONIFICO')">
+          <strong>Bonifico</strong>
+          <small>Dopo la verifica</small>
+        </button>
+      </div>
+
+      <label class="campo">
+        <span>Importo</span>
+        <input type="number" min="0.01" step="0.01" placeholder="0,00"
+               [value]="importoRicarica()" (input)="aggiornaImportoRicarica($event)">
+      </label>
+
+      <!-- Anteprima DICHIARATA come stima: il calcolo che vale e'
+           quello del server, esattamente come le spese di spedizione. -->
+      @if (metodoRicarica() === 'PAYPAL' && importoRicaricaNum() > 0) {
+        <div class="riepilogo">
+          <span>Commissione PayPal (5% + 0,35 €)</span>
+          <span>− {{ commissioneStimata() | number:'1.2-2' }} €</span>
+        </div>
+        <div class="riepilogo forte">
+          <span>Credito accreditato</span>
+          <span>{{ nettoStimato() | number:'1.2-2' }} €</span>
+        </div>
+        <p class="nota">Importi indicativi: il calcolo definitivo lo esegue il sistema.</p>
+      } @else if (metodoRicarica() === 'BONIFICO') {
+        <p class="nota">
+          Il credito viene accreditato quando il bonifico risulta ricevuto:
+          fino ad allora il saldo non cambia e la richiesta resta in verifica.
+        </p>
+      }
+
+      <button type="button" class="btn-primario"
+              [disabled]="!ricaricaValida() || inCorso()"
+              (click)="ricarica()">Ricarica</button>
+    </section>
+
+    <!-- ============ RITIRO ============ -->
+    <section class="pannello">
+      <h2><mat-icon>account_balance</mat-icon> Ritira credito</h2>
+
+      @if (conti().length === 0) {
+        <!-- Vuoto ONESTO: dice cosa manca e come rimediare, in un click -->
+        <p class="nota">
+          Per ritirare il credito serve un conto bancario intestato a te.
+        </p>
+        <a routerLink="/account/conti" class="btn-secondario">
+          <mat-icon>add</mat-icon> Aggiungi un conto
+        </a>
+      } @else {
+        <label class="campo">
+          <span>Conto di destinazione</span>
+          <select [value]="contoSel() ?? ''"
+                  (change)="contoSel.set(+$any($event.target).value)">
+            <option value="" disabled>Scegli un conto…</option>
+            @for (c of conti(); track c.id) {
+              <option [value]="c.id">{{ c.intestatario }} — {{ c.ibanMascherato }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="campo">
+          <span>Importo</span>
+          <input type="number" min="0.01" step="0.01" placeholder="0,00"
+                 [value]="importoPrelievo()" (input)="aggiornaImportoPrelievo($event)">
+        </label>
+        <button type="button" class="link-tutto" (click)="tuttoIlSaldo()">
+          Ritira tutto ({{ saldo() | number:'1.2-2' }} €)
+        </button>
+
+        @if (importoPrelievoNum() > saldo()) {
+          <p class="nota errore">L'importo supera il credito disponibile.</p>
+        }
+
+        <p class="nota">
+          L'importo viene scalato subito dal credito; il bonifico viene
+          eseguito dopo la verifica. Se la richiesta viene rifiutata,
+          il credito torna nel portafoglio.
+        </p>
+
+        <button type="button" class="btn-primario"
+                [disabled]="!prelievoValido() || inCorso()"
+                (click)="apriPrelievo()">Richiedi il ritiro</button>
+      }
+    </section>
+  </div>
+
+  <!-- ============ STORICO ============ -->
+  <section class="pannello storico">
+    <h2><mat-icon>receipt_long</mat-icon> Movimenti</h2>
+
+    @if (caricando()) {
+      <p class="stato">Caricamento…</p>
+    } @else if (movimenti().length === 0) {
+      <p class="stato">Nessun movimento: il tuo portafoglio è appena nato.</p>
+    } @else {
+      <ul class="movimenti">
+        @for (m of movimenti(); track m.id) {
+          <li>
+            <div class="descr">
+              <strong>{{ ETICHETTA_TIPO[m.tipo] ?? m.tipo }}</strong>
+              @if (m.descrizione) { <small>{{ m.descrizione }}</small> }
+              <small class="data">{{ m.creationDate | date:'dd/MM/yyyy HH:mm' }}</small>
+            </div>
+            <div class="valori">
+              <span class="importo" [class.entrata]="isEntrata(m)">
+                {{ isEntrata(m) ? '+' : '−' }} {{ m.importo | number:'1.2-2' }} €
+              </span>
+              @if (m.commissione > 0) {
+                <small class="commissione">commissione {{ m.commissione | number:'1.2-2' }} €</small>
+              }
+              <span class="chip-stato stato-{{ m.stato.toLowerCase() }}">
+                {{ ETICHETTA_STATO[m.stato] ?? m.stato }}
+              </span>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  @if (messaggio(); as m) {
+    <div class="toast" [class.errore]="m.errore">{{ m.testo }}</div>
+  }
+
+  <!-- Conferma del ritiro: qui si muovono soldi, il <dialog> nativo
+       e' lo stesso pattern degli altri flussi (focus trap, ESC,
+       backdrop gratis). Annulla per primo: default sicuro. -->
+  <dialog #dialogPrelievo class="dialog" (close)="erroreDialog.set(null)">
+    <h2><mat-icon>account_balance</mat-icon> Conferma il ritiro</h2>
+    <p class="testo-dialog">
+      Ritirare <strong>{{ importoPrelievoNum() | number:'1.2-2' }} €</strong>
+      @if (contoScelto(); as c) {
+        sul conto <strong>{{ c.ibanMascherato }}</strong> intestato a {{ c.intestatario }}?
+      }
+    </p>
+    <p class="nota">L'importo verrà scalato subito dal credito disponibile.</p>
+    @if (erroreDialog(); as e) { <p class="nota errore">{{ e }}</p> }
+    <div class="dialog-azioni">
+      <button type="button" class="btn-secondario" (click)="chiudiPrelievo()">Annulla</button>
+      <button type="button" class="btn-primario" [disabled]="inCorso()"
+              (click)="confermaPrelievo()">Conferma ritiro</button>
+    </div>
+  </dialog>
+</div>

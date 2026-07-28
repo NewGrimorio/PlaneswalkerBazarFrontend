@@ -9,7 +9,10 @@ export interface RecensioneDTO {
   creationDate: string;
   updateDate: string;
 
-  // Popolati solo nella vista admin (moderazione)
+  // Popolati solo nella vista arricchita (moderazione admin / le mie).
+  // ordineId serve a riaprire la recensione in modifica: il salvataggio
+  // esige l'ordine che ne giustifica il diritto.
   prodottoId?: number | null;
   prodottoNome?: string | null;
+  ordineId?: number | null;
 }

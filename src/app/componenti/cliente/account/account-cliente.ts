@@ -46,7 +46,7 @@ export class AccountCliente {
     { link: '/account/portafoglio', icona: 'account_balance_wallet',
       titolo: 'Portafoglio',
       descrizione: 'Ricariche, prelievi e storico dei movimenti.',
-      pronta: false, mostraSaldo: true },
+      pronta: true, mostraSaldo: true },
     { link: '/account/ordini',      icona: 'local_shipping',
       titolo: 'I miei ordini',
       descrizione: 'Stato delle spedizioni, annullamenti e resi.',
@@ -54,15 +54,15 @@ export class AccountCliente {
     { link: '/account/indirizzi',   icona: 'location_on',
       titolo: 'Indirizzi',
       descrizione: 'Gli indirizzi di spedizione e il predefinito.',
-      pronta: false },
+      pronta: true },
     { link: '/account/conti',       icona: 'account_balance',
       titolo: 'Conti bancari',
       descrizione: 'I conti per i prelievi dal portafoglio.',
-      pronta: false },
+      pronta: true },
     { link: '/account/recensioni',  icona: 'rate_review',
       titolo: 'Le mie recensioni',
       descrizione: 'Le recensioni che hai scritto sui prodotti.',
-      pronta: false },
+      pronta: true },
   ];
 
   constructor() {

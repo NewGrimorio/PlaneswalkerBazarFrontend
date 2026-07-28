@@ -4,11 +4,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { AuthServices } from '../../auth/auth-services';
 import { MatIconModule } from '@angular/material/icon';
 import { inject } from '@angular/core';
+import { TopVenduti } from '../top-venduti/top-venduti';
 
 
 @Component({
   selector: 'app-homepage',
-  imports: [RouterLink, MatButtonModule,MatIconModule],
+  imports: [RouterLink, MatButtonModule,MatIconModule, TopVenduti],
   templateUrl: './homepage.html',
   styleUrl: './homepage.css',
 })

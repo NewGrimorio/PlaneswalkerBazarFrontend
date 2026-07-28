@@ -31,10 +31,20 @@
                 -->{{ o.spedProvincia ? ' (' + o.spedProvincia + ')' : '' }}</small>
             </div>
           </div>
+
+          <!-- Blocco a RIGA INTERA sotto l'indirizzo: l'admin legge il
+               motivo e SOTTO trova il bottone Rimborsa. Valorizzato solo
+               nella coda RESO_RICHIESTO (batch V15). -->
           @if (o.motivoReso) {
-             <p class="motivo-reso"><mat-icon inline>assignment_return</mat-icon>
-            <strong>Motivo del reso:</strong> {{ o.motivoReso }}</p>
-            }
+            <div class="motivo-reso">
+              <mat-icon>assignment_return</mat-icon>
+              <div>
+                <strong>Motivo del reso</strong>
+                <p>{{ o.motivoReso }}</p>
+              </div>
+            </div>
+          }
+
           <div class="azioni">
             @switch (o.stato) {
               @case ('CREATO') {
@@ -64,4 +74,20 @@
   @if (messaggio(); as m) {
     <div class="toast" [class.errore]="m.errore">{{ m.testo }}</div>
   }
+
+  <!-- Conferma azioni: <dialog> nativo riusabile (stesso pattern dei
+       dialog cliente). Sempre nel DOM, aperto con showModal() al click;
+       (close) pulisce lo stato, ESC compreso. Annulla per primo:
+       il focus iniziale cade sul default SICURO. -->
+  <dialog #dialogConferma class="dialog-conferma" (close)="confermaRichiesta.set(null)">
+    @if (confermaRichiesta(); as c) {
+      <p class="testo-conferma">{{ c.testo }}</p>
+      <div class="dialog-azioni">
+        <button type="button" class="btn neutro" (click)="chiudiConferma()">Annulla</button>
+        <button type="button" class="btn"
+                [class.primario]="!c.distruttiva" [class.pericolo]="c.distruttiva"
+                (click)="confermaOk()">{{ c.etichetta }}</button>
+      </div>
+    }
+  </dialog>
 </div>

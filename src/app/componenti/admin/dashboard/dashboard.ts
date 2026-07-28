@@ -30,15 +30,17 @@ export class Dashboard {
    * I contatori. tipo 'pannello' = il click apre un pannello a scomparsa
    * (SKU sotto scorta, con la lista dei prodotti da rifornire); tipo
    * 'link' = naviga alla coda. 'azionabile' evidenzia quando c'e' lavoro.
+   * Con la moderazione preventiva (V15) sono TUTTI azionabili: ogni
+   * numero e' lavoro che aspetta l'operatore, nessuno e' decorativo.
    */
   contatori = computed(() => {
     const s = this.stats();
     if (!s) return [];
     return [
-      { label: 'Ordini da spedire',    icona: 'local_shipping',  valore: s.ordiniDaSpedire,      tipo: 'link' as const,     link: '/admin/ordini',     azionabile: true },
-      { label: 'Bonifici in attesa',   icona: 'account_balance', valore: s.bonificiInAttesa,     tipo: 'link' as const,     link: '/admin/movimenti',  azionabile: true },
-      { label: 'SKU sotto scorta',     icona: 'warning',         valore: s.skuSottoScorta,       tipo: 'pannello' as const, link: '',                  azionabile: true },
-      { label: 'Recensioni pubblicate',icona: 'rate_review',     valore: s.recensioniPubblicate, tipo: 'link' as const,     link: '/admin/recensioni', azionabile: false },
+      { label: 'Ordini da spedire',      icona: 'local_shipping',  valore: s.ordiniDaSpedire,       tipo: 'link' as const,     link: '/admin/ordini',     azionabile: true },
+      { label: 'Bonifici in attesa',     icona: 'account_balance', valore: s.bonificiInAttesa,      tipo: 'link' as const,     link: '/admin/movimenti',  azionabile: true },
+      { label: 'SKU sotto scorta',       icona: 'warning',         valore: s.skuSottoScorta,        tipo: 'pannello' as const, link: '',                  azionabile: true },
+      { label: 'Recensioni da moderare', icona: 'rate_review',     valore: s.recensioniDaModerare,  tipo: 'link' as const,     link: '/admin/recensioni', azionabile: true },
     ];
   });
 
@@ -53,6 +55,8 @@ export class Dashboard {
       descrizione: 'Spedizioni, cancellazioni e rimborsi' },
     { titolo: 'Movimenti',        icona: 'account_balance', link: '/admin/movimenti',
       descrizione: 'Bonifici e storico transazioni' },
+    { titolo: 'Vendite',          icona: 'trending_up',     link: '/admin/vendite',
+      descrizione: 'Classifica dei più venduti ed export CSV' },
     { titolo: 'Recensioni',       icona: 'rate_review',     link: '/admin/recensioni',
       descrizione: 'Moderazione' },
   ];

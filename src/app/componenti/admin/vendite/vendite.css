@@ -1,0 +1,81 @@
+:host { display: block; }
+
+.vendite-admin { padding: 8px 4px 40px; }
+
+header { display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+         margin-bottom: 20px; }
+.vendite-admin h1 { font-size: 1.7rem; margin: 0; }
+
+.filtri { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  border: 1px solid #d5d9e0; background: #fff;
+  border-radius: 999px; padding: 6px 16px;
+  cursor: pointer; font-size: .88rem; color: #445;
+  transition: all .15s;
+}
+.chip:hover { border-color: #1565c0; }
+.chip.attivo { background: #1565c0; border-color: #1565c0; color: #fff; }
+
+.scarica { margin-left: auto; }
+
+.stato { color: #8892a0; font-size: .95rem; padding: 20px 0; }
+
+/* ---------- Sintesi ---------- */
+.sintesi { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.numero {
+  flex: 1; min-width: 180px;
+  border: 1px solid #e8eaee; border-radius: 12px; background: #fff;
+  padding: 14px 18px; display: flex; flex-direction: column; gap: 2px;
+}
+.numero .etichetta {
+  font-size: .74rem; text-transform: uppercase; letter-spacing: .05em;
+  color: #8892a0;
+}
+.numero strong { font-size: 1.5rem; color: #1a2433; }
+
+/* ---------- Tabella con barre ---------- */
+.tabella {
+  width: 100%; border-collapse: collapse;
+  border: 1px solid #e8eaee; border-radius: 12px; overflow: hidden;
+  background: #fff;
+}
+.tabella th, .tabella td { padding: 10px 14px; text-align: left; }
+.tabella thead th {
+  font-size: .74rem; text-transform: uppercase; letter-spacing: .05em;
+  color: #8892a0; border-bottom: 1px solid #e8eaee; font-weight: 700;
+}
+.tabella tbody tr { border-bottom: 1px solid #f1f2f5; }
+.tabella tbody tr:last-child { border-bottom: none; }
+
+.pos { width: 34px; color: #8892a0; font-weight: 700; }
+.nome { display: block; font-weight: 600; color: #1a2433; font-size: .92rem; }
+.tipo { color: #8892a0; font-size: .76rem; }
+.num { text-align: right; white-space: nowrap; }
+.forte { font-weight: 700; }
+
+.barra-col { width: 26%; min-width: 120px; }
+.barra { height: 8px; background: #eef1f5; border-radius: 999px; overflow: hidden; }
+.barra span { display: block; height: 100%; border-radius: 999px;
+              background: linear-gradient(90deg, #6ea8e8, #1565c0); }
+
+.nota { margin: 14px 2px 0; font-size: .8rem; color: #8892a0; line-height: 1.5; }
+
+/* ---------- Bottoni e toast ---------- */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: none; border-radius: 8px;
+  padding: 8px 16px; font-size: .88rem; cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+}
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.primario { background: #1565c0; color: #fff; }
+.btn.primario:hover:not(:disabled) { background: #0f4f9c; }
+.btn mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #263041; color: #fff;
+  padding: 12px 22px; border-radius: 8px; font-size: .9rem; z-index: 60;
+  box-shadow: 0 6px 20px rgba(0,0,0,.25);
+}
+.toast.errore { background: #c0392b; }

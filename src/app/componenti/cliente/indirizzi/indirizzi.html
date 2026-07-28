@@ -1,0 +1,167 @@
+<div class="pagina">
+  <a routerLink="/account" class="briciola">
+    <mat-icon>arrow_back</mat-icon> Il mio account
+  </a>
+  <h1>Indirizzi</h1>
+  <p class="intro">
+    Gli indirizzi di spedizione. Quello <strong>predefinito</strong> viene
+    proposto automaticamente al momento dell'acquisto.
+  </p>
+
+  @if (senzaPredefinito()) {
+    <p class="avviso">
+      <mat-icon>info</mat-icon>
+      Nessun indirizzo predefinito: sceglierai a ogni ordine, oppure
+      impostane uno qui sotto.
+    </p>
+  }
+
+  @if (caricando()) {
+    <p class="stato">Caricamento…</p>
+  } @else if (indirizzi().length === 0 && formId() === null) {
+    <div class="vuoto">
+      <mat-icon>location_off</mat-icon>
+      <p>Non hai ancora salvato nessun indirizzo.</p>
+      <button type="button" class="btn-primario" (click)="nuovo()">
+        <mat-icon>add</mat-icon> Aggiungi un indirizzo
+      </button>
+    </div>
+  } @else {
+    <ul class="lista">
+      @for (i of indirizzi(); track i.id) {
+        <li class="indirizzo" [class.predefinito]="i.predefinito">
+          <div class="dati">
+            <div class="titolo">
+              <strong>{{ i.etichetta || i.destinatario }}</strong>
+              @if (i.predefinito) { <span class="badge">Predefinito</span> }
+            </div>
+            <span>{{ i.destinatario }}</span>
+            <span>{{ i.via }} {{ i.civico }}</span>
+            <span>
+              {{ i.cap }} {{ i.citta }}<!--
+              -->{{ i.provincia ? ' (' + i.provincia + ')' : '' }} — {{ i.nazione }}
+            </span>
+          </div>
+
+          <div class="azioni-riga">
+            <!-- Il predefinito non si TOGLIE: se ne promuove un altro.
+                 Per questo sulla card predefinita il bottone non c'e'. -->
+            @if (!i.predefinito) {
+              <button type="button" class="btn-testo" [disabled]="inCorso()"
+                      (click)="setPredefinito(i)">Rendi predefinito</button>
+            }
+            <button type="button" class="btn-icona" title="Modifica"
+                    [disabled]="inCorso()" (click)="modifica(i)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button type="button" class="btn-icona pericolo" title="Rimuovi"
+                    [disabled]="inCorso()" (click)="chiediRimozione(i)">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+
+    @if (formId() === null) {
+      <button type="button" class="btn-secondario" (click)="nuovo()">
+        <mat-icon>add</mat-icon> Aggiungi un indirizzo
+      </button>
+    }
+  }
+
+  <!-- Stesso form per creare e modificare: i campi sono gli stessi,
+       cambia solo il verbo (formId 0 = nuovo, id = modifica). -->
+  @if (formId() !== null) {
+    <section class="form-indirizzo">
+      <h2>{{ formId() === 0 ? 'Nuovo indirizzo' : 'Modifica indirizzo' }}</h2>
+
+      <label class="campo">
+        <span>Etichetta <em>(facoltativa)</em></span>
+        <input type="text" maxlength="50" placeholder="Casa, Ufficio…"
+               [value]="etichetta()" (input)="agg(etichetta, $event)">
+      </label>
+
+      <label class="campo">
+        <span>Destinatario</span>
+        <input type="text" maxlength="200" placeholder="Nome e cognome"
+               [value]="destinatario()" (input)="agg(destinatario, $event)">
+      </label>
+
+      <div class="riga-campi">
+        <label class="campo cresci">
+          <span>Via</span>
+          <input type="text" maxlength="200" placeholder="Via delle Ginestre"
+                 [value]="via()" (input)="agg(via, $event)">
+        </label>
+        <label class="campo stretto">
+          <span>Civico</span>
+          <input type="text" maxlength="20" placeholder="01"
+                 [value]="civico()" (input)="agg(civico, $event)">
+        </label>
+      </div>
+
+      <div class="riga-campi">
+        <label class="campo stretto">
+          <span>CAP</span>
+          <input type="text" maxlength="5" inputmode="numeric" placeholder="98120"
+                 [value]="cap()" (input)="agg(cap, $event)">
+          @if (cap().length > 0 && !capValido()) {
+            <small class="errore">Cinque cifre.</small>
+          }
+        </label>
+        <label class="campo cresci">
+          <span>Città</span>
+          <input type="text" maxlength="100" placeholder="Messina"
+                 [value]="citta()" (input)="agg(citta, $event)">
+        </label>
+        <label class="campo micro">
+          <span>Prov.</span>
+          <input type="text" maxlength="2" placeholder="ME"
+                 [value]="provincia()" (input)="agg(provincia, $event)">
+          @if (provincia().length > 0 && !provinciaValida()) {
+            <small class="errore">Due lettere.</small>
+          }
+        </label>
+        <label class="campo micro">
+          <span>Nazione</span>
+          <input type="text" maxlength="2" placeholder="IT"
+                 [value]="nazione()" (input)="agg(nazione, $event)">
+        </label>
+      </div>
+
+      @if (erroreForm(); as e) { <p class="nota errore">{{ e }}</p> }
+
+      <div class="azioni-form">
+        <button type="button" class="btn-secondario" (click)="chiudiForm()">Annulla</button>
+        <button type="button" class="btn-primario"
+                [disabled]="!formValido() || inCorso()" (click)="salva()">
+          {{ formId() === 0 ? 'Salva indirizzo' : 'Salva modifiche' }}
+        </button>
+      </div>
+    </section>
+  }
+
+  @if (messaggio(); as m) {
+    <div class="toast" [class.errore]="m.errore">{{ m.testo }}</div>
+  }
+
+  <dialog #dialogRimozione class="dialog" (close)="indirizzoDaRimuovere.set(null)">
+    @if (indirizzoDaRimuovere(); as i) {
+      <h2><mat-icon>delete_outline</mat-icon> Rimuovere l'indirizzo?</h2>
+      <p class="testo-dialog">
+        <strong>{{ i.etichetta || i.destinatario }}</strong><br>
+        {{ i.via }} {{ i.civico }}, {{ i.cap }} {{ i.citta }}
+      </p>
+      <p class="nota">
+        Gli ordini già spediti a questo indirizzo non cambiano: conservano
+        una copia dei dati di spedizione.
+      </p>
+      <div class="dialog-azioni">
+        <button type="button" class="btn-secondario" (click)="chiudiRimozione()">Annulla</button>
+        <button type="button" class="btn-pericolo" [disabled]="inCorso()"
+                (click)="confermaRimozione()">Rimuovi</button>
+      </div>
+    }
+  </dialog>
+</div>

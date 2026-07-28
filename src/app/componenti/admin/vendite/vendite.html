@@ -1,0 +1,75 @@
+<div class="vendite-admin">
+  <header>
+    <h1>Vendite</h1>
+    <nav class="filtri">
+      @for (f of finestre; track f.v) {
+        <button type="button" class="chip" [class.attivo]="giorni() === f.v"
+                (click)="cambiaFinestra(f.v)">{{ f.l }}</button>
+      }
+    </nav>
+    <button type="button" class="btn primario scarica"
+            [disabled]="scaricando()" (click)="scaricaCsv()">
+      <mat-icon>download</mat-icon>
+      {{ scaricando() ? 'Preparazione…' : 'Scarica CSV' }}
+    </button>
+  </header>
+
+  @if (caricando()) {
+    <p class="stato">Caricamento…</p>
+  } @else if (classifica().length === 0) {
+    <p class="stato">Nessuna vendita nella finestra selezionata.</p>
+  } @else {
+    <!-- Due numeri di sintesi prima del dettaglio -->
+    <div class="sintesi">
+      <div class="numero">
+        <span class="etichetta">Copie vendute (top 10)</span>
+        <strong>{{ totaleCopie() }}</strong>
+      </div>
+      <div class="numero">
+        <span class="etichetta">Ricavo (top 10)</span>
+        <strong>{{ totaleRicavo() | number:'1.2-2' }} €</strong>
+      </div>
+    </div>
+
+    <table class="tabella">
+      <thead>
+        <tr>
+          <th class="pos">#</th>
+          <th>Prodotto</th>
+          <th class="num">Copie</th>
+          <th class="barra-col"></th>
+          <th class="num">Ricavo</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (t of classifica(); track t.nome; let i = $index) {
+          <tr>
+            <td class="pos">{{ i + 1 }}</td>
+            <td>
+              <span class="nome">{{ t.nome }}</span>
+              <small class="tipo">
+                {{ t.tipo === 'CARTA' ? 'Carta · varie versioni' : t.tipo }}
+              </small>
+            </td>
+            <td class="num forte">{{ t.quantita }}</td>
+            <td class="barra-col">
+              <div class="barra"><span [style.width]="larghezza(t)"></span></div>
+            </td>
+            <td class="num forte">{{ t.ricavo | number:'1.2-2' }} €</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <p class="nota">
+      La classifica aggrega le carte per titolo ("varie versioni": tutte
+      le stampe, condizioni e lingue insieme) ed esclude gli ordini
+      annullati e cancellati. Il CSV contiene invece il dato grezzo,
+      una riga per ogni voce d'ordine della finestra.
+    </p>
+  }
+
+  @if (messaggio(); as m) {
+    <div class="toast" [class.errore]="m.errore">{{ m.testo }}</div>
+  }
+</div>

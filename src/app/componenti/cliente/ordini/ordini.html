@@ -163,8 +163,13 @@
             <button type="button" class="chip-prodotto"
                     [class.attivo]="prodottoSel() === p.id"
                     (click)="selezionaProdotto(p.id)">
-              @if (recensioneDi(p.id)) { <mat-icon inline>check</mat-icon> }
               {{ p.nome }}
+              <!-- "Gia' recensito" = stella + voto dato: informa senza
+                   assomigliare a una selezione (lo sfondo scuro e' la
+                   selezione, questo e' un badge di stato) -->
+              @if (recensioneDi(p.id); as r) {
+                <span class="gia-recensita"><mat-icon inline>star</mat-icon>{{ r.voto }}</span>
+              }
             </button>
           }
         </div>

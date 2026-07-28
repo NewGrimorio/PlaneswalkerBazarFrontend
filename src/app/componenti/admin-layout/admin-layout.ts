@@ -29,6 +29,7 @@ export class AdminLayout {
     { titolo: 'Magazzino',       icona: 'warehouse',       link: '/admin/magazzino' },
     { titolo: 'Ordini',          icona: 'local_shipping',  link: '/admin/ordini' },
     { titolo: 'Movimenti',       icona: 'account_balance', link: '/admin/movimenti' },
+    { titolo: 'Vendite',         icona: 'trending_up',     link: '/admin/vendite' },
     { titolo: 'Recensioni',      icona: 'rate_review',     link: '/admin/recensioni' },
   ];
 

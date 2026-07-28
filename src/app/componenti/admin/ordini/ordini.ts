@@ -1,4 +1,4 @@
-import { Component, inject, signal, PLATFORM_ID } from '@angular/core';
+import { Component, ElementRef, inject, signal, viewChild, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, DecimalPipe, DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,11 +9,26 @@ const BASE = environment.apiUrl;
 
 type Toast = { testo: string; errore: boolean } | null;
 
+/** Una richiesta di conferma: testo, etichetta del bottone, cosa fare. */
+interface Conferma {
+  testo: string;
+  etichetta: string;
+  distruttiva?: boolean;
+  azione: () => void;
+}
+
 /**
  * Coda ordini lato ADMIN, dentro AdminLayout (rotta /admin/ordini).
  * Si sceglie uno stato (una "coda di lavoro") e si agisce: le azioni
  * disponibili dipendono dallo stato, e dopo ogni azione l'ordine esce
  * dalla coda corrente (si ricarica la lista).
+ *
+ * Le conferme passano da un <dialog> nativo riusabile (niente
+ * window.confirm: quello e' browser chrome, con tanto di checkbox
+ * "impedisci ulteriori conferme" che puo' zittirlo per sempre).
+ * Stesso pattern dei dialog cliente: showModal() solo al click,
+ * (close) pulisce lo stato, ESC compreso. Annulla e' il primo
+ * bottone: il focus iniziale cade sul default SICURO.
  *
  * Backend: AdminOrdineController. La lista NON porta le voci (solo lo
  * snapshot indirizzo + totale); il dettaglio delle righe richiederebbe
@@ -30,6 +45,8 @@ export class Ordini {
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
 
+  private dialogConferma = viewChild.required<ElementRef<HTMLDialogElement>>('dialogConferma');
+
   stati = [
     { v: 'CREATO',         l: 'Da spedire' },
     { v: 'SPEDITO',        l: 'Spedite' },
@@ -44,6 +61,7 @@ export class Ordini {
   caricando = signal(false);
   inCorso = signal<number | null>(null);   // id dell'ordine in azione
   messaggio = signal<Toast>(null);
+  confermaRichiesta = signal<Conferma | null>(null);   // null = dialog chiuso
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) this.carica();
@@ -74,13 +92,21 @@ export class Ordini {
   }
 
   cancella(o: OrdineDTO): void {
-    if (!this.conferma(`Cancellare l'ordine #${o.id}? Scorte e credito verranno ripristinati.`)) return;
-    this.azione(o, 'cancella', `Ordine #${o.id} cancellato: scorte e credito ripristinati.`);
+    this.chiediConferma({
+      testo: `Cancellare l'ordine #${o.id}? Scorte e credito verranno ripristinati.`,
+      etichetta: 'Cancella ordine',
+      distruttiva: true,
+      azione: () => this.azione(o, 'cancella',
+          `Ordine #${o.id} cancellato: scorte e credito ripristinati.`),
+    });
   }
 
   rimborsa(o: OrdineDTO): void {
-    if (!this.conferma(`Rimborsare l'ordine #${o.id}? Il credito tornerà al cliente.`)) return;
-    this.azione(o, 'rimborsa', `Ordine #${o.id} rimborsato.`);
+    this.chiediConferma({
+      testo: `Rimborsare l'ordine #${o.id}? Il credito tornerà al cliente.`,
+      etichetta: 'Rimborsa',
+      azione: () => this.azione(o, 'rimborsa', `Ordine #${o.id} rimborsato.`),
+    });
   }
 
   private azione(o: OrdineDTO, path: string, successo: string): void {
@@ -95,8 +121,22 @@ export class Ordini {
       });
   }
 
-  private conferma(msg: string): boolean {
-    return isPlatformBrowser(this.platformId) ? window.confirm(msg) : false;
+  // --- Dialog di conferma (riusabile per ogni azione della coda) ---
+
+  private chiediConferma(c: Conferma): void {
+    this.confermaRichiesta.set(c);
+    this.dialogConferma().nativeElement.showModal();
+  }
+
+  confermaOk(): void {
+    const c = this.confermaRichiesta();
+    this.dialogConferma().nativeElement.close();
+    c?.azione();
+  }
+
+  chiudiConferma(): void {
+    this.dialogConferma().nativeElement.close();
+    // lo stato lo pulisce l'evento (close) del dialog, ESC compreso
   }
 
   private toast(testo: string, errore: boolean): void {

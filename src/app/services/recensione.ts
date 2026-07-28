@@ -31,6 +31,11 @@ export class Recensione {
     return this.http.post<RecensioneDTO>(`${BASE}/recensioni`, req);
   }
 
+  /** TUTTE le mie recensioni, dalla piu' aggiornata (con prodottoNome e ordineId). */
+  mie(): Observable<RecensioneDTO[]> {
+    return this.http.get<RecensioneDTO[]>(`${BASE}/recensioni/mie`);
+  }
+
   /** Le MIE recensioni sui prodotti di un MIO ordine (con prodottoId). */
   mieByOrdine(ordineId: number): Observable<RecensioneDTO[]> {
     return this.http.get<RecensioneDTO[]>(`${BASE}/recensioni/ordine/${ordineId}`);

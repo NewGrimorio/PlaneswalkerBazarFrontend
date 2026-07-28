@@ -57,6 +57,8 @@
 .btn.primario:hover:not(:disabled) { background: #0f4f9c; }
 .btn.pericolo { background: #fff; color: #c0392b; border: 1px solid #e6b0aa; }
 .btn.pericolo:hover:not(:disabled) { background: #fdf3f2; }
+.btn.neutro { background: #fff; color: #445; border: 1px solid #d5d9e0; }
+.btn.neutro:hover:not(:disabled) { background: #f6f8fa; }
 
 .badge-stato {
   background: #eef1f5; color: #667;
@@ -71,3 +73,51 @@
   box-shadow: 0 6px 20px rgba(0,0,0,.25);
 }
 .toast.errore { background: #c0392b; }
+
+/* ===== Motivo del reso (coda "Resi da rimborsare") ===== */
+/* La card e' una griglia 1fr/auto: il blocco prende la riga intera
+   sotto l'indirizzo, dove l'operatore lo legge prima di decidere. */
+.ordine .motivo-reso {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-start;
+  gap: .55rem;
+  margin: .3rem 0 .5rem;
+  padding: .6rem .8rem;
+  background: #f6f8fa;
+  border-left: 3px solid var(--colore-plancia, #35507a);
+  border-radius: 6px;
+}
+.ordine .motivo-reso mat-icon {
+  color: var(--colore-plancia, #35507a);
+  font-size: 20px; width: 20px; height: 20px;
+  margin-top: .1rem;
+}
+.ordine .motivo-reso strong {
+  display: block;
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: #5f6b7a;
+}
+.ordine .motivo-reso p { margin: .15rem 0 0; }
+
+/* Quando c'e' il motivo, le azioni prendono la riga intera: il
+   flex-end le porta a filo destro come nelle altre code. Il
+   combinatore ~ le tocca SOLO nelle card col motivo. */
+.motivo-reso ~ .azioni { grid-column: 1 / -1; }
+
+/* ===== Dialog di conferma (Cancella / Rimborsa) ===== */
+.dialog-conferma {
+  border: none;
+  border-radius: 12px;
+  padding: 1.4rem 1.5rem;
+  width: min(92vw, 420px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .25);
+}
+.dialog-conferma::backdrop { background: rgba(20, 28, 42, .45); }
+.testo-conferma { margin: 0; font-size: .95rem; color: #263041; }
+.dialog-azioni {
+  display: flex; justify-content: flex-end; gap: .6rem;
+  margin-top: 1.25rem;
+}

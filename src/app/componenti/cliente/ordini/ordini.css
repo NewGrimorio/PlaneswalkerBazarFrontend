@@ -75,6 +75,14 @@
 .azioni button.distruttiva:hover:not(:disabled) { background: #fdecea; }
 .azioni mat-icon { font-size: 18px; width: 18px; height: 18px; }
 
+/* La riga "Ordine concluso: periodo di reso terminato": prende la
+   riga intera sopra i bottoni (flex-wrap) e usa il tono delle note. */
+.azioni .nota-chiusura {
+  flex-basis: 100%;
+  color: #a09786;
+  font-size: .82rem;
+}
+
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
          background: #2a1f16; color: #f5e6c8; padding: 12px 22px; border-radius: 8px;
          font-size: .9rem; z-index: 60; box-shadow: 0 6px 20px rgba(0,0,0,.25); }
@@ -111,3 +119,16 @@
 .chip-prodotto.attivo { border-color: #2e2a24; background: #2e2a24; color: #fff; }
 .spiega.avviso { color: #8a6d1a; }
 .azioni .recensione { border-color: #c9a227; color: #8a6d1a; }
+
+/* Badge "gia' recensito" sulle chip prodotto: stella + voto dato */
+.chip-prodotto .gia-recensita {
+  display: inline-flex; align-items: center; gap: 1px;
+  margin-left: .35rem;
+  font-size: .8rem; font-weight: 600;
+  color: #c9a227;
+}
+.chip-prodotto .gia-recensita mat-icon {
+  font-size: 15px; width: 15px; height: 15px;
+}
+/* Sul fondo scuro della chip attiva l'oro si schiarisce per contrasto */
+.chip-prodotto.attivo .gia-recensita { color: #f0d060; }

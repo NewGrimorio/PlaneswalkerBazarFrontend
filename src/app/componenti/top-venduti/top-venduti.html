@@ -1,0 +1,52 @@
+@if (!caricando() && classifica().length > 0) {
+  <section class="top-venduti">
+    <header>
+      <mat-icon>trending_up</mat-icon>
+      <h2>I più acquistati della settimana</h2>
+    </header>
+
+    <!-- Podio: i primi tre con l'immagine, stile MTGStocks -->
+    <div class="podio">
+      @for (t of podio(); track t.nome; let i = $index) {
+        <article class="posto">
+          @if (link(t)) {
+            <a [routerLink]="link(t)" class="cornice">
+              @if (img(t)) { <img [src]="img(t)" [alt]="t.nome" loading="lazy"> }
+              @else { <div class="segnaposto"><mat-icon>style</mat-icon></div> }
+            </a>
+          } @else {
+            <div class="cornice">
+              @if (img(t)) { <img [src]="img(t)" [alt]="t.nome" loading="lazy"> }
+              @else { <div class="segnaposto"><mat-icon>style</mat-icon></div> }
+            </div>
+          }
+          <span class="medaglia">{{ i + 1 }}</span>
+          <strong class="nome">
+            {{ t.nome }}
+            @if (t.tipo === 'CARTA') { <small>varie versioni</small> }
+          </strong>
+          <span class="copie">{{ t.quantita }} {{ t.quantita === 1 ? 'copia' : 'copie' }}</span>
+        </article>
+      }
+    </div>
+
+    <!-- Dal quarto in giù: righe con barra proporzionale al primo -->
+    @if (resto().length > 0) {
+      <ol class="righe" [attr.start]="4">
+        @for (t of resto(); track t.nome; let i = $index) {
+          <li>
+            <span class="pos">{{ i + 4 }}</span>
+            <div class="info">
+              <span class="nome-riga">
+                {{ t.nome }}
+                @if (t.tipo === 'CARTA') { <small>varie versioni</small> }
+              </span>
+              <div class="barra"><span [style.width]="larghezza(t)"></span></div>
+            </div>
+            <span class="copie-riga">{{ t.quantita }}</span>
+          </li>
+        }
+      </ol>
+    }
+  </section>
+}

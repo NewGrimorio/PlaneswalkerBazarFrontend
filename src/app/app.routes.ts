@@ -20,6 +20,11 @@ import { adminGuard } from './auth/admin-guard';
 import { autentificateGuard } from './auth/autentificate-guard';
 import { AccountCliente } from './componenti/cliente/account/account-cliente';
 import { OrdiniCliente } from './componenti/cliente/ordini/ordini';
+import { PortafoglioCliente } from './componenti/cliente/portafoglio/portafoglio';
+import { ContiCliente } from './componenti/cliente/conti/conti';
+import { IndirizziCliente } from './componenti/cliente/indirizzi/indirizzi';
+import { RecensioniCliente } from './componenti/cliente/recensioni/recensioni';
+import { VenditeAdmin } from './componenti/admin/vendite/vendite';
 
 export const routes: Routes = [
 
@@ -34,6 +39,8 @@ export const routes: Routes = [
     // AREA PUBBLICA + CLIENTE
     // Catalogo sfogliabile da ospiti: il login serve solo per comprare.
     // Cosi' l'SSR renderizza davvero la vetrina, non un guscio vuoto.
+    // Per questo il guard NON sta sul layout, ma sulle singole rotte
+    // che lo richiedono: le pagine account e il checkout.
     // ------------------------------------------------------------------
     {
         path: '',
@@ -41,8 +48,14 @@ export const routes: Routes = [
         children: [
             { path: '', component: Homepage },
 
-            { path: 'account', component: AccountCliente, canActivate: [autentificateGuard] },
-            { path: 'account/ordini', component: OrdiniCliente, canActivate: [autentificateGuard] },
+            // Area account: path piatti con prefisso account/ — l'URL
+            // racconta la gerarchia anche senza rotte annidate.
+            { path: 'account',             component: AccountCliente,     canActivate: [autentificateGuard] },
+            { path: 'account/ordini',      component: OrdiniCliente,      canActivate: [autentificateGuard] },
+            { path: 'account/portafoglio', component: PortafoglioCliente, canActivate: [autentificateGuard] },
+            { path: 'account/conti',       component: ContiCliente,       canActivate: [autentificateGuard] },
+            { path: 'account/indirizzi',   component: IndirizziCliente,   canActivate: [autentificateGuard] },
+            { path: 'account/recensioni',  component: RecensioniCliente,  canActivate: [autentificateGuard] },
 
             // Carte singole: due passi — griglia set, poi carte del set
             { path: 'carte-singole',         component: Espansioni },
@@ -80,6 +93,7 @@ export const routes: Routes = [
             { path: 'ordini',     component: Ordini },
             { path: 'movimenti',  component: Movimenti },
             { path: 'recensioni', component: Recensioni },
+            { path: 'vendite',    component: VenditeAdmin },
             { path: 'account',    component: Account },
         ]
     },
