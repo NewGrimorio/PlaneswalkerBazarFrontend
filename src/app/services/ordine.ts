@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { OrdineDTO } from '../modelli/ordine-dto';
-import {StoricoStatoOrdineDTO} from '../modelli/storico-stato-ordine-dto';
+import { StoricoStatoOrdineDTO } from '../modelli/storico-stato-ordine-dto';
 
 const BASE = environment.apiUrl;
 
@@ -23,8 +23,6 @@ export class Ordine {
         { indirizzoId, tipoSpedizione });
   }
 
-
-  /** Lista dei miei ordini, dal piu' recente (senza voci). */
   list(): Observable<OrdineDTO[]> {
     return this.http.get<OrdineDTO[]>(`${BASE}/ordini`);
   }
@@ -38,9 +36,22 @@ export class Ordine {
     return this.http.get<StoricoStatoOrdineDTO[]>(`${BASE}/ordini/${id}/timeline`);
   }
 
-  /** Transizioni cliente: path kebab-case, identita' dal token. */
+  /**
+   * Transizioni cliente SENZA body: annulla, conferma-consegna,
+   * segnala-non-consegnato. Path kebab-case, identita' dal token.
+   * Il reso NON passa da qui: ha un body con la motivazione.
+   */
   transizione(id: number, azione: string): Observable<OrdineDTO> {
     return this.http.post<OrdineDTO>(`${BASE}/ordini/${id}/${azione}`, null);
   }
 
+  /**
+   * CONSEGNATO -> RESO_RICHIESTO. La motivazione e' OBBLIGATORIA
+   * (max 300 caratteri): il backend la valida e la salva nella nota
+   * della transizione — il cliente la ritrova nella timeline,
+   * l'admin nella coda dei resi.
+   */
+  richiediReso(id: number, nota: string): Observable<OrdineDTO> {
+    return this.http.post<OrdineDTO>(`${BASE}/ordini/${id}/richiedi-reso`, { nota });
+  }
 }

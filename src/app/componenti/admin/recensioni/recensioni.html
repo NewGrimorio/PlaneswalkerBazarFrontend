@@ -36,15 +36,31 @@
               @if (r.acquistoVerificato) { <span class="verificato"><mat-icon>verified</mat-icon> Acquisto verificato</span> }
             </small>
 
+            <!-- Le azioni seguono la CODA, non viceversa:
+                 IN_ATTESA e' il gate della pubblicazione (approva/rifiuta),
+                 le altre due sono interventi a posteriori. Stessi due
+                 endpoint (modera true/false), etichette diverse per
+                 contesto — come nel ts. -->
             <div class="azioni">
-              @if (r.stato === 'APPROVATA') {
-                <button type="button" class="btn nascondi" [disabled]="inCorso() === r.id" (click)="nascondi(r)">
-                  <mat-icon>visibility_off</mat-icon> Nascondi
-                </button>
-              } @else {
-                <button type="button" class="btn ripristina" [disabled]="inCorso() === r.id" (click)="ripristina(r)">
-                  <mat-icon>visibility</mat-icon> Ripristina
-                </button>
+              @switch (r.stato) {
+                @case ('IN_ATTESA') {
+                  <button type="button" class="btn approva" [disabled]="inCorso() === r.id" (click)="approva(r)">
+                    <mat-icon>check_circle</mat-icon> Approva
+                  </button>
+                  <button type="button" class="btn rifiuta" [disabled]="inCorso() === r.id" (click)="rifiuta(r)">
+                    <mat-icon>block</mat-icon> Rifiuta
+                  </button>
+                }
+                @case ('APPROVATA') {
+                  <button type="button" class="btn nascondi" [disabled]="inCorso() === r.id" (click)="nascondi(r)">
+                    <mat-icon>visibility_off</mat-icon> Nascondi
+                  </button>
+                }
+                @default {
+                  <button type="button" class="btn ripristina" [disabled]="inCorso() === r.id" (click)="ripristina(r)">
+                    <mat-icon>visibility</mat-icon> Ripristina
+                  </button>
+                }
               }
             </div>
           </div>

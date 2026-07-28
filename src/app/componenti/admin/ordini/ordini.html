@@ -31,7 +31,10 @@
                 -->{{ o.spedProvincia ? ' (' + o.spedProvincia + ')' : '' }}</small>
             </div>
           </div>
-
+          @if (o.motivoReso) {
+             <p class="motivo-reso"><mat-icon inline>assignment_return</mat-icon>
+            <strong>Motivo del reso:</strong> {{ o.motivoReso }}</p>
+            }
           <div class="azioni">
             @switch (o.stato) {
               @case ('CREATO') {

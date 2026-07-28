@@ -12,7 +12,7 @@ export interface OrdineDTO {
   stato: string;
   totale: number;
 
-  speseSpedizione: number;
+  speseSpedizione?: number;
   spedDestinatario?: string;
   spedVia?: string;
   spedCivico?: string;
@@ -23,7 +23,11 @@ export interface OrdineDTO {
 
   creationDate?: string;
   updateDate?: string;
-  tipoSpedizione: string;
+  tipoSpedizione?: string;
 
   voci?: VoceOrdineDTO[];
+
+  /** ADMIN-ONLY: motivazione del reso, presente solo nella coda
+   *  "Resi da rimborsare". Il cliente la vede nella timeline. */
+  motivoReso?: string | null;
 }

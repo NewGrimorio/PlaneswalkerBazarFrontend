@@ -11,11 +11,17 @@ type Toast = { testo: string; errore: boolean } | null;
 
 /**
  * Moderazione recensioni lato ADMIN (rotta /admin/recensioni).
- * La policy e' "pubblicazione immediata": le nuove nascono APPROVATE.
- * Quindi le code utili sono APPROVATE (visibili, si possono nascondere)
- * e RIFIUTATE (nascoste, si possono ripristinare).
+ * Policy V15: MODERAZIONE PREVENTIVA — le nuove nascono IN_ATTESA e
+ * diventano pubbliche solo con l'approvazione. Anche la MODIFICA di
+ * una recensione pubblicata la riporta in questa coda.
  *
- * modera(false) = nascondi -> RIFIUTATA;  modera(true) = ripristina -> APPROVATA.
+ * Tre code, tre intenti:
+ *   IN_ATTESA  -> "Da moderare": approva (pubblica) o rifiuta
+ *   APPROVATA  -> "Pubblicate":  si puo' nascondere a posteriori
+ *   RIFIUTATA  -> "Nascoste":    si puo' ripristinare
+ *
+ * modera(true) = APPROVATA;  modera(false) = RIFIUTATA — le quattro
+ * azioni sono due chiamate con etichette diverse per contesto.
  */
 @Component({
   selector: 'app-recensioni',
@@ -28,11 +34,12 @@ export class Recensioni {
   private platformId = inject(PLATFORM_ID);
 
   stati = [
+    { v: 'IN_ATTESA', l: 'Da moderare' },
     { v: 'APPROVATA', l: 'Pubblicate' },
     { v: 'RIFIUTATA', l: 'Nascoste' },
   ];
 
-  statoSel = signal<string>('APPROVATA');
+  statoSel = signal<string>('IN_ATTESA');
   recensioni = signal<RecensioneDTO[]>([]);
   caricando = signal(false);
   inCorso = signal<number | null>(null);
@@ -65,6 +72,11 @@ export class Recensioni {
     return [1, 2, 3, 4, 5].map(n => n <= voto);
   }
 
+  // --- Coda IN_ATTESA: il gate della pubblicazione ---
+  approva(r: RecensioneDTO): void { this.modera(r, true, `Recensione #${r.id} pubblicata.`); }
+  rifiuta(r: RecensioneDTO): void { this.modera(r, false, `Recensione #${r.id} rifiutata.`); }
+
+  // --- Interventi a posteriori sulle altre code ---
   nascondi(r: RecensioneDTO): void { this.modera(r, false, `Recensione #${r.id} nascosta.`); }
   ripristina(r: RecensioneDTO): void { this.modera(r, true, `Recensione #${r.id} ripristinata.`); }
 

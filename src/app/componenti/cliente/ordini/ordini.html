@@ -45,7 +45,7 @@
                 <div class="riepilogo">
                   <span>Spedizione {{ d.tipoSpedizione }}</span>
                   <span>
-                    @if (d.speseSpedizione > 0) {
+                    @if ((d.speseSpedizione ?? 0) > 0){
                       {{ d.speseSpedizione | number:'1.2-2' }} €
                     } @else { offerta }
                   </span>
@@ -69,14 +69,25 @@
                       <div>
                         <strong>{{ ETICHETTA_STATO[t.statoA] ?? t.statoA }}</strong>
                         <small>{{ t.creationDate | date:'dd/MM/yyyy HH:mm' }}</small>
+                        <!-- La nota della transizione (es. motivo del reso):
+                             il backend la salva dalla V15, qui si vede -->
+                        @if (t.nota) { <p class="nota">{{ t.nota }}</p> }
                       </div>
                     </li>
                   }
                 </ol>
               }
 
-              @if (azioniDi(o).length > 0) {
+              @if (azioniDi(o).length > 0 || puoRecensire(o)) {
                 <div class="azioni">
+                  <!-- Quando la finestra e' scaduta il bottone reso sparisce:
+                       questa riga dice PERCHE', o l'utente lo cerchera' -->
+                  @if (o.stato === 'CONSEGNATO' && resoScaduto()) {
+                    <small class="nota-chiusura">
+                      Ordine concluso: il periodo di reso ({{ RESO_GIORNI }} giorni
+                      dalla consegna) è terminato.
+                    </small>
+                  }
                   @for (a of azioniDi(o); track a.path) {
                     <button type="button"
                             [class.distruttiva]="a.distruttiva"
@@ -84,6 +95,19 @@
                             (click)="esegui(o, a)">
                       <mat-icon>{{ a.icona }}</mat-icon>
                       {{ a.label }}
+                    </button>
+                  }
+                  <!-- NON e' una transizione di stato: convive con le azioni
+                       (es. accanto a "Richiedi reso" su CONSEGNATO) e resta
+                       anche dopo il reso — chi ha ricevuto giudica.
+                       Disabilitato finche' il dettaglio non arriva: i
+                       prodotti recensibili vengono dalle voci. -->
+                  @if (puoRecensire(o)) {
+                    <button type="button" class="recensione"
+                            [disabled]="inCorso() === o.id || !dettaglio()"
+                            (click)="apriRecensione(o)">
+                      <mat-icon>rate_review</mat-icon>
+                      {{ etichettaRecensione() }}
                     </button>
                   }
                 </div>
@@ -98,4 +122,89 @@
   @if (messaggio(); as m) {
     <div class="toast" [class.errore]="m.errore">{{ m.testo }}</div>
   }
+
+  <!-- Dialog motivazione reso (V15): sempre nel DOM (chiuso = invisibile,
+       SSR-safe), aperto con showModal() solo al click. L'evento (close)
+       pulisce lo stato e copre anche la chiusura con ESC. -->
+  <dialog #dialogReso class="dialog-reso" (close)="resoPerOrdine.set(null)">
+    @if (resoPerOrdine(); as o) {
+      <h2><mat-icon>keyboard_return</mat-icon> Richiedi reso — ordine #{{ o.id }}</h2>
+      <p class="spiega">
+        Raccontaci cosa non va: la motivazione accompagna la richiesta
+        e la leggerà chi gestisce il rimborso.
+      </p>
+      <textarea rows="4" maxlength="300" autofocus
+                placeholder="Es. il prodotto è arrivato danneggiato…"
+                [value]="notaReso()" (input)="aggiornaNota($event)"></textarea>
+      <div class="contatore">{{ notaReso().length }}/300</div>
+      @if (erroreReso(); as e) { <p class="errore">{{ e }}</p> }
+      <div class="dialog-azioni">
+        <button type="button" class="btn-secondario" (click)="chiudiReso()">Annulla</button>
+        <button type="button" class="btn-primario"
+                [disabled]="notaReso().trim().length === 0 || inCorso() === o.id"
+                (click)="confermaReso()">Invia richiesta</button>
+      </div>
+    }
+  </dialog>
+
+  <!-- Dialog recensione: stesso pattern del reso. Un prodotto -> form
+       diretto; piu' prodotti -> chip di scelta, con la spunta su quelli
+       gia' recensiti. Il form si PRECOMPILA se la recensione esiste
+       (upsert lato server) e ricorda che la modifica torna in moderazione. -->
+  <dialog #dialogRecensione class="dialog-reso dialog-recensione"
+          (close)="recensionePerOrdine.set(null)">
+    @if (recensionePerOrdine(); as o) {
+      <h2><mat-icon>rate_review</mat-icon> La tua recensione</h2>
+
+      @if (prodottiRecensibili().length > 1) {
+        <p class="spiega">Scegli il prodotto da recensire:</p>
+        <div class="chip-prodotti">
+          @for (p of prodottiRecensibili(); track p.id) {
+            <button type="button" class="chip-prodotto"
+                    [class.attivo]="prodottoSel() === p.id"
+                    (click)="selezionaProdotto(p.id)">
+              @if (recensioneDi(p.id)) { <mat-icon inline>check</mat-icon> }
+              {{ p.nome }}
+            </button>
+          }
+        </div>
+      }
+
+      @if (prodottoSel() !== null) {
+        @if (recensioneDi(prodottoSel()!)) {
+          <p class="spiega avviso">
+            Hai già recensito questo prodotto: modificandola tornerà
+            in moderazione e sarà di nuovo visibile dopo l'approvazione.
+          </p>
+        }
+
+        <div class="stelle-input" role="radiogroup" aria-label="Voto">
+          @for (n of [1, 2, 3, 4, 5]; track n) {
+            <button type="button" class="stella"
+                    [attr.aria-label]="n + ' stelle'"
+                    (click)="votoSel.set(n)">
+              <mat-icon>{{ n <= votoSel() ? 'star' : 'star_border' }}</mat-icon>
+            </button>
+          }
+        </div>
+
+        <input type="text" maxlength="150" placeholder="Titolo (facoltativo)"
+               [value]="titoloRec()" (input)="aggiornaTitolo($event)">
+        <textarea rows="4" maxlength="4000"
+                  placeholder="Com'è andata? (facoltativo)"
+                  [value]="testoRec()" (input)="aggiornaTesto($event)"></textarea>
+        <div class="contatore">{{ testoRec().length }}/4000</div>
+      } @else if (prodottiRecensibili().length === 0) {
+        <p class="stato">Caricamento articoli…</p>
+      }
+
+      @if (erroreRecensione(); as e) { <p class="errore">{{ e }}</p> }
+      <div class="dialog-azioni">
+        <button type="button" class="btn-secondario" (click)="chiudiRecensione()">Annulla</button>
+        <button type="button" class="btn-primario"
+                [disabled]="prodottoSel() === null || votoSel() === 0 || inviandoRec()"
+                (click)="confermaRecensione()">Invia recensione</button>
+      </div>
+    }
+  </dialog>
 </div>
