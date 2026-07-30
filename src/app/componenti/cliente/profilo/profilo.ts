@@ -5,6 +5,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { provideNativeDateAdapter, MAT_DATE_LOCALE } from '@angular/material/core';
 import { AuthServices } from '../../../auth/auth-services';
 import { Utente } from '../../../services/utente';
 import { UtenteDTO } from '../../../modelli/utente-dto';
@@ -13,14 +15,14 @@ import { urlImmagine } from '../../../utils/url-immagine';
 type Esito = { testo: string; errore: boolean } | null;
 
 /**
- * Account ADMIN (/admin/account, dentro la plancia): identita' e
- * credenziali dell'operatore — avatar, anagrafica, email, password.
- * Niente indirizzi: l'admin che compra li gestisce dall'area cliente
- * come qualsiasi utente.
+ * Profilo CLIENTE (/account/profilo): identita' e credenziali —
+ * avatar, anagrafica, email, password. Gli INDIRIZZI non stanno qui:
+ * hanno la loro tessera dedicata nell'hub (/account/indirizzi), una
+ * cosa sola per pagina.
  *
- * GEMELLO CONSAPEVOLE di cliente/profilo (scelta documentata): stessa
+ * GEMELLO CONSAPEVOLE di admin/account (scelta documentata): stessa
  * logica, due componenti separati perche' le due pagine hanno ragioni
- * di cambiamento diverse (plancia vs negozio). Se tocchi un flusso
+ * di cambiamento diverse (negozio vs plancia). Se tocchi un flusso
  * qui — password, email, avatar — valuta se va toccato anche la'.
  *
  * FASE C: l'account non conosce piu' il proprio id. "Chi sono" lo
@@ -33,13 +35,17 @@ type Esito = { testo: string; errore: boolean } | null;
  * fuori. UX intatta, sicurezza piena.
  */
 @Component({
-  selector: 'app-account',
+  selector: 'app-profilo',
   imports: [FormsModule, MatButtonModule, MatFormFieldModule,
-            MatInputModule, MatIconModule],
-  templateUrl: './account.html',
-  styleUrl: './account.css',
+            MatInputModule, MatIconModule, MatDatepickerModule],
+  // Il datepicker lavora con oggetti Date: il NativeDateAdapter li
+  // formatta col locale italiano (gg/mm/aaaa), niente librerie in piu'.
+  providers: [provideNativeDateAdapter(),
+              { provide: MAT_DATE_LOCALE, useValue: 'it-IT' }],
+  templateUrl: './profilo.html',
+  styleUrl: './profilo.css',
 })
-export class Account {
+export class Profilo {
 
   private authS = inject(AuthServices);
   private utenteS = inject(Utente);
@@ -56,7 +62,11 @@ export class Account {
 
   // --- Card 1: anagrafica ---
   fNome = ''; fCognome = ''; fUsername = '';
-  fTelefono = ''; fDataNascita = ''; fCodiceFiscale = '';
+  fTelefono = ''; fCodiceFiscale = '';
+  /** Date (non stringa): e' il tipo che il datepicker parla. */
+  fDataNascita: Date | null = null;
+  /** Limite del calendario: non si nasce nel futuro. */
+  oggi = new Date();
   msgAnagrafica = signal<Esito>(null);
 
   // --- Card 2: email ---
@@ -92,7 +102,7 @@ export class Account {
     this.fCognome = u.cognome;
     this.fUsername = u.username;
     this.fTelefono = u.telefono ?? '';
-    this.fDataNascita = u.dataNascita ?? '';
+    this.fDataNascita = u.dataNascita ? new Date(u.dataNascita) : null;
     this.fCodiceFiscale = u.codiceFiscale ?? '';
     this.emailAttuale.set(u.email);
     this.immagineProfilo.set(u.immagineProfilo);
@@ -163,7 +173,7 @@ export class Account {
       // Il cambio vero sara' un'operazione admin dedicata (futura).
       username: this.fUsername.trim(),
       telefono: this.fTelefono.trim() || null,
-      dataNascita: this.fDataNascita || null,
+      dataNascita: this.dataIso(this.fDataNascita),
       codiceFiscale: this.fCodiceFiscale.trim().toUpperCase() || null,
     }).subscribe({
       next: u => {
@@ -236,6 +246,15 @@ export class Account {
         },
         error: err => { this.msgPassword.set(this.esitoErrore(err)); this.inCorso.set(false); }
       });
+  }
+
+  /** Date -> 'yyyy-MM-dd' (il formato del DTO), in ora LOCALE:
+   *  toISOString() userebbe UTC e a mezzanotte sbaglierebbe giorno. */
+  private dataIso(d: Date | null): string | null {
+    if (!d) return null;
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const gg = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${mm}-${gg}`;
   }
 
   private esitoErrore(err: any): Esito {

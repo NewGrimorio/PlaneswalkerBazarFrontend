@@ -15,6 +15,7 @@ import { Magazzino } from './componenti/admin/magazzino/magazzino';
 import { Ordini } from './componenti/admin/ordini/ordini';
 import { Movimenti } from './componenti/admin/movimenti/movimenti';
 import { Recensioni } from './componenti/admin/recensioni/recensioni';
+import { Profilo } from './componenti/cliente/profilo/profilo';
 import { Account } from './componenti/admin/account/account';
 import { adminGuard } from './auth/admin-guard';
 import { autentificateGuard } from './auth/autentificate-guard';
@@ -51,6 +52,7 @@ export const routes: Routes = [
             // Area account: path piatti con prefisso account/ — l'URL
             // racconta la gerarchia anche senza rotte annidate.
             { path: 'account',             component: AccountCliente,     canActivate: [autentificateGuard] },
+            { path: 'account/profilo',     component: Profilo,            canActivate: [autentificateGuard] },
             { path: 'account/ordini',      component: OrdiniCliente,      canActivate: [autentificateGuard] },
             { path: 'account/portafoglio', component: PortafoglioCliente, canActivate: [autentificateGuard] },
             { path: 'account/conti',       component: ContiCliente,       canActivate: [autentificateGuard] },
@@ -94,6 +96,9 @@ export const routes: Routes = [
             { path: 'movimenti',  component: Movimenti },
             { path: 'recensioni', component: Recensioni },
             { path: 'vendite',    component: VenditeAdmin },
+            // Componenti SEPARATI per scelta: la pagina admin e quella
+            // cliente hanno ragioni di cambiamento diverse (plancia vs
+            // negozio) e ognuna evolve senza paura di rompere l'altra.
             { path: 'account',    component: Account },
         ]
     },

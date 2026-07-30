@@ -1,11 +1,16 @@
-<h1>Il tuo account</h1>
-<p class="sottotitolo">Avatar, dati personali e credenziali dell'operatore.</p>
+<h1>Informazioni personali</h1>
+<p class="sottotitolo">Avatar, dati personali e credenziali di accesso.
+   Gli indirizzi di spedizione hanno la loro sezione dedicata.</p>
 
 <!-- ================= Immagine profilo ================= -->
 <div class="pannello-form">
-  <h2>Immagine profilo</h2>
+  <h2>Identità pubblica</h2>
   <div class="blocco-avatar">
     <img class="avatar-grande" [src]="urlAvatar" alt="Immagine profilo">
+    <div class="identita">
+      <span class="etichetta-username">Username</span>
+      <strong class="valore-username">{{ fUsername }}</strong>
+    </div>
     <div class="azioni-avatar">
       <button mat-stroked-button type="button" [disabled]="inCorso()"
               (click)="fileAvatar.click()">
@@ -42,14 +47,11 @@
       </mat-form-field>
     </div>
     <div class="riga">
-      <mat-form-field appearance="outline" class="cresce">
-        <mat-label>Username</mat-label>
-        <!-- Qui MODIFICABILE: l'admin gestisce il proprio username
-             dalla pagina. Nel gemello cliente invece il campo non
-             esiste — prima divergenza reale tra i due componenti. -->
-        <input matInput name="username" [(ngModel)]="fUsername" required
-               pattern="^[a-zA-Z0-9._\-]{3,30}$" maxlength="30">
-      </mat-form-field>
+      <!-- Lo USERNAME non e' un campo qui: per il cliente non e'
+           modificabile (lo fara' l'admin, operazione futura) e quindi
+           non ha senso mostrarlo come input. E' esposto in sola
+           lettura nella card Immagine profilo, accanto all'avatar:
+           insieme formano l'identita' pubblica. -->
       <mat-form-field appearance="outline" class="cresce">
         <mat-label>Telefono</mat-label>
         <input matInput name="telefono" [(ngModel)]="fTelefono"
@@ -59,7 +61,12 @@
     <div class="riga">
       <mat-form-field appearance="outline">
         <mat-label>Data di nascita</mat-label>
-        <input matInput type="date" name="dataNascita" [(ngModel)]="fDataNascita">
+        <input matInput [matDatepicker]="pickerNascita" name="dataNascita"
+               [(ngModel)]="fDataNascita" [max]="oggi">
+        <mat-datepicker-toggle matIconSuffix [for]="pickerNascita"></mat-datepicker-toggle>
+        <!-- multi-year: per una data di nascita si parte dall'anno,
+             non dal mese corrente -->
+        <mat-datepicker #pickerNascita startView="multi-year"></mat-datepicker>
       </mat-form-field>
       <mat-form-field appearance="outline" class="cresce">
         <mat-label>Codice fiscale</mat-label>

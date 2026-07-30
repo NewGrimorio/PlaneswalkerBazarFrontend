@@ -42,7 +42,7 @@ export class AccountCliente {
     { link: '/account/profilo',     icona: 'person',
       titolo: 'Informazioni personali',
       descrizione: 'Nome, email, username, avatar e password.',
-      pronta: false },
+      pronta: true },
     { link: '/account/portafoglio', icona: 'account_balance_wallet',
       titolo: 'Portafoglio',
       descrizione: 'Ricariche, prelievi e storico dei movimenti.',

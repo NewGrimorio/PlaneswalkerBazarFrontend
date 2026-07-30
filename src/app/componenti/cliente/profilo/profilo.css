@@ -1,0 +1,67 @@
+/* Vestito CLIENTE della pagina profilo (ex admin/account).
+   In plancia la STRUTTURA (contenitore, card, righe) arrivava da
+   styles/admin.css, scoped sotto app-admin-layout: fuori non esiste.
+   Qui c'e' tutto: struttura nel linguaggio delle pagine cliente
+   (conti/indirizzi: card chiare, oro #d4a24c) + le regole di
+   dettaglio originali della pagina, con la palette armonizzata.
+
+   :host fa da contenitore: l'html non ha un wrapper .pagina e cosi'
+   non serve aggiungerlo. */
+:host {
+  display: block;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+h1 { margin: 0 0 8px; font-size: 1.8rem; color: #2a1f16; }
+.sottotitolo { margin: 0 0 20px; color: #6b6355; font-size: .92rem; line-height: 1.5; }
+
+/* ---------- Pannelli (le card dei form) ---------- */
+.pannello-form {
+  border: 1px solid #e8e2d6; border-radius: 12px; background: #fff;
+  padding: 18px 20px 20px; margin-bottom: 16px;
+}
+.pannello-form h2 { margin: 0 0 16px; font-size: 18px; color: #2a1f16; }
+.nota { color: #6b6355; margin: -8px 0 16px; font-size: .9rem; }
+
+/* ---------- Righe di campi ---------- */
+/* align-items: flex-start e' il fix dell'allineamento: il default
+   (stretch) STIRAVA i campi della riga all'altezza del piu' alto —
+   con subscriptSizing dynamic l'hint di "Nuova password" allungava
+   il box di "Conferma nuova". Cosi' ognuno e' alto quanto serve. */
+.riga { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
+.cresce { flex: 1; min-width: 220px; }
+.stretto { max-width: 140px; }
+
+/* ---------- Esiti ---------- */
+.messaggio {
+  margin: 10px 0 0; padding: 8px 12px; border-radius: 8px;
+  background: #eef7ee; color: #2c6e31; font-size: .88rem;
+}
+.messaggio.errore { background: #fdecea; color: #b3261e; }
+.rosso { color: #b3261e; }
+
+.azioni-form { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+
+/* ---------- Card immagine profilo ---------- */
+.blocco-avatar { display: flex; align-items: center; gap: 20px;
+                 flex-wrap: wrap; margin-bottom: 16px; }
+.avatar-grande {
+  width: 96px; height: 96px; border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--colore-plancia, #d4a24c);
+  background: #fdfbf6;
+}
+.azioni-avatar {
+  display: flex; flex-direction: column;
+  align-items: flex-start; gap: 4px;
+}
+
+/* ---------- Identita' pubblica (avatar + username) ---------- */
+.identita { display: flex; flex-direction: column; gap: 2px; min-width: 140px; }
+.etichetta-username {
+  font-size: .72rem; text-transform: uppercase; letter-spacing: .05em;
+  color: #a09786;
+}
+.valore-username { font-size: 1.05rem; color: #2a1f16; }

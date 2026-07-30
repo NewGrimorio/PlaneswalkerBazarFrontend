@@ -1,14 +1,20 @@
+/* Account ADMIN: vive DENTRO la plancia, quindi la struttura
+   (contenitore, .pannello-form, .riga, .messaggio) arriva da
+   styles/admin.css scoped sotto app-admin-layout. Qui restano solo
+   i dettagli propri della pagina — e' il motivo per cui questo file
+   e' piccolo mentre il gemello cliente porta tutto con se'. */
+
 .pannello-form h2 { margin: 0 0 16px; font-size: 18px; }
 .nota { color: #666; margin: -8px 0 16px; }
 .rosso { color: #b3261e; }
-.stretto { max-width: 140px; }
 
 /* ---------- Card immagine profilo ---------- */
 .blocco-avatar { display: flex; align-items: center; gap: 20px; margin-bottom: 16px; }
+
 .avatar-grande {
   width: 96px; height: 96px; border-radius: 50%;
   object-fit: cover;
-  border: 3px solid var(--colore-plancia);
+  border: 3px solid var(--colore-plancia, #d4a24c);
   background: #fff;
 }
 .azioni-avatar {
@@ -16,20 +22,6 @@
   align-items: flex-start; gap: 4px;
 }
 
-/* ---------- Sezione indirizzi ---------- */
-.testata-sezione { display: flex; align-items: center; margin-bottom: 8px; }
-
-.sottoform {
-  border: 1px solid #eee; border-radius: 8px;
-  padding: 16px 16px 4px; margin-bottom: 16px;
-  background: #fafafa;
-}
-
-.riga-indirizzo {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 4px;
-  border-bottom: 1px solid #eee;
-}
-.riga-indirizzo .dati { display: flex; flex-direction: column; }
-.riga-indirizzo .dati span { color: #666; font-size: 14px; }
-.riga-indirizzo.predef mat-icon { color: #f1b53d; }
+/* La .riga strutturale arriva da admin.css: qui solo l'override
+   anti-stiramento (vedi gemello cliente per il perche'). */
+.riga { align-items: flex-start; }
