@@ -1,0 +1,35 @@
+<div class="ricerca" (keydown.escape)="chiudi()">
+  <mat-icon class="lente">search</mat-icon>
+  <input type="text" placeholder="Cerca carte, box, mazzi…"
+         [value]="query()"
+         (input)="onInput($any($event.target).value)"
+         (focus)="query().length >= 2 && risultati().length > 0 ? aperto.set(true) : null"
+         (blur)="onBlur()">
+
+  @if (aperto()) {
+    <div class="menu-risultati">
+      @if (risultati().length === 0) {
+        <p class="vuoto">
+          {{ cercando() ? 'Ricerca…' : 'Nessun risultato per "' + query() + '"' }}
+        </p>
+      } @else {
+        @for (r of risultati(); track r.slug) {
+          <button type="button" class="riga" (mousedown)="vai(r)">
+            <span class="mini">
+              @if (urlImmagine(r.imageUrl); as u) {
+                <img [src]="u" alt="" loading="lazy">
+              } @else {
+                <mat-icon>image</mat-icon>
+              }
+            </span>
+            <span class="testi">
+              <strong>{{ r.nome }}</strong>
+              <small>{{ etichetta(r) }}</small>
+            </span>
+            <mat-icon class="freccia">north_east</mat-icon>
+          </button>
+        }
+      }
+    </div>
+  }
+</div>

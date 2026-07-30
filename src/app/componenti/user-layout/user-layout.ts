@@ -6,7 +6,9 @@ import { MatMenuModule } from '@angular/material/menu';
 import { AuthServices } from '../../auth/auth-services';
 import { Utente } from '../../services/utente';
 import { Portafoglio } from '../../services/portafoglio';
+import { Carrello } from '../../services/carrello';
 import { urlImmagine } from '../../utils/url-immagine';
+import { BarraRicerca } from '../barra-ricerca/barra-ricerca';
 
 /**
  * Shell dell'area cliente: nav orizzontale + outlet.
@@ -23,7 +25,7 @@ import { urlImmagine } from '../../utils/url-immagine';
 @Component({
   selector: 'app-user-layout',
   imports: [RouterLink, RouterLinkActive, RouterOutlet, DecimalPipe,
-            MatIconModule, MatMenuModule],
+            MatIconModule, MatMenuModule, BarraRicerca],
   templateUrl: './user-layout.html',
   styleUrl: './user-layout.css',
 })
@@ -33,6 +35,7 @@ export class UserLayout {
   private platformId = inject(PLATFORM_ID);
   authS = inject(AuthServices);
   portafoglioS = inject(Portafoglio);
+  carrelloS = inject(Carrello);
 
   /** Esposta al template: le funzioni importate non sono visibili da sole */
   protected readonly urlImmagine = urlImmagine;
@@ -42,20 +45,22 @@ export class UserLayout {
     { path: 'bustine',       label: 'Bustine' },
     { path: 'box',           label: 'Box' },
     { path: 'mazzi',         label: 'Mazzi' },
-    { path: 'lotti',         label: 'Lotti' },
-    { path: 'sigillato',     label: 'Sigillato' },
+    // Path INVARIATI (URL stabili, agganciati a route.data e tipo
+    // prodotto): cambiano solo le parole che il cliente legge.
+    { path: 'lotti',         label: 'Lotti di carte' },
+    { path: 'sigillato',     label: 'Bundle' },
     { path: 'accessori',     label: 'Accessori' },
   ];
 
   constructor() {
-    // Il saldo segue la sessione: appena c'e' un utente (login,
-    // refresh silenzioso, hydration) si carica; via l'utente, via il
-    // saldo. Solo browser: in SSR non c'e' sessione per design.
+    // Saldo e CARRELLO seguono la sessione: appena c'e' un utente
+    // (login, refresh silenzioso, hydration) si caricano; via
+    // l'utente, via entrambi. Solo browser: in SSR niente sessione.
     effect(() => {
       const u = this.authS.utente();
       if (!isPlatformBrowser(this.platformId)) return;
-      if (u) this.portafoglioS.refreshSaldo();
-      else this.portafoglioS.azzeraSaldo();
+      if (u) { this.portafoglioS.refreshSaldo(); this.carrelloS.refresh(); }
+      else   { this.portafoglioS.azzeraSaldo();  this.carrelloS.azzera(); }
     });
   }
 
@@ -76,6 +81,7 @@ export class UserLayout {
 
   private chiudiSessione(): void {
     this.portafoglioS.azzeraSaldo();
+    this.carrelloS.azzera();
     this.authS.resetAll();
     this.router.navigate(['/login']);
   }

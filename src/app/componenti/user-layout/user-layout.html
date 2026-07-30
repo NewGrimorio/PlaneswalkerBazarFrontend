@@ -12,8 +12,23 @@
     }
   </div>
 
+  <!-- Ricerca globale: pubblica come il catalogo, tra le categorie
+       e il gruppo destro (carrello + chip) -->
+  <app-barra-ricerca class="ricerca-top" />
+
   <!-- Catalogo pubblico: la nav deve reggere anche senza sessione -->
   @if (authS.isAutentificated()) {
+    <!-- Carrello in topbar: il badge legge il signal condiviso del
+         service, aggiornato da OGNI operazione ovunque avvenga -->
+    <a routerLink="/checkout" class="carrello-top" aria-label="Carrello">
+      <mat-icon>shopping_cart</mat-icon>
+      @if (carrelloS.carrelloCorrente(); as c) {
+        @if (c.numeroArticoli > 0) {
+          <span class="badge-carrello">{{ c.numeroArticoli }}</span>
+        }
+      }
+    </a>
+
     <!-- Chip identita': avatar vero + saluto + saldo (Amazon dice chi
          sei, Cardtrader quanto hai). menuOpened rinfresca il saldo:
          quando l'utente guarda, il numero e' fresco. -->

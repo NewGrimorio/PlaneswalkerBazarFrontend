@@ -5,17 +5,19 @@
     <div class="conferma-ok">
       <mat-icon>check_circle</mat-icon>
       <h1>Ordine confermato</h1>
-      <p>Il tuo ordine <strong>#{{ o.id }}</strong> è stato creato ({{ o.stato }}).</p>
+      <p>Il tuo ordine <strong>#{{ o.id }}</strong> è stato registrato e verrà preparato a breve.</p>
       <p class="tot">Totale pagato: <strong>{{ o.totale | number:'1.2-2' }} €</strong></p>
       @if (o.speseSpedizione !== undefined) {
         <p class="stato">
-          Spedizione {{ o.tipoSpedizione }}:
+          Spedizione {{ o.tipoSpedizione === 'EXPRESS' ? 'express' : 'standard' }}:
           @if (o.speseSpedizione > 0) { {{ o.speseSpedizione | number:'1.2-2' }} € }
-          @else { offerta }
+          @else { gratuita }
         </p>
       }
-      
-      <a routerLink="/negozio" class="btn-primario">Torna al negozio</a>
+      <div class="azioni-conferma">
+        <a routerLink="/account/ordini" class="btn-primario">I miei ordini</a>
+        <a routerLink="/" class="link-negozio">Torna al negozio</a>
+      </div>
     </div>
   } @else {
 
@@ -26,7 +28,7 @@
       <h2>Riepilogo</h2>
       @if (carrello(); as c) {
         @if (c.voci.length === 0) {
-          <p class="stato">Il carrello è vuoto. <a routerLink="/negozio">Vai al negozio</a>.</p>
+          <p class="stato">Il carrello è vuoto. <a routerLink="/">Vai al negozio</a>.</p>
         } @else {
           <ul class="voci">
             @for (v of c.voci; track v.id) {

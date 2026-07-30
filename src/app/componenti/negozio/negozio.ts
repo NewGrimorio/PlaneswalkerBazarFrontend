@@ -4,38 +4,37 @@ import { HttpClient } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { combineLatest } from 'rxjs';
+import { FormsModule } from '@angular/forms';
 import { Prodotto } from '../../services/prodotto';
 import { Carrello } from '../../services/carrello';
 import { ProdottoDTO } from '../../modelli/prodotti-dto';
-import { CarrelloDTO } from '../../modelli/carrello-dto';
-import { VoceCarrelloDTO } from '../../modelli/voce-carrello-dto';
 import { MagazzinoSKUDTO } from '../../modelli/magazzino-sku-dto';
 import { CartaVetrinaDTO } from '../../modelli/carta-vetrina-dto';
 import { EspansioneDTO } from '../../modelli/espansione-dto';
 import { urlImmagine } from '../../utils/url-immagine';
 import { AuthServices } from '../../auth/auth-services';
 import { environment } from '../../../environments/environment';
-import { FormsModule } from '@angular/forms';
 
 const BASE = environment.apiUrl;
 
 type Toast = { testo: string; errore: boolean } | null;
 
 /**
- * Vetrina + carrello. Vive dentro UserLayout: la nav e il logout
- * stanno nella shell, qui resta solo il catalogo.
+ * Vetrina. Vive dentro UserLayout: nav, logout e ora anche il
+ * CARRELLO stanno nella shell (badge in topbar dal signal condiviso
+ * del service) — qui resta solo il catalogo, con la scheda FILTRI
+ * a sinistra al posto del vecchio aside carrello.
  *
  * Due modalita', decise dalla rotta:
  *  - /bustine, /box, ...        -> categoria da data.tipo
- *  - /carte-singole/:codice     -> i prodotti di UN set
+ *  - /carte-singole/:codice     -> le carte di UN set
  * In entrambi i casi l'URL e' condivisibile e indicizzabile.
  *
- * Il catalogo e' PUBBLICO: i prodotti caricano anche in SSR e per un
- * ospite. Il carrello invece richiede il token, quindi si popola solo
- * nel browser e solo da autenticati.
+ * Il catalogo e' PUBBLICO: carica anche in SSR e per un ospite.
  *
- * Flusso: la lista NON porta le varianti -> click sul prodotto ->
- * dettaglio (getBySlug) con gli skus -> "Aggiungi".
+ * Flusso: la lista NON porta le varianti -> click -> getBySlug con
+ * gli skus -> NON-single con varianti: pagina /prodotto/:slug;
+ * single o senza varianti: modale.
  */
 @Component({
   selector: 'app-negozio',
@@ -62,35 +61,45 @@ export class Negozio {
     BOOSTER: 'Bustine',
     BOOSTER_BOX: 'Box',
     MAZZO: 'Mazzi',
-    SET_LOTTO: 'Lotti',
-    SIGILLATO: 'Sigillato',
+    SET_LOTTO: 'Lotti di carte',
+    SIGILLATO: 'Bundle',
     ACCESSORIO: 'Accessori',
   };
 
+  // ATTENZIONE: ripristina qui il TUO valore se era diverso
+  private readonly PER_PAGINA = 24;
+
   prodotti = signal<ProdottoDTO[]>([]);
+  carte = signal<CartaVetrinaDTO[]>([]);
   espansione = signal<EspansioneDTO | null>(null);
   tipoSel = signal<string>('SINGLE');
   caricando = signal(false);
 
+  ordinamento = signal('numero-asc');
+  pagina = signal(1);
+
   prodottoAperto = signal<ProdottoDTO | null>(null);
-  carrello = signal<CarrelloDTO | null>(null);
   messaggio = signal<Toast>(null);
+
+  // ---------------- Filtri (scheda a sinistra) ----------------
+  // Client-side sui dati gia' caricati: nessuna chiamata in piu'.
+  fNome = signal('');
+  fRarita = signal<Set<string>>(new Set());     // vuoto = tutte
+  fSoloDisponibili = signal(false);
+  fPrezzoMax = signal<number | null>(null);
+  fEspansione = signal('');                     // griglia generica
 
   /** Dentro un set vince il nome del set: e' l'informazione piu' utile. */
   titolo = computed(() =>
     this.espansione()?.nome ?? this.etichette[this.tipoSel()] ?? 'Catalogo');
 
-  carte = signal<CartaVetrinaDTO[]>([]);
-  ordinamento = signal<string>('numero-asc');
-  pagina = signal(1);
-  readonly PER_PAGINA = 20;
-  
   constructor() {
     // data (categoria) e paramMap (codice set) insieme: navigando tra
     // rotte sorelle il componente e' RIUSATO e il costruttore non gira
     // di nuovo, quindi servono gli stream e non lo snapshot.
     combineLatest([this.route.data, this.route.paramMap]).subscribe(([d, p]) => {
       this.tipoSel.set(d['tipo'] ?? 'SINGLE');
+      this.azzeraFiltri();
       const codice = p.get('codice');
       if (codice) {
         this.caricaEspansione(codice);
@@ -99,11 +108,6 @@ export class Negozio {
         this.caricaProdotti(this.tipoSel());
       }
     });
-
-    // Il carrello richiede il token: niente chiamata da ospite o in SSR,
-    // altrimenti si spara una 401 a ogni apertura di pagina.
-    if (isPlatformBrowser(this.platformId) && this.authS.isAutentificated())
-      this.caricaCarrello();
   }
 
   // ---------------- Vetrina ----------------
@@ -117,11 +121,10 @@ export class Negozio {
   }
 
   /**
-   * Set -> vetrina carte del set. Due chiamate in sequenza: la prima
-   * serve anche a dare il nome vero alla pagina (il codice in URL non
+   * Set -> carte del set. Due chiamate in sequenza: la prima serve
+   * anche a dare il nome vero alla pagina (il codice in URL non
    * basta). La seconda usa l'endpoint dedicato: solo SINGLE, digitali
-   * escluse e prezzo "a partire da" gia' aggregato — il filtro
-   * client-side non serve piu'.
+   * escluse e prezzo "a partire da" gia' aggregato.
    */
   private caricaEspansione(codice: string): void {
     this.caricando.set(true);
@@ -149,28 +152,29 @@ export class Negozio {
   }
 
   /**
-   * Apre il dettaglio (modale). Prende lo SLUG, non il DTO: serve sia
-   * alla griglia carte (CartaVetrinaDTO) sia a quella generica
-   * (ProdottoDTO), e il dettaglio via getBySlug porta gli skus —
-   * senza, non c'e' nulla da aggiungere.
+   * Apre il dettaglio. Prende lo SLUG, non il DTO: serve sia alla
+   * griglia carte (CartaVetrinaDTO) sia a quella generica (ProdottoDTO).
+   * NON-single con varianti -> pagina dedicata (/prodotto/:slug): un
+   * box merita spazio e un URL condivisibile. Il modale resta per le
+   * single (hanno gia' /carta/:slug) e per i prodotti senza varianti.
    */
   apri(slug: string): void {
     this.prodottoS.getBySlug(slug).subscribe({
-      next: dett => this.prodottoAperto.set(dett),
+      next: dett => {
+        const comprabile = !!dett.skus && dett.skus.length > 0;
+        if (comprabile && dett.tipoProdotto !== 'SINGLE') {
+          this.router.navigate(['/prodotto', dett.slug]);
+          return;
+        }
+        this.prodottoAperto.set(dett);
+      },
       error: err => this.toast(err?.error?.msg ?? 'Prodotto non disponibile', true)
     });
   }
 
   chiudi(): void { this.prodottoAperto.set(null); }
 
-  // ---------------- Carrello ----------------
-
-  private caricaCarrello(): void {
-    this.carrelloS.get().subscribe({
-      next: c => this.carrello.set(c),
-      error: () => {}
-    });
-  }
+  // ---------------- Aggiunta dal modale (single) ----------------
 
   aggiungi(sku: MagazzinoSKUDTO): void {
     // Sfogliare e' libero, comprare no: l'ospite viene mandato al login
@@ -181,50 +185,20 @@ export class Negozio {
     }
 
     // Deterministico a prescindere dalla semantica di addVoce: se lo
-    // sku e' gia' nel carrello, si imposta quantita+1; altrimenti 1.
-    const c = this.carrello();
+    // sku e' gia' nel carrello (signal CONDIVISO del service, tenuto
+    // fresco dalla shell), si imposta quantita+1; altrimenti 1.
+    const c = this.carrelloS.carrelloCorrente();
     const esistente = c?.voci.find(v => v.skuId === sku.id);
     const chiamata = esistente
       ? this.carrelloS.updateVoce(sku.id, esistente.quantita + 1)
       : this.carrelloS.addVoce(sku.id, 1);
 
+    // Il tap nel service aggiorna il signal (e il badge in topbar):
+    // qui resta solo il feedback all'utente.
     chiamata.subscribe({
-      next: agg => { this.carrello.set(agg); this.toast('Aggiunto al carrello', false); },
+      next: () => this.toast('Aggiunto al carrello', false),
       error: err => this.toast(err?.error?.msg ?? 'Impossibile aggiungere', true)
     });
-  }
-
-  incrementa(v: VoceCarrelloDTO): void {
-    this.carrelloS.updateVoce(v.skuId, v.quantita + 1).subscribe({
-      next: agg => this.carrello.set(agg),
-      error: err => this.toast(err?.error?.msg ?? 'Errore', true)
-    });
-  }
-
-  decrementa(v: VoceCarrelloDTO): void {
-    if (v.quantita <= 1) { this.rimuovi(v); return; }
-    this.carrelloS.updateVoce(v.skuId, v.quantita - 1).subscribe({
-      next: agg => this.carrello.set(agg),
-      error: err => this.toast(err?.error?.msg ?? 'Errore', true)
-    });
-  }
-
-  rimuovi(v: VoceCarrelloDTO): void {
-    this.carrelloS.removeVoce(v.id).subscribe({
-      next: agg => this.carrello.set(agg),
-      error: err => this.toast(err?.error?.msg ?? 'Errore', true)
-    });
-  }
-
-  svuota(): void {
-    this.carrelloS.svuota().subscribe({
-      next: () => this.caricaCarrello(),
-      error: err => this.toast(err?.error?.msg ?? 'Errore', true)
-    });
-  }
-
-  procedi(): void {
-    this.router.navigate(['/checkout']);
   }
 
   private toast(testo: string, errore: boolean): void {
@@ -233,6 +207,63 @@ export class Negozio {
       setTimeout(() => this.messaggio.set(null), 2800);
   }
 
+  // ---------------- Filtri ----------------
+
+  cambiaNome(v: string): void { this.fNome.set(v); this.pagina.set(1); }
+  cambiaSoloDisponibili(v: boolean): void { this.fSoloDisponibili.set(v); this.pagina.set(1); }
+  cambiaPrezzoMax(v: number | null): void { this.fPrezzoMax.set(v); this.pagina.set(1); }
+  cambiaEspansione(v: string): void { this.fEspansione.set(v); this.pagina.set(1); }
+
+  /** Set immutabile: mutarlo non triggererebbe i computed (zoneless). */
+  toggleRarita(r: string): void {
+    this.fRarita.update(s => {
+      const n = new Set(s);
+      n.has(r) ? n.delete(r) : n.add(r);
+      return n;
+    });
+    this.pagina.set(1);
+  }
+
+  azzeraFiltri(): void {
+    this.fNome.set('');
+    this.fRarita.set(new Set());
+    this.fSoloDisponibili.set(false);
+    this.fPrezzoMax.set(null);
+    this.fEspansione.set('');
+    this.pagina.set(1);
+  }
+
+  filtriAttivi = computed(() =>
+    this.fNome().trim() !== '' || this.fRarita().size > 0 ||
+    this.fSoloDisponibili() || this.fPrezzoMax() != null ||
+    this.fEspansione() !== '');
+
+  /** Espansioni presenti nella griglia generica (per la select). */
+  espansioniPresenti = computed(() => {
+    const nomi = this.prodotti()
+        .map(p => p.espansioneNome)
+        .filter((n): n is string => !!n);
+    return [...new Set(nomi)].sort();
+  });
+
+  private passaNome(nome: string): boolean {
+    const q = this.fNome().trim().toLowerCase();
+    return q === '' || nome.toLowerCase().includes(q);
+  }
+
+  carteFiltrate = computed(() => this.carte().filter(c =>
+    this.passaNome(c.nome)
+    && (this.fRarita().size === 0 || this.fRarita().has(c.rarita))
+    && (!this.fSoloDisponibili() || c.prezzoDa != null)
+    && (this.fPrezzoMax() == null || (c.prezzoDa != null && c.prezzoDa <= this.fPrezzoMax()!))
+  ));
+
+  prodottiFiltrati = computed(() => this.prodotti().filter(p =>
+    this.passaNome(p.nome)
+    && (this.fEspansione() === '' || p.espansioneNome === this.fEspansione())
+  ));
+
+  // ---------------- Ordinamento e paginazione (vetrina carte) ----------------
 
   /** Rango per l'ordinamento C -> M; sconosciute in coda. */
   private readonly RANGO_RARITA: Record<string, number> = {
@@ -244,6 +275,17 @@ export class Negozio {
     COMMON: 'Comune', UNCOMMON: 'Non comune', RARE: 'Rara',
     MYTHIC: 'Mitica', SPECIAL: 'Speciale', BONUS: 'Bonus',
   };
+
+  /** Per le checkbox dei filtri: ORDINATE C -> M (keyvalue pipe
+   *  ordinerebbe alfabeticamente, che per le rarita' non ha senso). */
+  readonly RARITA_FILTRO = [
+    { valore: 'COMMON',   etichetta: 'Comune' },
+    { valore: 'UNCOMMON', etichetta: 'Non comune' },
+    { valore: 'RARE',     etichetta: 'Rara' },
+    { valore: 'MYTHIC',   etichetta: 'Mitica' },
+    { valore: 'SPECIAL',  etichetta: 'Speciale' },
+    { valore: 'BONUS',    etichetta: 'Bonus' },
+  ];
 
   /** Numero di collezione: ordinamento NATURALE ("2" < "10"; "382z" dopo "382"). */
   private numColl(n: string): number {
@@ -271,7 +313,7 @@ export class Negozio {
 
   ordinate = computed(() => {
     const cmp = this.confronti[this.ordinamento()] ?? this.confronti['numero-asc'];
-    return [...this.carte()].sort(cmp);
+    return [...this.carteFiltrate()].sort(cmp);
   });
   totalePagine = computed(() =>
     Math.max(1, Math.ceil(this.ordinate().length / this.PER_PAGINA)));

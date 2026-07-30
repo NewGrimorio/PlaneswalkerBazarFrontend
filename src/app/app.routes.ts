@@ -16,6 +16,7 @@ import { Ordini } from './componenti/admin/ordini/ordini';
 import { Movimenti } from './componenti/admin/movimenti/movimenti';
 import { Recensioni } from './componenti/admin/recensioni/recensioni';
 import { Profilo } from './componenti/cliente/profilo/profilo';
+import { DettaglioProdotto } from './componenti/dettaglio-prodotto/dettaglio-prodotto';
 import { Account } from './componenti/admin/account/account';
 import { adminGuard } from './auth/admin-guard';
 import { autentificateGuard } from './auth/autentificate-guard';
@@ -72,6 +73,9 @@ export const routes: Routes = [
             { path: 'mazzi',     component: Negozio, data: { tipo: 'MAZZO' } },
             { path: 'lotti',     component: Negozio, data: { tipo: 'SET_LOTTO' } },
             { path: 'sigillato', component: Negozio, data: { tipo: 'SIGILLATO' } },
+            // Pagina dei prodotti non-single: URL condivisibile, il
+            // modale del negozio resta per single e non disponibili.
+            { path: 'prodotto/:slug', component: DettaglioProdotto },
             { path: 'accessori', component: Negozio, data: { tipo: 'ACCESSORIO' } },
 
             // L'unica pagina protetta dell'area cliente: qui si paga.

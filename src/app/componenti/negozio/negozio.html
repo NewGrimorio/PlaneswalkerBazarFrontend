@@ -9,6 +9,63 @@
   </header>
 
   <div class="corpo">
+
+    <!-- FILTRI (a sinistra, al posto del vecchio aside carrello:
+         il carrello ora vive in topbar e nella pagina checkout) -->
+    <aside class="filtri">
+      <h2><mat-icon>tune</mat-icon> Filtri</h2>
+
+      <label class="campo-filtro">Nome
+        <input type="text" placeholder="Cerca…"
+               [ngModel]="fNome()" (ngModelChange)="cambiaNome($event)">
+      </label>
+
+      @if (espansione()) {
+        <!-- Vetrina carte del set -->
+        <fieldset class="gruppo-filtro">
+          <legend>Rarità</legend>
+          @for (r of RARITA_FILTRO; track r.valore) {
+            <label class="spunta">
+              <input type="checkbox"
+                     [checked]="fRarita().has(r.valore)"
+                     (change)="toggleRarita(r.valore)">
+              {{ r.etichetta }}
+            </label>
+          }
+        </fieldset>
+
+        <label class="spunta">
+          <input type="checkbox"
+                 [checked]="fSoloDisponibili()"
+                 (change)="cambiaSoloDisponibili(!fSoloDisponibili())">
+          Solo disponibili
+        </label>
+
+        <label class="campo-filtro">Prezzo massimo (€)
+          <input type="number" min="0" step="0.5" placeholder="Nessuno"
+                 [ngModel]="fPrezzoMax()" (ngModelChange)="cambiaPrezzoMax($event)">
+        </label>
+      } @else {
+        <!-- Griglia generica -->
+        @if (espansioniPresenti().length > 1) {
+          <label class="campo-filtro">Espansione
+            <select [ngModel]="fEspansione()" (ngModelChange)="cambiaEspansione($event)">
+              <option value="">Tutte</option>
+              @for (n of espansioniPresenti(); track n) {
+                <option [value]="n">{{ n }}</option>
+              }
+            </select>
+          </label>
+        }
+      }
+
+      @if (filtriAttivi()) {
+        <button type="button" class="btn-testo" (click)="azzeraFiltri()">
+          <mat-icon>filter_alt_off</mat-icon> Azzera filtri
+        </button>
+      }
+    </aside>
+
     <!-- VETRINA -->
     <section class="vetrina">
       @if (caricando()) {
@@ -33,7 +90,10 @@
         </div>
 
         @if (ordinate().length === 0) {
-          <p class="stato">Nessuna carta disponibile in questo set.</p>
+          <p class="stato">
+            {{ filtriAttivi() ? 'Nessuna carta corrisponde ai filtri.'
+                              : 'Nessuna carta disponibile in questo set.' }}
+          </p>
         } @else {
           <div class="griglia">
             @for (c of visibili(); track c.id) {
@@ -69,13 +129,16 @@
           }
         }
 
-      } @else if (prodotti().length === 0) {
-        <p class="stato">Nessun prodotto in questa categoria.</p>
+      } @else if (prodottiFiltrati().length === 0) {
+        <p class="stato">
+          {{ filtriAttivi() ? 'Nessun prodotto corrisponde ai filtri.'
+                            : 'Nessun prodotto in questa categoria.' }}
+        </p>
       } @else {
 
         <!-- ============ GRIGLIA GENERICA (bustine, box, ...) ============ -->
         <div class="griglia">
-          @for (p of prodotti(); track p.id) {
+          @for (p of prodottiFiltrati(); track p.id) {
             <article class="card" (click)="apri(p.slug)">
               <div class="thumb">
                 @if (urlImmagine(p.imageUrl); as u) {
@@ -91,78 +154,9 @@
         </div>
       }
     </section>
-
-    <!-- CARRELLO -->
-    <aside class="carrello">
-      <h2>
-        <mat-icon>shopping_cart</mat-icon> Carrello
-        @if (carrello(); as c) { <span class="badge">{{ c.numeroArticoli }}</span> }
-      </h2>
-
-      @if (!authS.isAutentificated()) {
-        <p class="stato">
-          <a routerLink="/login" class="link-accedi">Accedi</a>
-          per aggiungere prodotti al carrello.
-        </p>
-      } @else if (carrello(); as c) {
-        @if (c.voci.length === 0) {
-          <p class="stato">Il carrello è vuoto.</p>
-        } @else {
-          <ul class="voci">
-            @for (v of c.voci; track v.id) {
-              <li [class.non-disp]="!v.disponibile">
-                <div class="riga-top">
-                  <strong>{{ v.nomeProdotto }}</strong>
-                  <button type="button" class="icona" title="Rimuovi" (click)="rimuovi(v)">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </div>
-                <small class="dett">{{ v.finitura }} · {{ v.condizione }} · {{ v.lingua }}</small>
-                <div class="riga-bottom">
-                  <div class="stepper">
-                    <button type="button" class="icona" (click)="decrementa(v)">
-                      <mat-icon>remove</mat-icon>
-                    </button>
-                    <span>{{ v.quantita }}</span>
-                    <button type="button" class="icona" (click)="incrementa(v)">
-                      <mat-icon>add</mat-icon>
-                    </button>
-                  </div>
-                  <span class="sub">{{ v.subtotale | number:'1.2-2' }} €</span>
-                </div>
-                @if (!v.disponibile) {
-                  <small class="avviso">Quantità non più disponibile</small>
-                }
-              </li>
-            }
-          </ul>
-
-          <div class="totale">
-            <span>Merce</span>
-            <strong>{{ c.totale | number:'1.2-2' }} €</strong>
-          </div>
-          @if (c.spedizioneOfferta) {
-            <p class="promo">Spedizione express offerta.</p>
-          } @else if (c.mancaPerSpedizioneGratuita > 0) {
-            <p class="promo">
-              Aggiungi {{ c.mancaPerSpedizioneGratuita | number:'1.2-2' }} €
-              per la spedizione express offerta.
-            </p>
-          }
-
-          <button type="button" class="btn-primario"
-                  [disabled]="c.numeroArticoli === 0" (click)="procedi()">
-            Procedi all'ordine
-          </button>
-          <button type="button" class="btn-testo" (click)="svuota()">Svuota carrello</button>
-        }
-      } @else {
-        <p class="stato">Caricamento…</p>
-      }
-    </aside>
   </div>
 
-  <!-- DETTAGLIO PRODOTTO + VARIANTI (modale) -->
+  <!-- DETTAGLIO PRODOTTO + VARIANTI (modale: single e non disponibili) -->
   @if (prodottoAperto(); as p) {
     <div class="modale" (click)="chiudi()">
       <div class="pannello" (click)="$event.stopPropagation()">
@@ -195,7 +189,11 @@
             }
           </ul>
         } @else {
-          <p class="stato">Nessuna variante acquistabile al momento.</p>
+          @if (p.tipoProdotto === 'SINGLE') {
+            <p class="stato">Nessuna variante acquistabile al momento.</p>
+          } @else {
+            <p class="stato">Non disponibile nello store.</p>
+          }
         }
       </div>
     </div>

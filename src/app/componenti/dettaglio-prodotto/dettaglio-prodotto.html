@@ -1,0 +1,65 @@
+<div class="pagina">
+  <a [routerLink]="linkVetrina()" class="briciola">
+    <mat-icon>arrow_back</mat-icon> {{ etichettaTipo() }}
+  </a>
+
+  @if (caricando()) {
+    <p class="stato">Caricamento…</p>
+  } @else if (prodotto(); as p) {
+    <div class="scheda">
+
+      <div class="colonna-immagine">
+        @if (urlImmagine(p.imageUrl); as u) {
+          <img [src]="u" [alt]="p.nome">
+        } @else {
+          <div class="senza-immagine"><mat-icon>image</mat-icon></div>
+        }
+      </div>
+
+      <div class="colonna-info">
+        <h1>{{ p.nome }}</h1>
+        @if (p.espansioneNome) { <p class="set">{{ p.espansioneNome }}</p> }
+        @if (p.descrizione) { <p class="descr">{{ p.descrizione }}</p> }
+
+        @if (p.skus && p.skus.length > 0) {
+          <h2 class="titolo-varianti">Disponibilità</h2>
+          <ul class="varianti">
+            @for (s of p.skus; track s.id) {
+              <li>
+                <div class="v-info">
+                  <strong>{{ s.prezzo | number:'1.2-2' }} €</strong>
+                  <small>Lingua: {{ lingua(s) }}</small>
+                </div>
+                @if (s.disponibile) {
+                  <div class="qta">
+                    <button type="button" (click)="cambiaQta(s, -1)"
+                            [disabled]="qtaDi(s) <= 1">−</button>
+                    <span>{{ qtaDi(s) }}</span>
+                    <button type="button" (click)="cambiaQta(s, 1)"
+                            [disabled]="qtaDi(s) >= s.quantita">+</button>
+                  </div>
+                }
+                <button type="button" class="btn-oro"
+                        [disabled]="!s.disponibile" (click)="aggiungi(s)">
+                  {{ s.disponibile ? 'Aggiungi al carrello' : 'Esaurito' }}
+                </button>
+              </li>
+            }
+          </ul>
+          <button type="button" class="btn-testo" (click)="vaiAlCarrello()">
+            <mat-icon>shopping_cart</mat-icon> Vai al carrello
+          </button>
+        } @else {
+          <p class="stato">Non disponibile nello store.</p>
+        }
+      </div>
+
+    </div>
+  } @else {
+    <p class="stato">Prodotto non trovato.</p>
+  }
+
+  @if (messaggio(); as m) {
+    <div class="toast" [class.errore]="m.errore">{{ m.testo }}</div>
+  }
+</div>

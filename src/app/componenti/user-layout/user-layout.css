@@ -23,11 +23,32 @@
 .link-menu:hover { color: #f5e6c8; }
 .link-menu.attivo { color: #d4a24c; border-bottom-color: #d4a24c; }
 
+/* ---------- Ricerca globale ---------- */
+.ricerca-top {
+  flex: 1; max-width: 380px; min-width: 180px;
+  margin-left: auto;                 /* spinge ricerca+carrello+chip a destra */
+}
+
+/* ---------- Carrello in topbar ---------- */
+.carrello-top {
+  position: relative; display: flex; align-items: center;
+  padding: 8px; border-radius: 50%; color: #f5e6c8;
+  transition: background .15s;
+}
+.carrello-top:hover { background: rgba(212, 162, 76, 0.15); }
+.badge-carrello {
+  position: absolute; top: 0; right: 0;
+  min-width: 18px; height: 18px; padding: 0 4px;
+  border-radius: 999px; background: #d4a24c; color: #1a1410;
+  font-size: .7rem; font-weight: 800;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
 /* ---------- Chip utente (autenticato) ----------
    Scuro bordato d'oro, non piu' pillola piena: l'oro pieno resta al
    call-to-action Accedi. Dentro: avatar vero, saluto, saldo in oro. */
 .chip-utente {
-  margin-left: auto; height: 52px; padding: 0 14px 0 8px;
+  height: 52px; padding: 0 14px 0 8px;
   display: flex; align-items: center; gap: 10px;
   border-radius: 999px;
   background: rgba(212, 162, 76, 0.10);
@@ -69,4 +90,5 @@
   .menu-user { height: auto; flex-wrap: wrap; padding: 12px 16px; }
   .marchio { display: none; }
   .chi-chip { display: none; }   /* su mobile resta il cerchietto */
+  .ricerca-top { order: 10; flex-basis: 100%; max-width: none; margin-left: 0; }
 }

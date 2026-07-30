@@ -1,0 +1,87 @@
+:host { display: block; }
+
+.pagina { max-width: 1000px; margin: 0 auto; padding: 24px 20px 60px; }
+
+.briciola {
+  display: inline-flex; align-items: center; gap: 4px;
+  color: #a8792e; text-decoration: none; font-size: .88rem; margin-bottom: 14px;
+}
+.briciola:hover { text-decoration: underline; }
+.briciola mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
+.stato { color: #a09786; padding: 16px 0; }
+
+/* ---------- Scheda: immagine a sinistra, info a destra ---------- */
+.scheda { display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; }
+
+.colonna-immagine {
+  flex: 0 0 380px; max-width: 380px;
+  border: 1px solid #e8e2d6; border-radius: 12px; background: #fff;
+  padding: 16px; display: flex; justify-content: center;
+  position: sticky; top: 88px;      /* resta in vista scorrendo le varianti */
+}
+.colonna-immagine img { max-width: 100%; height: auto; border-radius: 6px; }
+.senza-immagine {
+  width: 100%; aspect-ratio: 1; display: flex;
+  align-items: center; justify-content: center; color: #ddd5c6;
+}
+.senza-immagine mat-icon { font-size: 64px; width: 64px; height: 64px; }
+
+.colonna-info { flex: 1; min-width: 300px; }
+.colonna-info h1 { margin: 0 0 4px; font-size: 1.6rem; color: #2a1f16; line-height: 1.25; }
+.set { margin: 0 0 12px; color: #a8792e; font-weight: 600; }
+.descr { margin: 0 0 18px; color: #6b6355; line-height: 1.55; }
+
+/* ---------- Varianti ---------- */
+.titolo-varianti { margin: 0 0 10px; font-size: 1.05rem; color: #2a1f16; }
+.varianti { list-style: none; margin: 0 0 14px; padding: 0;
+            display: flex; flex-direction: column; gap: 10px; }
+.varianti li {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  border: 1px solid #e8e2d6; border-radius: 10px; background: #fff;
+  padding: 12px 16px;
+}
+.v-info { display: flex; flex-direction: column; gap: 1px; }
+.v-info strong { font-size: 1.15rem; color: #2a1f16; }
+.v-info small { color: #a09786; font-size: .8rem; letter-spacing: .02em; }
+
+/* ---------- Contatore quantita' ---------- */
+.qta {
+  display: flex; align-items: center; gap: 2px;
+  border: 1px solid #e0d7c6; border-radius: 8px; background: #fdfbf6;
+}
+.qta button {
+  width: 32px; height: 36px; border: none; background: none;
+  font-size: 1.1rem; color: #a8792e; cursor: pointer;
+}
+.qta button:disabled { opacity: .35; cursor: not-allowed; }
+.qta span { min-width: 26px; text-align: center; font-weight: 700; color: #2a1f16; }
+
+.btn-oro {
+  border: none; border-radius: 8px; padding: 10px 18px;
+  background: #d4a24c; color: #1a1410; font-weight: 700; font-size: .9rem;
+  cursor: pointer; white-space: nowrap; transition: background .15s;
+}
+.btn-oro:hover:not(:disabled) { background: #e8c579; }
+.btn-oro:disabled { opacity: .45; cursor: not-allowed; }
+
+.btn-testo {
+  border: none; background: none; padding: 6px 0;
+  display: inline-flex; align-items: center; gap: 6px;
+  color: #a8792e; font: inherit; font-size: .88rem; cursor: pointer;
+  text-decoration: underline;
+}
+.btn-testo mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
+/* ---------- Toast ---------- */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #2c6e31; color: #fff; border-radius: 8px;
+  padding: 10px 18px; font-size: .9rem; z-index: 50;
+  box-shadow: 0 4px 14px rgba(0,0,0,.25);
+}
+.toast.errore { background: #b3261e; }
+
+@media (max-width: 760px) {
+  .colonna-immagine { position: static; flex-basis: 100%; max-width: 100%; }
+}
