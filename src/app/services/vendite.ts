@@ -32,4 +32,10 @@ export class Vendite {
     return this.http.get(`${BASE}/admin/vendite/export.csv`,
         { params: { giorni }, responseType: 'blob' });
   }
+
+  /** Excel vero (.xlsx, POI): celle tipizzate, stesso schema del CSV. */
+  exportXlsx(giorni = 30): Observable<Blob> {
+    return this.http.get(`${BASE}/admin/vendite/export.xlsx`,
+        { params: { giorni }, responseType: 'blob' });
+  }
 }

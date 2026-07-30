@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, DecimalPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { Vendite } from '../../../services/vendite';
 import { VendutoTopDTO } from '../../../modelli/venduto-top-dto';
 
@@ -8,16 +9,16 @@ type Toast = { testo: string; errore: boolean } | null;
 
 /**
  * Analisi vendite lato ADMIN (rotta /admin/vendite): la classifica
- * del pubblico ma CON i ricavi, su finestre selezionabili, e il
- * bottone che scarica il CSV grezzo (una riga per voce d'ordine)
- * per le analisi in Excel.
+ * del pubblico ma CON i ricavi, su finestre selezionabili, e il menu
+ * Esporta (a destra) per scaricare xlsx o CSV — una riga per voce
+ * d'ordine, per le analisi in Excel.
  *
  * Il download passa da un blob: il Bearer vive in memoria e viaggia
  * solo nell'interceptor, un <a href> nudo arriverebbe senza token.
  */
 @Component({
   selector: 'app-vendite-admin',
-  imports: [DecimalPipe, MatIconModule],
+  imports: [DecimalPipe, MatIconModule, MatMenuModule],
   templateUrl: './vendite.html',
   styleUrl: './vendite.css',
 })
@@ -69,21 +70,25 @@ export class VenditeAdmin {
     return Math.max(6, Math.round(t.quantita / this.massimo() * 100)) + '%';
   }
 
-  /** Download del CSV come blob: nome file dal Content-Disposition
-   *  del server sarebbe l'ideale, qui lo ricomponiamo uguale. */
-  scaricaCsv(): void {
+  /** Download come blob (nome file ricomposto uguale al server).
+   *  Un metodo per entrambi i formati: cambia solo l'endpoint —
+   *  xlsx per lavorarci in Excel, csv per l'interoperabilita'. */
+  scarica(formato: 'xlsx' | 'csv'): void {
     if (this.scaricando()) return;
     this.scaricando.set(true);
-    this.venditeS.exportCsv(this.giorni()).subscribe({
+    const chiamata = formato === 'xlsx'
+        ? this.venditeS.exportXlsx(this.giorni())
+        : this.venditeS.exportCsv(this.giorni());
+    chiamata.subscribe({
       next: blob => {
         this.scaricando.set(false);
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `vendite-ultimi-${this.giorni()}gg.csv`;
+        a.download = `vendite-ultimi-${this.giorni()}gg.${formato}`;
         a.click();
         URL.revokeObjectURL(url);
-        this.toast('CSV scaricato.', false);
+        this.toast(formato === 'xlsx' ? 'Excel scaricato.' : 'CSV scaricato.', false);
       },
       error: () => {
         this.scaricando.set(false);

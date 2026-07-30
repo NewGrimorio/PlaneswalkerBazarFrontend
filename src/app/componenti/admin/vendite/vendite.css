@@ -70,6 +70,7 @@ header { display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 .btn.primario { background: #1565c0; color: #fff; }
 .btn.primario:hover:not(:disabled) { background: #0f4f9c; }
+.scarica .freccia { margin-left: -2px; }
 .btn mat-icon { font-size: 18px; width: 18px; height: 18px; }
 
 .toast {

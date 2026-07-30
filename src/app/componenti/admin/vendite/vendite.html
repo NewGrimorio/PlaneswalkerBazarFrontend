@@ -7,11 +7,24 @@
                 (click)="cambiaFinestra(f.v)">{{ f.l }}</button>
       }
     </nav>
+    <!-- Esporta: unico bottone a destra, il formato si sceglie dal
+         menu. matMenuTriggerFor come nel chip utente del layout. -->
     <button type="button" class="btn primario scarica"
-            [disabled]="scaricando()" (click)="scaricaCsv()">
+            [disabled]="scaricando()" [matMenuTriggerFor]="menuEsporta">
       <mat-icon>download</mat-icon>
-      {{ scaricando() ? 'Preparazione…' : 'Scarica CSV' }}
+      {{ scaricando() ? 'Preparazione…' : 'Scarica report' }}
+      <mat-icon class="freccia">expand_more</mat-icon>
     </button>
+    <mat-menu #menuEsporta="matMenu" xPosition="before">
+      <button mat-menu-item (click)="scarica('xlsx')">
+        <mat-icon>table_view</mat-icon>
+        <span>Excel (.xlsx)</span>
+      </button>
+      <button mat-menu-item (click)="scarica('csv')">
+        <mat-icon>description</mat-icon>
+        <span>CSV (.csv)</span>
+      </button>
+    </mat-menu>
   </header>
 
   @if (caricando()) {
