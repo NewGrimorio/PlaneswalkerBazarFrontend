@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -30,6 +30,27 @@ export interface RicaricaEsito {
 @Injectable({ providedIn: 'root' })
 export class Portafoglio {
   private http = inject(HttpClient);
+
+  /**
+   * SALDO CONDIVISO (signal): un'unica fonte per chiunque lo mostri —
+   * il chip in topbar, l'hub account, domani altro. Chi muove denaro
+   * (ricarica, prelievo, checkout) chiama refreshSaldo() e tutti i
+   * lettori si aggiornano da soli. null = non caricato / non loggato.
+   */
+  saldoCorrente = signal<number | null>(null);
+
+  /** Rilegge il saldo dal server e aggiorna il signal condiviso. */
+  refreshSaldo(): void {
+    this.get().subscribe({
+      next: p => this.saldoCorrente.set(p.saldo),
+      error: () => this.saldoCorrente.set(null)   // sessione assente/scaduta
+    });
+  }
+
+  /** Da chiamare al logout: un saldo fantasma non deve sopravvivere. */
+  azzeraSaldo(): void {
+    this.saldoCorrente.set(null);
+  }
 
   get(): Observable<PortafoglioDTO> {
     return this.http.get<PortafoglioDTO>(`${BASE}/portafoglio`);

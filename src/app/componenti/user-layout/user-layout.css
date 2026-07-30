@@ -23,28 +23,50 @@
 .link-menu:hover { color: #f5e6c8; }
 .link-menu.attivo { color: #d4a24c; border-bottom-color: #d4a24c; }
 
-.pulsante-utente {
-  margin-left: auto; height: 42px; padding: 0 14px;
-  border-radius: 6px; background: #d4a24c; color: #1a1410; font-weight: 700;
+/* ---------- Chip utente (autenticato) ----------
+   Scuro bordato d'oro, non piu' pillola piena: l'oro pieno resta al
+   call-to-action Accedi. Dentro: avatar vero, saluto, saldo in oro. */
+.chip-utente {
+  margin-left: auto; height: 52px; padding: 0 14px 0 8px;
+  display: flex; align-items: center; gap: 10px;
+  border-radius: 999px;
+  background: rgba(212, 162, 76, 0.10);
+  border: 1px solid #d4a24c;
+  cursor: pointer; font: inherit;      /* bottone nativo: reset */
 }
-.pulsante-utente { --mat-text-button-label-text-color: #1a1410; }
-.pulsante-utente .nome-utente,
-.pulsante-utente mat-icon { color: #1a1410; }
+.chip-utente:hover { background: rgba(212, 162, 76, 0.22); }
 
-.pulsante-utente:hover { background: #e8c579; }
-.contenuto-pulsante-utente { display: inline-flex; align-items: center; gap: 8px; }
-.nome-utente { white-space: nowrap; }
+.avatar-chip {
+  width: 36px; height: 36px; border-radius: 50%;
+  object-fit: cover;                   /* ritaglia, mai deforma */
+  border: 2px solid #d4a24c;
+  background: #2a2118;
+}
 
-/* Da ospite il bottone e' un <a>, non un <button> Material:
-   servono allineamento e reset del sottolineato. */
+.chi-chip {
+  display: flex; flex-direction: column; align-items: flex-start;
+  line-height: 1.15;
+}
+.saluto { font-size: 12.5px; font-weight: 600; color: #f5e6c8; white-space: nowrap; }
+.saldo-chip { font-size: 13.5px; font-weight: 800; color: #d4a24c; }
+
+.chip-utente .freccia-chip { color: #d4a24c; }
+
+/* ---------- Accedi (ospite): il call-to-action resta ORO pieno ---------- */
 .pulsante-accedi {
+  margin-left: auto; height: 42px; padding: 0 14px;
   display: inline-flex; align-items: center; gap: 8px;
-  text-decoration: none;
+  border-radius: 6px; background: #d4a24c;
+  color: #1a1410; font-weight: 700; text-decoration: none;
 }
+.pulsante-accedi:hover { background: #e8c579; }
+.pulsante-accedi mat-icon { color: #1a1410; }
+.nome-utente { white-space: nowrap; }
 
 .contenuto-user { min-height: calc(100vh - 72px); background: #faf8f4; }
 
 @media (max-width: 900px) {
   .menu-user { height: auto; flex-wrap: wrap; padding: 12px 16px; }
   .marchio { display: none; }
+  .chi-chip { display: none; }   /* su mobile resta il cerchietto */
 }

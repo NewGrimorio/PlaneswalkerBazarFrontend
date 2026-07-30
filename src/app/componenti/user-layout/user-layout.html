@@ -14,27 +14,50 @@
 
   <!-- Catalogo pubblico: la nav deve reggere anche senza sessione -->
   @if (authS.isAutentificated()) {
-    <button mat-button [matMenuTriggerFor]="menuUtente" class="pulsante-utente">
-      <span class="contenuto-pulsante-utente">
-        <mat-icon>account_circle</mat-icon>
-        <span class="nome-utente">Ciao, {{ authS.utente()?.username ?? 'utente' }}</span>
-        <mat-icon>expand_more</mat-icon>
+    <!-- Chip identita': avatar vero + saluto + saldo (Amazon dice chi
+         sei, Cardtrader quanto hai). menuOpened rinfresca il saldo:
+         quando l'utente guarda, il numero e' fresco. -->
+    <!-- Bottone NATIVO, non mat-button: il wrapper interno di Material
+         (mdc-button__label) sballa la centratura verticale nel chip a
+         altezza fissa. Stesso approccio del chip della plancia admin. -->
+    <button type="button" class="chip-utente" [matMenuTriggerFor]="menuUtente"
+            (menuOpened)="portafoglioS.refreshSaldo()">
+      <img class="avatar-chip"
+           [src]="urlImmagine(authS.utente()?.immagineProfilo) ?? '/avatar-default.svg'"
+           alt="">
+      <span class="chi-chip">
+        <span class="saluto">Ciao, {{ authS.utente()?.username ?? 'utente' }}</span>
+        @if (portafoglioS.saldoCorrente() !== null) {
+          <span class="saldo-chip">{{ portafoglioS.saldoCorrente() | number:'1.2-2' }} €</span>
+        }
       </span>
+      <mat-icon class="freccia-chip">expand_more</mat-icon>
     </button>
 
-    <mat-menu #menuUtente="matMenu">
+    <mat-menu #menuUtente="matMenu" xPosition="before">
       <button mat-menu-item routerLink="/account">
         <mat-icon>person</mat-icon><span>Il mio account</span>
+      </button>
+      <button mat-menu-item routerLink="/account/ordini">
+        <mat-icon>local_shipping</mat-icon><span>I miei ordini</span>
+      </button>
+      <button mat-menu-item routerLink="/account/portafoglio">
+        <mat-icon>account_balance_wallet</mat-icon><span>Portafoglio</span>
       </button>
       <button mat-menu-item routerLink="/checkout">
         <mat-icon>shopping_cart</mat-icon><span>Carrello</span>
       </button>
+      @if (eAdmin) {
+        <button mat-menu-item routerLink="/admin">
+          <mat-icon>space_dashboard</mat-icon><span>Plancia admin</span>
+        </button>
+      }
       <button mat-menu-item (click)="esci()">
         <mat-icon>logout</mat-icon><span>Esci</span>
       </button>
     </mat-menu>
   } @else {
-    <a routerLink="/login" class="pulsante-utente pulsante-accedi">
+    <a routerLink="/login" class="pulsante-accedi">
       <mat-icon>login</mat-icon>
       <span class="nome-utente">Accedi</span>
     </a>
