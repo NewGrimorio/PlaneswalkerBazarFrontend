@@ -1,35 +1,32 @@
 :host { display: block; }
 
-.menu-user {
-  height: 72px;
-  display: flex; align-items: center; gap: 20px;
-  padding: 0 24px;
+/* ================= TOPBAR A DUE RIGHE =================
+   Riga alta:   logo | ricerca | carrello + chip utente
+   Riga bassa:  categorie CENTRATE che si illuminano all'hover */
+.topbar {
   background: #1a1410;                 /* bruno scuro del logo */
   border-bottom: 2px solid #d4a24c;    /* filo d'oro */
   position: sticky; top: 0; z-index: 10;
 }
+
+/* ---------- Riga alta ---------- */
+.riga-alta {
+  display: flex; align-items: center; gap: 20px;
+  padding: 10px 24px;
+}
+
 .logo-link { display: flex; align-items: center; gap: 10px; text-decoration: none; }
 .logo { width: 44px; height: 44px; object-fit: contain; }
 .marchio { color: #f5e6c8; font-weight: 700; letter-spacing: .4px; white-space: nowrap; }
 .marchio-oro { color: #d4a24c; margin-left: 4px; }
 
-.link-wrap { display: flex; gap: 18px; flex-wrap: wrap; }
-.link-menu {
-  color: #cbbfae; text-decoration: none;
-  font-size: 14px; font-weight: 600;
-  padding: 6px 0; border-bottom: 2px solid transparent;
-  transition: color .15s, border-color .15s;
-}
-.link-menu:hover { color: #f5e6c8; }
-.link-menu.attivo { color: #d4a24c; border-bottom-color: #d4a24c; }
+/* La ricerca occupa il centro: cresce, ma con un tetto, e i margin
+   auto la tengono centrata tra il logo e il gruppo destro */
+.ricerca-top { flex: 1; max-width: 520px; margin: 0 auto; }
 
-/* ---------- Ricerca globale ---------- */
-.ricerca-top {
-  flex: 1; max-width: 380px; min-width: 180px;
-  margin-left: auto;                 /* spinge ricerca+carrello+chip a destra */
-}
+.gruppo-destro { display: flex; align-items: center; gap: 12px; }
 
-/* ---------- Carrello in topbar ---------- */
+/* ---------- Carrello ---------- */
 .carrello-top {
   position: relative; display: flex; align-items: center;
   padding: 8px; border-radius: 50%; color: #f5e6c8;
@@ -44,9 +41,7 @@
   display: inline-flex; align-items: center; justify-content: center;
 }
 
-/* ---------- Chip utente (autenticato) ----------
-   Scuro bordato d'oro, non piu' pillola piena: l'oro pieno resta al
-   call-to-action Accedi. Dentro: avatar vero, saluto, saldo in oro. */
+/* ---------- Chip utente ---------- */
 .chip-utente {
   height: 52px; padding: 0 14px 0 8px;
   display: flex; align-items: center; gap: 10px;
@@ -75,7 +70,7 @@
 
 /* ---------- Accedi (ospite): il call-to-action resta ORO pieno ---------- */
 .pulsante-accedi {
-  margin-left: auto; height: 42px; padding: 0 14px;
+  height: 42px; padding: 0 14px;
   display: inline-flex; align-items: center; gap: 8px;
   border-radius: 6px; background: #d4a24c;
   color: #1a1410; font-weight: 700; text-decoration: none;
@@ -84,11 +79,42 @@
 .pulsante-accedi mat-icon { color: #1a1410; }
 .nome-utente { white-space: nowrap; }
 
-.contenuto-user { min-height: calc(100vh - 72px); background: #faf8f4; }
+/* ---------- Riga categorie: centrate, con l'effetto luce ---------- */
+.riga-categorie {
+  display: flex; justify-content: center; align-items: center;
+  gap: 28px; flex-wrap: wrap;
+  padding: 0 24px;
+  min-height: 44px;
+  border-top: 1px solid rgba(212, 162, 76, 0.25);
+}
+.link-menu {
+  display: inline-flex; align-items: center; gap: 7px;
+  color: #cbbfae; text-decoration: none;
+  font-size: 14px; font-weight: 600;
+  padding: 10px 2px; border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s, text-shadow .15s;
+}
+/* "Si illuminano": oro chiaro + alone caldo, come lanterne del bazar */
+.link-menu:hover {
+  color: #f0c96a;
+  text-shadow: 0 0 14px rgba(212, 162, 76, 0.85);
+}
+.link-menu.attivo { color: #d4a24c; border-bottom-color: #d4a24c; }
 
+/* Slot icona (predisposto): quando l'array valorizza 'icona' */
+.icona-cat { width: 20px; height: 20px; object-fit: contain; }
+
+.contenuto-user { min-height: calc(100vh - 120px); background: #faf8f4; }
+
+/* ---------- Mobile ---------- */
 @media (max-width: 900px) {
-  .menu-user { height: auto; flex-wrap: wrap; padding: 12px 16px; }
+  .riga-alta { flex-wrap: wrap; padding: 10px 16px; }
   .marchio { display: none; }
   .chi-chip { display: none; }   /* su mobile resta il cerchietto */
-  .ricerca-top { order: 10; flex-basis: 100%; max-width: none; margin-left: 0; }
+  .ricerca-top { order: 10; flex-basis: 100%; max-width: none; margin: 6px 0 0; }
+  /* Le categorie scorrono in orizzontale invece di andare a capo */
+  .riga-categorie {
+    justify-content: flex-start; flex-wrap: nowrap;
+    overflow-x: auto; gap: 18px;
+  }
 }

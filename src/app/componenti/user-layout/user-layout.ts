@@ -85,4 +85,5 @@ export class UserLayout {
     this.authS.resetAll();
     this.router.navigate(['/login']);
   }
+  
 }
