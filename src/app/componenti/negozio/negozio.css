@@ -83,11 +83,18 @@
   border-color: #d4a24c;
 }
 .thumb {
-  aspect-ratio: 3 / 4;
+  /* 63/88: le proporzioni VERE di una carta Magic. Con il vecchio
+     3/4 (piu' largo) il cover scalava sulla larghezza e tagliava
+     alto e basso — cioe' il bordo nero. */
+  aspect-ratio: 63 / 88;
   display: flex; align-items: center; justify-content: center;
-  background: #f6f2ea; border-radius: 6px; overflow: hidden; margin-bottom: 8px;
+  /* BIANCO come la card: con contain le immagini non-verticali
+     (tappetini, accessori) lasciano bande — sul bianco spariscono. */
+  background: #fff; border-radius: 6px; overflow: hidden; margin-bottom: 8px;
 }
-.thumb img { width: 100%; height: 100%; object-fit: cover; }
+/* contain, non cover: la scansione si vede INTERA, bordo compreso.
+   Col ratio giusto le eventuali bande residue sono di 1-2px. */
+.thumb img { width: 100%; height: 100%; object-fit: contain; }
 .thumb mat-icon { color: #c9bfae; transform: scale(1.6); }
 .card h3 { margin: 0; font-size: .92rem; line-height: 1.25; }
 .card small { color: #8a8175; font-size: .78rem; }
