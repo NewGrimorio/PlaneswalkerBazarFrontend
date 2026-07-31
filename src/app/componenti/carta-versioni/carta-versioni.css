@@ -1,0 +1,164 @@
+/* Stessa vetrina del negozio, ancorata alla carta: pannello filtri
+   piu' griglia. Sulla tessera il titolo e' il NOME DEL SET (la carta
+   e' una sola e sta nella testata). */
+.pagina { max-width: 1200px; margin: 0 auto; padding: 24px 20px 40px; }
+
+.torna {
+  display: inline-flex; align-items: center; gap: 4px;
+  color: #8a6d2f; text-decoration: none; font-size: .9rem;
+}
+.torna:hover { text-decoration: underline; }
+.mini { font-size: 16px; width: 16px; height: 16px; }
+
+.testata { margin: 10px 0 18px; }
+.testata h1 { margin: 0 0 4px; font-size: 1.8rem; color: #2a1f16; }
+.sottotitolo { margin: 0; color: #a09786; font-size: .9rem; }
+
+.stato { color: #a09786; font-size: .9rem; padding: 8px 0; }
+.conta { color: #a09786; font-size: .85rem; margin: 0 0 12px; text-align: right; }
+
+/* ---- layout: filtri + vetrina ---- */
+.corpo { display: flex; gap: 24px; align-items: flex-start; }
+.filtri {
+  flex: 0 0 220px; position: sticky; top: 90px;
+  border: 1px solid #e8e2d6; border-radius: 12px;
+  background: #fff; padding: 16px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.filtri h2 {
+  margin: 0; font-size: 1rem; color: #2a1f16;
+  display: flex; align-items: center; gap: 6px;
+}
+.filtri h2 mat-icon { color: #8a6d2f; }
+.vetrina { flex: 1; min-width: 0; }
+
+.campo-filtro { display: flex; flex-direction: column; gap: 6px;
+                font-size: .82rem; color: #6b6355; }
+.campo-filtro input {
+  border: 1px solid #ddd3c2; border-radius: 8px; padding: 8px 10px;
+  font: inherit; font-size: .88rem;
+}
+.spunta { display: flex; align-items: center; gap: 8px;
+          font-size: .88rem; color: #2a1f16; cursor: pointer; }
+.spunta input { accent-color: #d4a24c; width: 16px; height: 16px; }
+
+.tendina { border-top: 1px solid #f0ebe0; padding-top: 10px; }
+.tendina summary {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .82rem; color: #6b6355; cursor: pointer;
+  list-style: none; user-select: none;
+}
+.tendina summary::-webkit-details-marker { display: none; }
+.tendina summary::after {
+  content: ''; margin-left: auto;
+  border: solid #a09786; border-width: 0 2px 2px 0;
+  padding: 3px; transform: rotate(45deg);
+  transition: transform .15s;
+}
+.tendina[open] summary::after { transform: rotate(-135deg); }
+.tendina-corpo { display: flex; flex-direction: column; gap: 6px;
+                 padding: 10px 2px 2px; }
+.conta-sel {
+  min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 9px; background: #d4a24c; color: #fff;
+  font-size: .7rem; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.btn-testo {
+  border: none; background: none; padding: 0; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 4px;
+  color: #8a6d2f; font: inherit; font-size: .85rem;
+}
+.btn-testo:hover { color: #a8792e; }
+.btn-testo mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
+/* ---- griglia e tessere (identiche al negozio) ---- */
+.griglia {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+.card {
+  border: 1px solid #e8e2d6; border-radius: 10px; padding: 10px;
+  cursor: pointer; background: #fff;
+  transition: box-shadow .15s, transform .15s, border-color .15s;
+}
+.card:hover {
+  box-shadow: 0 6px 18px rgba(0,0,0,.12);
+  transform: translateY(-2px);
+  border-color: #d4a24c;
+}
+.thumb {
+  aspect-ratio: 63 / 88;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff; border-radius: 6px; overflow: hidden; margin-bottom: 8px;
+}
+.thumb img { width: 100%; height: 100%; object-fit: contain; }
+.thumb mat-icon { color: #c9bfae; transform: scale(1.6); }
+.card h3 { margin: 0; font-size: .92rem; line-height: 1.25; }
+.meta-carta { color: #a09786; font-size: .74rem; display: block; }
+.prezzo-da { font-weight: 700; color: #a8792e; font-size: .9rem; }
+.prezzo-nd { display: block; margin-top: 4px; color: #c0392b;
+             font-size: .78rem; font-style: italic; }
+
+.prezzo-da { display: block; margin-top: 4px; }
+
+/* ---- Modale varianti: stili IDENTICI al negozio ---- */
+.modale {
+  position: fixed; inset: 0;
+  background: rgba(26,20,16,.6);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; z-index: 50;
+}
+.pannello {
+  background: #fff; border-radius: 14px;
+  padding: 24px; max-width: 460px; width: 100%;
+  max-height: 85vh; overflow: auto; position: relative;
+}
+.pannello h2 { margin: 0 8px 4px 0; font-size: 1.3rem; }
+.icona {
+  border: none; background: none; cursor: pointer;
+  color: #6b6355; display: inline-flex;
+}
+.chiudi { position: absolute; top: 12px; right: 12px; }
+.set { color: #a8792e; font-size: .85rem; margin: 0 0 8px; }
+
+.btn-dettaglio {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: #a8792e; font-weight: 600; font-size: .88rem;
+  text-decoration: none; margin-bottom: 14px;
+}
+.btn-dettaglio:hover { text-decoration: underline; }
+.btn-dettaglio mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
+.varianti { list-style: none; margin: 0; padding: 0;
+            display: flex; flex-direction: column; gap: 10px; }
+.varianti li {
+  display: flex; align-items: center; justify-content: space-between;
+  border: 1px solid #e8e2d6; border-radius: 8px; padding: 10px 12px;
+}
+.v-info { display: flex; flex-direction: column; }
+.v-info strong { font-size: 1.05rem; }
+.v-info small { color: #a09786; font-size: .78rem; }
+
+.btn-primario {
+  border: none; border-radius: 8px;
+  background: #d4a24c; color: #1a1410;
+  padding: 10px; font-size: .92rem; font-weight: 700; cursor: pointer;
+  transition: background .15s;
+}
+.btn-primario:hover:not(:disabled) { background: #e8c579; }
+.btn-primario:disabled { background: #e6ded0; color: #a09786; cursor: not-allowed; }
+.btn-primario.piccolo { padding: 6px 16px; }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #2a1f16; color: #f5e6c8; padding: 12px 22px; border-radius: 8px;
+  font-size: .9rem; z-index: 60; box-shadow: 0 6px 20px rgba(0,0,0,.25);
+}
+.toast.errore { background: #c0392b; }
+
+@media (max-width: 780px) {
+  .corpo { flex-direction: column; }
+  .filtri { position: static; flex: none; width: 100%; }
+}

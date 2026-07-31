@@ -12,6 +12,8 @@ export interface RisultatoRicercaDTO {
   dettaglio: string | null;
   slug: string;
   imageUrl: string | null;
+  /** Solo per tipo=CARTA: quante versioni (guida la navigazione). */
+  versioni: number | null;
 }
 
 /** Ricerca globale: endpoint pubblico, niente token necessario. */

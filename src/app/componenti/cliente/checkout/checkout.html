@@ -84,6 +84,22 @@
           </div>
           @if (metodoRicarica === 'PAYPAL') {
             <small class="nota">PayPal applica una commissione del 5% + 0,35 €, accredito immediato.</small>
+            <!-- Calcolo live: stessa formula del backend. La commissione
+                 e' trattenuta dal pagato: quel che conta per l'utente e'
+                 quanto ARRIVA sul saldo. -->
+            @if (nettoPaypal(); as netto) {
+              @if (netto > 0) {
+                <small class="nota calcolo">
+                  Pagherai <strong>{{ importoRicarica | number:'1.2-2' }} €</strong>
+                  · commissione {{ commissionePaypal() | number:'1.2-2' }} €
+                  · sul saldo arriveranno <strong>{{ netto | number:'1.2-2' }} €</strong>
+                </small>
+              } @else {
+                <small class="nota errore-calcolo">
+                  Importo troppo basso: la commissione lo azzererebbe.
+                </small>
+              }
+            }
           } @else {
             <small class="nota">Il bonifico va confermato da un amministratore prima di essere disponibile.</small>
           }

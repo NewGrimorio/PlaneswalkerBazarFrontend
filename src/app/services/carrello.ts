@@ -41,6 +41,13 @@ export class Carrello {
       .pipe(tap(c => this.carrelloCorrente.set(c)));
   }
 
+  /** Quick-add dalla tessera: 1 pezzo della variante piu' economica
+   *  disponibile del prodotto ("da X euro" -> esattamente quello). */
+  addEconomico(prodottoId: number): Observable<CarrelloDTO> {
+    return this.http.post<CarrelloDTO>(`${BASE}/carrello/prodotti/${prodottoId}/economico`, {})
+      .pipe(tap(c => this.carrelloCorrente.set(c)));
+  }
+
   /** Il backend INCREMENTA se la variante e' gia' in carrello. */
   addVoce(skuId: number, quantita: number): Observable<CarrelloDTO> {
     return this.http.post<CarrelloDTO>(`${BASE}/carrello/voci`, { skuId, quantita })

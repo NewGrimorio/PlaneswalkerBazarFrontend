@@ -124,6 +124,27 @@ export class Checkout {
 
   // ---------------- Ricarica ----------------
 
+  /**
+   * Specchio ESATTO del calcolo backend (PortafoglioImpl:
+   * PAYPAL_PERCENTUALE 0.05, PAYPAL_FISSO 0.35, HALF_UP a 2 decimali):
+   * la commissione e' TRATTENUTA dall'importo pagato, quindi cio' che
+   * arriva sul saldo e' il netto. Questi metodi alimentano la riga
+   * informativa live sotto il form — se il backend cambiasse tariffa,
+   * vanno aggiornati insieme (unica fonte di verita': il server).
+   */
+  commissionePaypal(): number | null {
+    const imp = this.importoRicarica;
+    if (imp == null || imp <= 0) return null;
+    return Math.round((imp * 0.05 + 0.35) * 100) / 100;
+  }
+
+  nettoPaypal(): number | null {
+    const imp = this.importoRicarica;
+    const c = this.commissionePaypal();
+    if (imp == null || c == null) return null;
+    return Math.round((imp - c) * 100) / 100;
+  }
+
   /** Precompila l'importo lordo che, al netto della commissione PayPal
    *  (5% + 0,35), copre esattamente il mancante. Per il bonifico e' il
    *  mancante secco (nessuna commissione), ma il bonifico non e'

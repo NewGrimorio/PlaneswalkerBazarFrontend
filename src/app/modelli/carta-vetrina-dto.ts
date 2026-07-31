@@ -8,5 +8,7 @@ export interface CartaVetrinaDTO {
   rarita: string;
   /** Sottoinsieme ordinato di "WUBRG": "" = incolore, >1 = multicolore. */
   colori: string;
+  espansioneCodice: string;
+  espansioneNome: string;
   prezzoDa: number | null;
 }

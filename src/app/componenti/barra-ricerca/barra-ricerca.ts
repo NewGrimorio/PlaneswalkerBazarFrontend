@@ -79,7 +79,16 @@ export class BarraRicerca {
 
   vai(r: RisultatoRicercaDTO): void {
     this.chiudi();
-    this.router.navigate([r.tipo === 'CARTA' ? '/carta' : '/prodotto', r.slug]);
+    if (r.tipo !== 'CARTA') {
+      this.router.navigate(['/prodotto', r.slug]);
+      return;
+    }
+    // Una sola versione: dritti al dettaglio. Piu' versioni: la
+    // pagina che le mostra tutte, cosi' l'utente sceglie la stampa.
+    if ((r.versioni ?? 1) > 1)
+      this.router.navigate(['/carta', r.slug, 'versioni']);
+    else
+      this.router.navigate(['/carta', r.slug]);
   }
 
   chiudi(): void {
