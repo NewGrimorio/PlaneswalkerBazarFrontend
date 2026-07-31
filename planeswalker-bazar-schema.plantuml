@@ -93,6 +93,10 @@ package "Catalogo Carte (Scryfall)" #FBF6EA {
     * espansione_id : bigint <<FK>>
     * numero_collezione, rarita
     scryfall_id : uuid <<UK>>
+    multiverse_id : integer <<Gatherer>>
+    cardmarket_id : integer
+    cardtrader_blueprint_id : integer
+    * digitale : boolean <<V14, escl. negozio>>
     * attivo, orfana : boolean <<V4>>
   }
   entity prezzo_riferimento {
@@ -100,7 +104,9 @@ package "Catalogo Carte (Scryfall)" #FBF6EA {
     --
     * stampa_id : bigint <<FK>>
     * fonte, finitura
+    * condizione, lingua <<V12, 'NA' per-finitura>>
     prezzo_trend/medio/min : numeric
+    -- append-only: storico gratis --
   }
 }
 
@@ -147,6 +153,8 @@ package "Carrello e Ordini" #F0EAFB {
     * utente_id : bigint <<FK>>
     * stato : varchar <<8 stati>>
     * totale : numeric
+    * tipo_spedizione : varchar <<V13>>
+    * spese_spedizione : numeric <<V13, snapshot tariffa>>
     sped_* : varchar <<snapshot indirizzo>>
   }
   entity voce_ordine {
@@ -162,7 +170,9 @@ package "Carrello e Ordini" #F0EAFB {
     --
     * ordine_id : bigint <<FK>>
     stato_da, stato_a : varchar
+    nota : varchar <<V15: motivo reso>>
     eseguito_da : bigint <<FK>>
+    -- fonte di verita' (finestra reso V16 derivata) --
   }
 }
 
@@ -175,8 +185,19 @@ package "Recensioni" #EAFBFB {
     * prodotto_id : bigint <<FK>>
     * ordine_id : bigint <<FK>>
     * voto : smallint <<CHECK 1..5>>
-    * stato : varchar
+    * stato : varchar <<V15, default IN_ATTESA>>
     -- UK (utente_id, prodotto_id) --
+  }
+}
+
+' ===================== SISTEMA =====================
+package "Sistema" #F5F5F0 {
+  entity messaggi_sistema {
+    * codice : varchar <<PK composta>>
+    * lingua : varchar <<PK composta>>
+    --
+    * testo : varchar
+    -- 2o livello di protezione (service) --
   }
 }
 
