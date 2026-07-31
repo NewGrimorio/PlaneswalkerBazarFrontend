@@ -69,3 +69,14 @@ h2 { font-size: 1.05rem; margin: 18px 0 10px; color: #2a1f16; }
          background: #2a1f16; color: #f5e6c8; padding: 12px 22px; border-radius: 8px;
          font-size: .9rem; z-index: 60; box-shadow: 0 6px 20px rgba(0,0,0,.25); }
 .toast.errore { background: #c0392b; }
+/* --- Risorse esterne (sotto l'immagine) --- */
+.link-esterni {
+  margin-top: 12px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.link-esterni a {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: .85rem; color: #8a6d2f; text-decoration: none;
+}
+.link-esterni a:hover { text-decoration: underline; }
+.link-esterni .mini { font-size: 14px; width: 14px; height: 14px; }

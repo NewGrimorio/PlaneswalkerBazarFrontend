@@ -6,5 +6,7 @@ export interface CartaVetrinaDTO {
   imageUrl: string | null;
   numeroCollezione: string;
   rarita: string;
+  /** Sottoinsieme ordinato di "WUBRG": "" = incolore, >1 = multicolore. */
+  colori: string;
   prezzoDa: number | null;
 }

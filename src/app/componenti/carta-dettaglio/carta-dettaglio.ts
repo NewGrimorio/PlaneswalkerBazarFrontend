@@ -44,6 +44,24 @@ export class CartaDettaglio {
     legal: 'Legale', not_legal: 'Non legale', banned: 'Bandita', restricted: 'Limitata',
   };
 
+  /**
+   * Link esterni della stampa. Scryfall usa l'URL canonico
+   * set/numero (gia' nel DTO, minuscolo dalla normalizzazione);
+   * encodeURIComponent per i numeri con caratteri speciali
+   * (promo tipo "1★"). Gatherer solo se il multiverseId esiste:
+   * molte stampe moderne non sono sul database Wizards.
+   */
+  linkScryfall = computed(() => {
+    const s = this.prodotto()?.stampa;
+    if (!s) return null;
+    return `https://scryfall.com/card/${s.espansioneCodice}/${encodeURIComponent(s.numeroCollezione)}`;
+  });
+
+  linkGatherer = computed(() => {
+    const id = this.prodotto()?.stampa?.multiverseId;
+    return id ? `https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=${id}` : null;
+  });
+
   /** legal e' JSON grezzo dal backend: si interpreta qui (come da contratto). */
   legalita = computed(() => {
     const raw = this.prodotto()?.carta?.legal;

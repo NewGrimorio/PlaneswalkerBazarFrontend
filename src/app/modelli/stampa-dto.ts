@@ -7,6 +7,8 @@ export interface StampaDTO {
   espansioneCodice: string;
   espansioneNome: string;
   numeroCollezione: string;
+  /** Id Gatherer (null: la stampa non e' sul database Wizards). */
+  multiverseId: number | null;
   rarita: string;
   artista: string | null;
   promo: boolean;

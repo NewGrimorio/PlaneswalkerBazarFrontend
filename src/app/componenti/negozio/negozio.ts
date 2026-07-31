@@ -67,7 +67,7 @@ export class Negozio {
   };
 
   // ATTENZIONE: ripristina qui il TUO valore se era diverso
-  private readonly PER_PAGINA = 24;
+  private readonly PER_PAGINA = 25;
 
   prodotti = signal<ProdottoDTO[]>([]);
   carte = signal<CartaVetrinaDTO[]>([]);
@@ -85,6 +85,7 @@ export class Negozio {
   // Client-side sui dati gia' caricati: nessuna chiamata in piu'.
   fNome = signal('');
   fRarita = signal<Set<string>>(new Set());     // vuoto = tutte
+  fColori = signal<Set<string>>(new Set());     // WUBRG + C/M, vuoto = tutti
   fSoloDisponibili = signal(false);
   fPrezzoMax = signal<number | null>(null);
   fEspansione = signal('');                     // griglia generica
@@ -224,9 +225,19 @@ export class Negozio {
     this.pagina.set(1);
   }
 
+  toggleColore(c: string): void {
+    this.fColori.update(s => {
+      const n = new Set(s);
+      n.has(c) ? n.delete(c) : n.add(c);
+      return n;
+    });
+    this.pagina.set(1);
+  }
+
   azzeraFiltri(): void {
     this.fNome.set('');
     this.fRarita.set(new Set());
+    this.fColori.set(new Set());
     this.fSoloDisponibili.set(false);
     this.fPrezzoMax.set(null);
     this.fEspansione.set('');
@@ -235,8 +246,51 @@ export class Negozio {
 
   filtriAttivi = computed(() =>
     this.fNome().trim() !== '' || this.fRarita().size > 0 ||
+    this.fColori().size > 0 ||
     this.fSoloDisponibili() || this.fPrezzoMax() != null ||
     this.fEspansione() !== '');
+
+  /**
+   * Voci del filtro colore, in ordine WUBRG (l'ordine "della ruota",
+   * non alfabetico) + Incolore e Multicolore in coda.
+   *
+   * Semantica a SOTTOINSIEME sulle lettere (lo stile "c<=" di
+   * Scryfall, quello di chi costruisce mazzi): la carta passa se i
+   * suoi colori stanno TUTTI nella selezione.
+   *  - W          -> solo mono-bianche
+   *  - W+R        -> bianche, rosse e le multicolori SOLO bianco-rosse
+   *  - W+R+B      -> mono e multicolori dentro Mardu (WR, WB, RB, WRB)
+   * "Incolore" e "Multicolore" restano condizioni indipendenti in OR:
+   * le incolori non chiedono mana colorato (irraggiungibili
+   * altrimenti), "Multicolore" da solo mostra tutte le oro.
+   */
+  readonly COLORI_FILTRO = [
+    { valore: 'W', etichetta: 'Bianco' },
+    { valore: 'U', etichetta: 'Blu' },
+    { valore: 'B', etichetta: 'Nero' },
+    { valore: 'R', etichetta: 'Rosso' },
+    { valore: 'G', etichetta: 'Verde' },
+    { valore: 'C', etichetta: 'Incolore' },
+    { valore: 'M', etichetta: 'Multicolore' },
+  ];
+
+  private passaColori(colori: string | null | undefined): boolean {
+    const sel = this.fColori();
+    if (sel.size === 0) return true;
+    const c = colori ?? '';
+
+    // Condizioni indipendenti, in OR con la regola delle lettere
+    if (sel.has('C') && c === '') return true;
+    if (sel.has('M') && c.length > 1) return true;
+
+    // Regola del sottoinsieme: OGNI colore della carta deve essere
+    // tra quelli selezionati. Le incolori (c vuoto) non passano da
+    // qui: every() su stringa vuota sarebbe true, ma "ho spuntato
+    // Bianco" non deve mostrare i Golem — per quelli c'e' il chip C.
+    const lettere = [...sel].filter(s => 'WUBRG'.includes(s));
+    if (lettere.length === 0 || c === '') return false;
+    return [...c].every(x => sel.has(x));
+  }
 
   /** Espansioni presenti nella griglia generica (per la select). */
   espansioniPresenti = computed(() => {
@@ -254,6 +308,7 @@ export class Negozio {
   carteFiltrate = computed(() => this.carte().filter(c =>
     this.passaNome(c.nome)
     && (this.fRarita().size === 0 || this.fRarita().has(c.rarita))
+    && this.passaColori(c.colori)
     && (!this.fSoloDisponibili() || c.prezzoDa != null)
     && (this.fPrezzoMax() == null || (c.prezzoDa != null && c.prezzoDa <= this.fPrezzoMax()!))
   ));

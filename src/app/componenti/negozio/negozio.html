@@ -21,18 +21,45 @@
       </label>
 
       @if (espansione()) {
-        <!-- Vetrina carte del set -->
-        <fieldset class="gruppo-filtro">
-          <legend>Rarità</legend>
-          @for (r of RARITA_FILTRO; track r.valore) {
-            <label class="spunta">
-              <input type="checkbox"
-                     [checked]="fRarita().has(r.valore)"
-                     (change)="toggleRarita(r.valore)">
-              {{ r.etichetta }}
-            </label>
-          }
-        </fieldset>
+        <!-- Vetrina carte del set.
+             Tendine con <details>/<summary>: apertura/chiusura, ESC e
+             accessibilita' native, zero JS, zero API browser (SSR-safe).
+             Il conteggio nel summary tiene visibile lo stato anche a
+             tendina chiusa. -->
+        <details class="tendina">
+          <summary>
+            Colore
+            @if (fColori().size > 0) { <span class="conta-sel">{{ fColori().size }}</span> }
+          </summary>
+          <div class="tendina-corpo">
+            @for (c of COLORI_FILTRO; track c.valore) {
+              <label class="spunta">
+                <input type="checkbox"
+                       [checked]="fColori().has(c.valore)"
+                       (change)="toggleColore(c.valore)">
+                <span class="pallino-colore" [attr.data-colore]="c.valore"></span>
+                {{ c.etichetta }}
+              </label>
+            }
+          </div>
+        </details>
+
+        <details class="tendina">
+          <summary>
+            Rarità
+            @if (fRarita().size > 0) { <span class="conta-sel">{{ fRarita().size }}</span> }
+          </summary>
+          <div class="tendina-corpo">
+            @for (r of RARITA_FILTRO; track r.valore) {
+              <label class="spunta">
+                <input type="checkbox"
+                       [checked]="fRarita().has(r.valore)"
+                       (change)="toggleRarita(r.valore)">
+                {{ r.etichetta }}
+              </label>
+            }
+          </div>
+        </details>
 
         <label class="spunta">
           <input type="checkbox"

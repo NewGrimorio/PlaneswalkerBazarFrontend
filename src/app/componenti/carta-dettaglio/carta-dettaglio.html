@@ -11,6 +11,22 @@
         @if (urlImmagine(p.imageUrl); as u) {
           <img [src]="u" [alt]="p.nome" class="carta-img">
         }
+        <!-- Risorse esterne: sotto l'immagine, come su Scryfall.
+             Anchor puri: SSR-safe e indicizzabili. -->
+        @if (linkScryfall() || linkGatherer()) {
+          <div class="link-esterni">
+            @if (linkScryfall(); as u) {
+              <a [href]="u" target="_blank" rel="noopener noreferrer">
+                Vedi su Scryfall <mat-icon class="mini">open_in_new</mat-icon>
+              </a>
+            }
+            @if (linkGatherer(); as u) {
+              <a [href]="u" target="_blank" rel="noopener noreferrer">
+                Vedi su Gatherer <mat-icon class="mini">open_in_new</mat-icon>
+              </a>
+            }
+          </div>
+        }
       </div>
 
       <div class="colonna-info">

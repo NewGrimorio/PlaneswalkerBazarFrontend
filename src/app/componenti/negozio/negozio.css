@@ -50,6 +50,49 @@
 }
 .spunta input { accent-color: #d4a24c; width: 16px; height: 16px; }
 
+/* --- Tendine filtri (<details>/<summary>) ---
+   Il summary imita le altre etichette della scheda; la freccia e'
+   il marker nativo ruotato via CSS, niente JS. Il badge .conta-sel
+   tiene visibile "quanti selezionati" anche a tendina chiusa. */
+.tendina { border-top: 1px solid #f0ebe0; padding-top: 10px; }
+.tendina summary {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .82rem; color: #6b6355; cursor: pointer;
+  list-style: none; user-select: none;
+}
+.tendina summary::-webkit-details-marker { display: none; }
+.tendina summary::after {
+  content: ''; margin-left: auto;
+  border: solid #a09786; border-width: 0 2px 2px 0;
+  padding: 3px; transform: rotate(45deg);
+  transition: transform .15s;
+}
+.tendina[open] summary::after { transform: rotate(-135deg); }
+.tendina-corpo {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 10px 2px 2px;
+}
+.conta-sel {
+  min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 9px; background: #d4a24c; color: #fff;
+  font-size: .7rem; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+/* Pallino colore accanto all'etichetta (WUBRG + C/M): stessa
+   palette del mana dei vecchi chip, in formato "legenda". */
+.pallino-colore {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 1px solid #d8d0c0; flex-shrink: 0;
+}
+.pallino-colore[data-colore="W"] { background: #f9f7dd; }
+.pallino-colore[data-colore="U"] { background: #bcd8ea; }
+.pallino-colore[data-colore="B"] { background: #4a4441; }
+.pallino-colore[data-colore="R"] { background: #e8a488; }
+.pallino-colore[data-colore="G"] { background: #a9c9a4; }
+.pallino-colore[data-colore="C"] { background: #d8d4cc; }
+.pallino-colore[data-colore="M"] { background: linear-gradient(135deg, #e8c56a, #c98f3a); }
+
 /* --- Barra ordinamento (vetrina carte) --- */
 .barra-ordina {
   display: flex; align-items: center; justify-content: space-between;
