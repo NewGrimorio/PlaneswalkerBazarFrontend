@@ -100,6 +100,33 @@
     }
   </section>
 
+  <!-- Dialog di conferma rifiuto: <dialog> nativo, stesso pattern di
+       reso/recensioni. Sempre nel DOM (chiuso e' invisibile), il POST
+       parte SOLO dal bottone di conferma. -->
+  <dialog #dialogRifiuto class="dialog-conferma" (close)="daRifiutare.set(null)">
+    @if (daRifiutare(); as m) {
+      <h2><mat-icon>warning_amber</mat-icon> Rifiutare il movimento #{{ m.id }}?</h2>
+      <p class="spiega">
+        {{ etichettaTipo(m) }} · <strong>{{ m.importo | number:'1.2-2' }} €</strong> · {{ m.metodo }}
+      </p>
+      @if (m.tipo === 'PRELIEVO') {
+        <p class="spiega avviso">
+          L'importo verrà ri-accreditato sul portafoglio del cliente.
+        </p>
+      } @else {
+        <p class="spiega avviso">
+          Il bonifico verrà scartato: il saldo del cliente non cambia.
+        </p>
+      }
+      <div class="dialog-azioni">
+        <button type="button" class="btn neutro" (click)="annullaRifiuto()">Annulla</button>
+        <button type="button" class="btn rifiuta" (click)="confermaRifiuto()">
+          <mat-icon>close</mat-icon> Rifiuta
+        </button>
+      </div>
+    }
+  </dialog>
+
   @if (messaggio(); as m) {
     <div class="toast" [class.errore]="m.errore">{{ m.testo }}</div>
   }

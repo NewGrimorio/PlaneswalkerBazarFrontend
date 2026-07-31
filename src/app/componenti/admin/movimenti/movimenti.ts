@@ -1,4 +1,4 @@
-import { Component, inject, signal, PLATFORM_ID } from '@angular/core';
+import { Component, ElementRef, inject, signal, viewChild, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, DecimalPipe, DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
@@ -31,6 +31,12 @@ export class Movimenti {
   inAttesa = signal<MovimentoDTO[]>([]);
   caricandoAttesa = signal(false);
   inCorso = signal<number | null>(null);
+
+  /** Il movimento in attesa di conferma di rifiuto; null = dialog chiuso.
+   *  Stesso pattern di reso/recensioni: <dialog> nativo sempre nel DOM
+   *  (chiuso e' invisibile -> SSR-safe), showModal solo su click. */
+  private dialogRifiuto = viewChild.required<ElementRef<HTMLDialogElement>>('dialogRifiuto');
+  daRifiutare = signal<MovimentoDTO | null>(null);
 
   // --- Sezione 2: storico ---
   storico = signal<MovimentoDTO[]>([]);
@@ -83,11 +89,20 @@ export class Movimenti {
     this.conferma(m, true, `Movimento #${m.id} approvato.`);
   }
 
+  /** Apre il dialog di conferma: il POST parte solo da li'. */
   rifiuta(m: MovimentoDTO): void {
-    const msg = m.tipo === 'PRELIEVO'
-      ? `Rifiutare il prelievo #${m.id}? L'importo verrà ri-accreditato al cliente.`
-      : `Rifiutare la ricarica #${m.id}?`;
-    if (!this.chiedi(msg)) return;
+    this.daRifiutare.set(m);
+    this.dialogRifiuto().nativeElement.showModal();
+  }
+
+  annullaRifiuto(): void {
+    this.dialogRifiuto().nativeElement.close();   // (close) azzera il signal
+  }
+
+  confermaRifiuto(): void {
+    const m = this.daRifiutare();
+    if (!m) return;
+    this.dialogRifiuto().nativeElement.close();
     this.conferma(m, false, `Movimento #${m.id} rifiutato.`);
   }
 
@@ -136,10 +151,6 @@ export class Movimenti {
   }
 
   // ============================================================
-
-  private chiedi(msg: string): boolean {
-    return isPlatformBrowser(this.platformId) ? window.confirm(msg) : false;
-  }
 
   private toast(testo: string, errore: boolean): void {
     this.messaggio.set({ testo, errore });
