@@ -42,6 +42,10 @@
           font-size: .88rem; color: #2a1f16; cursor: pointer; }
 .spunta input { accent-color: #d4a24c; width: 16px; height: 16px; }
 
+.gruppo-tipi { border: none; margin: 0; padding: 0;
+               display: flex; flex-direction: column; gap: 6px; }
+.gruppo-tipi legend { font-size: .82rem; color: #6b6355; padding: 0 0 4px; }
+
 .tendina { border-top: 1px solid #f0ebe0; padding-top: 10px; }
 .tendina summary {
   display: flex; align-items: center; gap: 6px;

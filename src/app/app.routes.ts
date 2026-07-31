@@ -6,7 +6,7 @@ import { UserLayout } from './componenti/user-layout/user-layout';
 import { Espansioni } from './componenti/espansioni/espansioni';
 import { Negozio } from './componenti/negozio/negozio';
 import { CartaDettaglio } from './componenti/carta-dettaglio/carta-dettaglio';
-import { CartaVersioni } from './componenti/carta-versioni/carta-versioni';
+import { ProdottoVersioni } from './componenti/prodotto-versioni/prodotto-versioni';
 import { Checkout } from './componenti/cliente/checkout/checkout';
 import { AdminLayout } from './componenti/admin-layout/admin-layout';
 import { Dashboard } from './componenti/admin/dashboard/dashboard';
@@ -66,7 +66,8 @@ export const routes: Routes = [
             { path: 'carte-singole/:codice', component: Negozio, data: { tipo: 'SINGLE' } },
 
             // Pagina carta (stile Scryfall): pubblica, indicizzabile
-            { path: 'carta/:slug/versioni', component: CartaVersioni },
+            { path: 'ricerca', component: ProdottoVersioni },
+            { path: 'carta/:slug/versioni', component: ProdottoVersioni },
             { path: 'carta/:slug', component: CartaDettaglio },
 
             // Altre categorie: un passo solo

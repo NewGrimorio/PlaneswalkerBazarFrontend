@@ -3,6 +3,7 @@
   <input type="text" placeholder="Cerca carte, box, mazzi…"
          [value]="query()"
          (input)="onInput($any($event.target).value)"
+         (keydown.enter)="invio()"
          (focus)="query().length >= 2 && risultati().length > 0 ? aperto.set(true) : null"
          (blur)="onBlur()">
 

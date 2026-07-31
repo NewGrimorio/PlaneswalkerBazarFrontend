@@ -77,6 +77,14 @@ export class BarraRicerca {
     });
   }
 
+  /** Invio: la pagina risultati completa (/ricerca?q=...). */
+  invio(): void {
+    const q = this.query().trim();
+    if (q.length < 2) return;
+    this.chiudi();
+    this.router.navigate(['/ricerca'], { queryParams: { q } });
+  }
+
   vai(r: RisultatoRicercaDTO): void {
     this.chiudi();
     if (r.tipo !== 'CARTA') {

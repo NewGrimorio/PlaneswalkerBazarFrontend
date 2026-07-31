@@ -3,16 +3,26 @@
 
   @if (caricamento()) {
     <p class="stato">Caricamento…</p>
-  } @else if (errore() || versioni().length === 0) {
+  } @else if (modo() === 'ricerca' && (errore() || risultati().length === 0)) {
+    <header class="testata">
+      <h1>Risultati per “{{ query() }}”</h1>
+    </header>
+    <p class="stato">Nessun risultato. Prova con un termine diverso.</p>
+  } @else if (modo() === 'carta' && (errore() || versioni().length === 0)) {
     <p class="stato">Carta non trovata.</p>
   } @else {
     <header class="testata">
-      <h1>{{ nomeCarta() }}</h1>
-      <p class="sottotitolo">
-        {{ versioni().length }}
-        {{ versioni().length === 1 ? 'versione' : 'versioni' }}
-        · dalla più recente
-      </p>
+      @if (modo() === 'carta') {
+        <h1>{{ nomeCarta() }}</h1>
+        <p class="sottotitolo">
+          {{ versioni().length }}
+          {{ versioni().length === 1 ? 'versione' : 'versioni' }}
+          · dalla più recente
+        </p>
+      } @else {
+        <h1>Risultati per “{{ query() }}”</h1>
+        <p class="sottotitolo">{{ risultati().length }} risultati</p>
+      }
     </header>
 
     <div class="corpo">
@@ -21,6 +31,23 @@
       <aside class="filtri">
         <h2><mat-icon>tune</mat-icon> Filtri</h2>
 
+        @if (modo() === 'ricerca') {
+          <!-- FILTRI DINAMICI: solo i tipi davvero presenti nei
+               risultati — niente mazzi trovati, niente chip Mazzi. -->
+          <fieldset class="gruppo-tipi">
+            <legend>Tipo</legend>
+            @for (t of tipiPresenti(); track t.tipo) {
+              <label class="spunta">
+                <input type="checkbox"
+                       [checked]="fTipi().has(t.tipo)"
+                       (change)="toggleTipo(t.tipo)">
+                {{ t.etichetta }}
+              </label>
+            }
+          </fieldset>
+        }
+
+        @if (modo() === 'carta') {
         <details class="tendina">
           <summary>
             Espansione
@@ -66,6 +93,7 @@
           <input type="number" min="0" step="0.5" placeholder="Nessuno"
                  [ngModel]="fPrezzoMax()" (ngModelChange)="cambiaPrezzoMax($event)">
         </label>
+        }
 
         @if (filtriAttivi()) {
           <button type="button" class="btn-testo" (click)="azzeraFiltri()">
@@ -75,6 +103,29 @@
       </aside>
 
       <section class="vetrina">
+        @if (modo() === 'ricerca') {
+          <p class="conta">{{ risultatiFiltrati().length }} di {{ risultati().length }} risultati</p>
+
+          @if (risultatiFiltrati().length === 0) {
+            <p class="stato">Nessun risultato corrisponde ai filtri.</p>
+          } @else {
+            <div class="griglia">
+              @for (r of risultatiFiltrati(); track r.slug) {
+                <article class="card" (click)="vaiRisultato(r)">
+                  <div class="thumb">
+                    @if (urlImmagine(r.imageUrl); as u) {
+                      <img [src]="u" [alt]="r.nome" loading="lazy">
+                    } @else {
+                      <mat-icon>image</mat-icon>
+                    }
+                  </div>
+                  <h3>{{ r.nome }}</h3>
+                  <small class="meta-carta">{{ dettaglioRisultato(r) }}</small>
+                </article>
+              }
+            </div>
+          }
+        } @else {
         <p class="conta">{{ filtrate().length }} di {{ versioni().length }} versioni</p>
 
         @if (filtrate().length === 0) {
@@ -102,6 +153,7 @@
               </article>
             }
           </div>
+        }
         }
       </section>
     </div>
