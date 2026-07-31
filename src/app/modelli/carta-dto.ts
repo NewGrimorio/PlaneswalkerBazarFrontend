@@ -12,4 +12,5 @@ export interface CartaDTO {
   identitaColore: string;
   paroleChiave: string | null;
   legal: string | null;           // JSON grezzo {"standard":"legal",...}
+  cardFaces: string | null;       // JSON grezzo delle facce (bifronte/MDFC)
 }

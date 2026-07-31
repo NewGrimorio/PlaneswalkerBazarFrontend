@@ -8,21 +8,35 @@
 
     <div class="corpo">
       <div class="colonna-img">
+        <!-- Flip 3D in solo CSS: la rotazione e' guidata dalla classe
+             .girata legata a un signal. Zero API browser: SSR-safe. -->
         @if (urlImmagine(p.imageUrl); as u) {
-          <img [src]="u" [alt]="p.nome" class="carta-img">
+          <div class="scena-carta" [class.girata]="mostraRetro()">
+            <div class="flip-interno">
+              <img [src]="u" [alt]="p.nome" class="faccia fronte">
+              @if (urlRetro(); as r) {
+                <img [src]="r" [alt]="p.nome + ' (retro)'" class="faccia retro" loading="lazy">
+              }
+            </div>
+          </div>
         }
-        <!-- Risorse esterne: sotto l'immagine, come su Scryfall.
-             Anchor puri: SSR-safe e indicizzabili. -->
+        @if (urlRetro()) {
+          <button type="button" class="btn-trasforma" (click)="gira()">
+            <mat-icon class="mini">autorenew</mat-icon>
+            {{ mostraRetro() ? 'Mostra il fronte' : 'Trasforma' }}
+          </button>
+        }
+        <!-- Risorse esterne: pillole discrete, il nome basta -->
         @if (linkScryfall() || linkGatherer()) {
-          <div class="link-esterni">
+          <div class="pillole-esterne">
             @if (linkScryfall(); as u) {
-              <a [href]="u" target="_blank" rel="noopener noreferrer">
-                Vedi su Scryfall <mat-icon class="mini">open_in_new</mat-icon>
+              <a class="pillola" [href]="u" target="_blank" rel="noopener noreferrer">
+                Scryfall <mat-icon class="micro">open_in_new</mat-icon>
               </a>
             }
             @if (linkGatherer(); as u) {
-              <a [href]="u" target="_blank" rel="noopener noreferrer">
-                Vedi su Gatherer <mat-icon class="mini">open_in_new</mat-icon>
+              <a class="pillola" [href]="u" target="_blank" rel="noopener noreferrer">
+                Gatherer <mat-icon class="micro">open_in_new</mat-icon>
               </a>
             }
           </div>

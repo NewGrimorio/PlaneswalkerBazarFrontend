@@ -37,6 +37,7 @@ export class CartaDettaglio {
   prodotto = signal<ProdottoDTO | null>(null);
   carrello = signal<CarrelloDTO | null>(null);
   messaggio = signal<Toast>(null);
+  mostraRetro = signal(false);
 
   private readonly FORMATI = ['standard', 'pioneer', 'modern', 'legacy',
     'vintage', 'commander', 'pauper', 'brawl', 'oathbreaker', 'penny'];
@@ -62,6 +63,31 @@ export class CartaDettaglio {
     return id ? `https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=${id}` : null;
   });
 
+  /**
+   * Immagine del retro per le bifronte (transform/MDFC).
+   * card_faces (oracle) dice solo SE esiste un retro con immagine
+   * propria — distingue le bifronte da split/adventure, che hanno
+   * facce ma una sola illustrazione. L'immagine invece si chiede a
+   * Scryfall PER QUESTA STAMPA (face=back sull'id della stampa),
+   * perche' le image_uris salvate in card_faces appartengono a una
+   * stampa qualsiasi: su una borderless mostrerebbero il retro della
+   * versione normale. version=normal: stessa taglia del fronte.
+   */
+  urlRetro = computed(() => {
+    const raw = this.prodotto()?.carta?.cardFaces;
+    const sid = this.prodotto()?.stampa?.scryfallId;
+    if (!raw || !sid) return null;
+    try {
+      const facce = JSON.parse(raw) as Array<{ image_uris?: unknown }>;
+      const bifronte = facce.length === 2 && facce.every(f => !!f.image_uris);
+      return bifronte
+          ? `https://api.scryfall.com/cards/${sid}?format=image&version=normal&face=back`
+          : null;
+    } catch { return null; }
+  });
+
+  gira(): void { this.mostraRetro.update(v => !v); }
+
   /** legal e' JSON grezzo dal backend: si interpreta qui (come da contratto). */
   legalita = computed(() => {
     const raw = this.prodotto()?.carta?.legal;
@@ -83,6 +109,7 @@ export class CartaDettaglio {
   }
 
   private carica(slug: string): void {
+    this.mostraRetro.set(false);        // nuova carta: si riparte dal fronte
     this.prodottoS.getBySlug(slug).subscribe({
       next: p => this.prodotto.set(p),
       error: () => this.toast('Carta non trovata', true)
