@@ -55,6 +55,69 @@
       </div>
 
     </div>
+
+    <!-- Recensioni approvate: la sezione compare SEMPRE — con la
+         media e l'elenco se qualcuno ha recensito, altrimenti con
+         l'invito. La testata con le stelle solo quando ci sono voti:
+         "0.0 su 5" a stelle vuote direbbe il falso. -->
+    @if (statistiche(); as st) {
+      <section class="recensioni">
+        <h2>Recensioni</h2>
+        @if (st.conteggio > 0) {
+          <div class="media-recensioni">
+            <span class="stelle" aria-hidden="true">
+              @for (piena of stelle(st.media ?? 0); track $index) {
+                <mat-icon>{{ piena ? 'star' : 'star_border' }}</mat-icon>
+              }
+            </span>
+            <strong>{{ st.media | number:'1.1-1' }}</strong>&nbsp;su 5
+            <span class="conteggio">
+              · {{ st.conteggio }} {{ st.conteggio === 1 ? 'recensione' : 'recensioni' }}
+            </span>
+          </div>
+
+          <ul class="lista-recensioni">
+            @for (r of recensioni(); track r.id) {
+              <li>
+                <!-- Avatar a sinistra: foto profilo se caricata,
+                     altrimenti l'iniziale del nome — mai un buco. -->
+                <div class="avatar-recensione">
+                  @if (urlImmagine(r.autoreImmagine); as u) {
+                    <img [src]="u" [alt]="r.autore" loading="lazy">
+                  } @else {
+                    <span class="iniziale">{{ r.autore.charAt(0).toUpperCase() }}</span>
+                  }
+                </div>
+                <div class="corpo-recensione">
+                <div class="testata-recensione">
+                  <span class="stelle" [attr.aria-label]="r.voto + ' su 5'">
+                    @for (piena of stelle(r.voto); track $index) {
+                      <mat-icon>{{ piena ? 'star' : 'star_border' }}</mat-icon>
+                    }
+                  </span>
+                  @if (r.titolo) { <strong>{{ r.titolo }}</strong> }
+                </div>
+                <p class="meta-recensione">
+                  {{ r.autore }}
+                  @if (r.acquistoVerificato) {
+                    <span class="verificato">
+                      <mat-icon class="mini">verified</mat-icon> Acquisto verificato
+                    </span>
+                  }
+                  · {{ r.creationDate | date:'dd/MM/yyyy' }}
+                </p>
+                @if (r.testo) { <p class="testo-recensione">{{ r.testo }}</p> }
+                </div>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="nessuna-recensione">
+            Non ci sono ancora recensioni per questo prodotto.
+          </p>
+        }
+      </section>
+    }
   } @else {
     <p class="stato">Prodotto non trovato.</p>
   }

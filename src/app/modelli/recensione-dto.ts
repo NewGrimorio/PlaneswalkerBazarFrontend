@@ -5,6 +5,8 @@ export interface RecensioneDTO {
   testo: string | null;
   stato: string;               // IN_ATTESA, APPROVATA, RIFIUTATA
   autore: string;
+  /** Avatar del profilo (url relativo), null se l'utente non l'ha caricato. */
+  autoreImmagine: string | null;
   acquistoVerificato: boolean;
   creationDate: string;
   updateDate: string;
@@ -15,4 +17,9 @@ export interface RecensioneDTO {
   prodottoId?: number | null;
   prodottoNome?: string | null;
   ordineId?: number | null;
+}
+/** Media e conteggio per la testata della sezione recensioni. */
+export interface RecensioneStatisticheDTO {
+  media: number | null;
+  conteggio: number;
 }

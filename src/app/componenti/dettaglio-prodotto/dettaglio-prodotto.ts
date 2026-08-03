@@ -1,8 +1,10 @@
 import { Component, inject, signal, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser, DecimalPipe } from '@angular/common';
+import { isPlatformBrowser, DecimalPipe, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { Prodotto } from '../../services/prodotto';
+import { Recensione } from '../../services/recensione';
+import { RecensioneDTO, RecensioneStatisticheDTO } from '../../modelli/recensione-dto';
 import { Carrello } from '../../services/carrello';
 import { ProdottoDTO } from '../../modelli/prodotti-dto';
 import { MagazzinoSKUDTO } from '../../modelli/magazzino-sku-dto';
@@ -24,12 +26,13 @@ type Toast = { testo: string; errore: boolean } | null;
  */
 @Component({
   selector: 'app-dettaglio-prodotto',
-  imports: [DecimalPipe, MatIconModule, RouterLink],
+  imports: [DecimalPipe, DatePipe, MatIconModule, RouterLink],
   templateUrl: './dettaglio-prodotto.html',
   styleUrl: './dettaglio-prodotto.css',
 })
 export class DettaglioProdotto {
   private prodottoS = inject(Prodotto);
+  private recensioneS = inject(Recensione);
   private carrelloS = inject(Carrello);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -41,6 +44,10 @@ export class DettaglioProdotto {
   prodotto = signal<ProdottoDTO | null>(null);
   caricando = signal(true);
   messaggio = signal<Toast>(null);
+
+  // ---- Recensioni pubbliche (solo APPROVATE, autore anonimizzato) ----
+  recensioni = signal<RecensioneDTO[]>([]);
+  statistiche = signal<RecensioneStatisticheDTO | null>(null);
 
   /** Da dove tornare indietro: la vetrina del tipo del prodotto. */
   private readonly VETRINE: Record<string, string> = {
@@ -97,10 +104,37 @@ export class DettaglioProdotto {
 
   private carica(slug: string): void {
     this.caricando.set(true);
+    this.recensioni.set([]);          // navigando tra prodotti: reset,
+    this.statistiche.set(null);       // niente recensioni "fantasma"
     this.prodottoS.getBySlug(slug).subscribe({
-      next: dett => { this.prodotto.set(dett); this.caricando.set(false); },
+      next: dett => {
+        this.prodotto.set(dett);
+        this.caricando.set(false);
+        this.caricaRecensioni(dett.id);
+      },
       error: () => { this.prodotto.set(null); this.caricando.set(false); }
     });
+  }
+
+  /** Dati pubblici: caricano anche in SSR (recensioni indicizzabili).
+   *  Best-effort: se falliscono, la sezione semplicemente non compare
+   *  — la pagina prodotto non deve rompersi per le recensioni. */
+  private caricaRecensioni(prodottoId: number): void {
+    this.recensioneS.statisticheByProdotto(prodottoId).subscribe({
+      next: st => this.statistiche.set(st),
+      error: () => this.statistiche.set(null),
+    });
+    this.recensioneS.pubblicheByProdotto(prodottoId).subscribe({
+      next: r => this.recensioni.set(r),
+      error: () => this.recensioni.set([]),
+    });
+  }
+
+  /** 5 posizioni piene/vuote per il voto (interi 1..5); per la media
+   *  si arrotonda al piu' vicino — la precisione sta nel numero. */
+  stelle(voto: number): boolean[] {
+    const pieno = Math.round(voto);
+    return [1, 2, 3, 4, 5].map(i => i <= pieno);
   }
 
   linkVetrina(): string {
