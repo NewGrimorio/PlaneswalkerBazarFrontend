@@ -7,6 +7,8 @@ import { Espansioni } from './componenti/espansioni/espansioni';
 import { Negozio } from './componenti/negozio/negozio';
 import { CartaDettaglio } from './componenti/carta-dettaglio/carta-dettaglio';
 import { ProdottoVersioni } from './componenti/prodotto-versioni/prodotto-versioni';
+import { PasswordDimenticata } from './componenti/password-dimenticata/password-dimenticata';
+import { ReimpostaPassword } from './componenti/reimposta-password/reimposta-password';
 import { Checkout } from './componenti/cliente/checkout/checkout';
 import { AdminLayout } from './componenti/admin-layout/admin-layout';
 import { Dashboard } from './componenti/admin/dashboard/dashboard';
@@ -33,6 +35,8 @@ export const routes: Routes = [
 
     // Pagine a tutto schermo: fuori dalla shell, niente nav.
     { path: 'login',         component: Login },
+            { path: 'password-dimenticata', component: PasswordDimenticata },
+            { path: 'reimposta-password', component: ReimpostaPassword },
     { path: 'registrazione', component: Registrazione },
 
     // Vecchio percorso: qualcuno potrebbe averlo nei preferiti
