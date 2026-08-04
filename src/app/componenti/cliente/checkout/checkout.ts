@@ -8,6 +8,7 @@ import { Portafoglio } from '../../../services/portafoglio';
 import { Indirizzo } from '../../../services/indirizzo';
 import { Ordine } from '../../../services/ordine';
 import { CarrelloDTO } from '../../../modelli/carrello-dto';
+import { urlImmagine } from '../../../utils/url-immagine';
 import { PortafoglioDTO } from '../../../modelli/portafoglio-dto';
 import { IndirizzoDTO } from '../../../modelli/indirizzo-dto';
 import { OrdineDTO } from '../../../modelli/ordine-dto';
@@ -37,6 +38,8 @@ export class Checkout {
   private indirizzoS = inject(Indirizzo);
   private ordineS = inject(Ordine);
   private platformId = inject(PLATFORM_ID);
+
+  protected readonly urlImmagine = urlImmagine;
 
   carrello = signal<CarrelloDTO | null>(null);
   portafoglio = signal<PortafoglioDTO | null>(null);
@@ -82,6 +85,29 @@ export class Checkout {
   mancante = computed(() => Math.max(0, this.totale() - this.saldo()));
   creditoSufficiente = computed(() => this.saldo() >= this.totale());
   carrelloVuoto = computed(() => (this.carrello()?.numeroArticoli ?? 0) === 0);
+
+  /** Stepper quantita': stessa semantica del mini-carrello — il meno
+   *  si ferma a 1 (per togliere c'e' la X), il tetto sulla giacenza
+   *  lo impone il backend. La risposta alimenta il signal locale e
+   *  TUTTI i computed a valle si ricalcolano: merce, spedizione
+   *  (soglia gratuita' compresa), totale, credito sufficiente. */
+  cambiaQuantita(skuId: number, nuova: number): void {
+    if (nuova < 1) return;
+    this.carrelloS.updateVoce(skuId, nuova).subscribe({
+      next: c => this.carrello.set(c),
+      error: err => this.toast(err?.error?.msg ?? 'Quantità non disponibile', true),
+    });
+  }
+
+  /** Rimozione dal riepilogo: la risposta e' il carrello aggiornato —
+   *  alimenta il signal locale (totali e spedizione si ricalcolano da
+   *  soli) e, via tap del service, anche il badge in topbar. */
+  rimuoviVoce(voceId: number): void {
+    this.carrelloS.removeVoce(voceId).subscribe({
+      next: c => this.carrello.set(c),
+      error: err => this.toast(err?.error?.msg ?? 'Impossibile rimuovere', true),
+    });
+  }
 
   puoConfermare = computed(() =>
     !this.carrelloVuoto()

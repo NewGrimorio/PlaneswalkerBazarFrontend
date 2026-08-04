@@ -22,7 +22,41 @@
 
 /* Riepilogo */
 .voci { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.voci li { display: flex; justify-content: space-between; font-size: .92rem; }
+.voci li {
+  display: flex; align-items: center; gap: 10px; font-size: .92rem;
+}
+.voce-thumb {
+  width: 40px; height: 40px; flex-shrink: 0;
+  border: 1px solid #eee7d9; border-radius: 6px; background: #fff;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.voce-thumb img { width: 100%; height: 100%; object-fit: contain; }
+.voce-thumb mat-icon { color: #c9bfae; }
+.voce-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.voce-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.voce-variante { color: #a09786; font-size: .74rem; }
+.voce-quantita {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 3px;
+}
+.step-q {
+  width: 20px; height: 20px; padding: 0;
+  border: 1px solid #d8cdb4; border-radius: 50%;
+  background: #fff; color: #8a6d2f; cursor: pointer;
+  font-size: .85rem; font-weight: 700; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.step-q:hover:not(:disabled) { background: #faf3e3; }
+.step-q:disabled { opacity: .35; cursor: default; }
+.num-q { min-width: 16px; text-align: center; font-size: .85rem; font-weight: 600; }
+.voce-prezzo { white-space: nowrap; }
+.voce-rimuovi {
+  border: none; background: none; cursor: pointer; padding: 2px;
+  color: #b5ab99; display: inline-flex; border-radius: 50%;
+  transition: color .15s, background .15s;
+}
+.voce-rimuovi:hover { color: #c0392b; background: #faf0ee; }
+.voce-rimuovi mat-icon { font-size: 18px; width: 18px; height: 18px; }
 .voci small { color: #a09786; }
 .totale {
   display: flex; justify-content: space-between; align-items: baseline;

@@ -13,15 +13,77 @@
     <div class="gruppo-destro">
       @if (authS.isAutentificated()) {
         <!-- Carrello: il badge legge il signal condiviso del service,
-             aggiornato da OGNI operazione ovunque avvenga -->
-        <a routerLink="/checkout" class="carrello-top" aria-label="Carrello">
-          <mat-icon>shopping_cart</mat-icon>
-          @if (carrelloS.carrelloCorrente(); as c) {
-            @if (c.numeroArticoli > 0) {
-              <span class="badge-carrello">{{ c.numeroArticoli }}</span>
+             aggiornato da OGNI operazione ovunque avvenga. Il click
+             apre il MINI-CARRELLO: anteprima e rimozione senza
+             lasciare la pagina; al checkout si va dal pannello. -->
+        <div class="carrello-wrap">
+          <button type="button" class="carrello-top" aria-label="Carrello"
+                  [attr.aria-expanded]="carrelloAperto()"
+                  (click)="apriChiudiCarrello()">
+            <mat-icon>shopping_cart</mat-icon>
+            @if (carrelloS.carrelloCorrente(); as c) {
+              @if (c.numeroArticoli > 0) {
+                <span class="badge-carrello">{{ c.numeroArticoli }}</span>
+              }
             }
+          </button>
+
+          @if (carrelloAperto()) {
+            <!-- backdrop trasparente: click fuori = chiudi -->
+            <div class="sfondo-carrello" (click)="chiudiCarrello()"></div>
+
+            <div class="pannello-carrello">
+              @if (carrelloS.carrelloCorrente(); as c) {
+                @if (c.voci.length === 0) {
+                  <p class="carrello-vuoto">Il carrello è vuoto.</p>
+                } @else {
+                  <p class="pc-titolo">
+                    Il tuo carrello
+                    <span class="pc-conta">{{ c.numeroArticoli }}
+                      {{ c.numeroArticoli === 1 ? 'articolo' : 'articoli' }}</span>
+                  </p>
+                  <ul class="pc-voci">
+                    @for (v of c.voci; track v.id) {
+                      <li>
+                        <div class="pc-thumb">
+                          @if (urlImmagine(v.imageUrl); as u) {
+                            <img [src]="u" [alt]="v.nomeProdotto" loading="lazy">
+                          } @else {
+                            <mat-icon>image</mat-icon>
+                          }
+                        </div>
+                        <div class="pc-info">
+                          <span class="pc-nome">{{ v.nomeProdotto }}</span>
+                          <span class="pc-quantita">
+                            <button type="button" class="pc-step" aria-label="Diminuisci"
+                                    [disabled]="v.quantita <= 1"
+                                    (click)="cambiaQuantita(v.skuId, v.quantita - 1)">−</button>
+                            <span class="pc-num">{{ v.quantita }}</span>
+                            <button type="button" class="pc-step" aria-label="Aumenta"
+                                    (click)="cambiaQuantita(v.skuId, v.quantita + 1)">+</button>
+                            <span class="pc-sub">· {{ v.subtotale | number:'1.2-2' }} €</span>
+                          </span>
+                        </div>
+                        <button type="button" class="pc-rimuovi" aria-label="Rimuovi"
+                                (click)="rimuoviDalCarrello(v.id)">
+                          <mat-icon>close</mat-icon>
+                        </button>
+                      </li>
+                    }
+                  </ul>
+                  <div class="pc-totale">
+                    <span>Merce</span><strong>{{ c.totale | number:'1.2-2' }} €</strong>
+                  </div>
+                  <button type="button" class="pc-checkout" (click)="vaiAlCheckout()">
+                    Vai al checkout
+                  </button>
+                }
+              } @else {
+                <p class="carrello-vuoto">Il carrello è vuoto.</p>
+              }
+            </div>
           }
-        </a>
+        </div>
 
         <!-- Chip identita': avatar vero + saluto + saldo. menuOpened
              rinfresca il saldo: quando l'utente guarda, e' fresco. -->

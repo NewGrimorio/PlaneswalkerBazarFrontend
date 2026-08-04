@@ -1,4 +1,4 @@
-import { Component, effect, inject, PLATFORM_ID } from '@angular/core';
+import { Component, effect, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, DecimalPipe } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -62,6 +62,40 @@ export class UserLayout {
       if (u) { this.portafoglioS.refreshSaldo(); this.carrelloS.refresh(); }
       else   { this.portafoglioS.azzeraSaldo();  this.carrelloS.azzera(); }
     });
+  }
+
+  // ---------------- Mini-carrello (pannello dall'icona) ----------------
+
+  /** Aperto/chiuso; il backdrop trasparente chiude al click fuori. */
+  carrelloAperto = signal(false);
+
+  apriChiudiCarrello(): void {
+    this.carrelloAperto.update(v => !v);
+    // Quando l'utente guarda, il carrello e' fresco (stesso principio
+    // del saldo nel chip): copre modifiche fatte in altre tab.
+    if (this.carrelloAperto()) this.carrelloS.refresh();
+  }
+
+  chiudiCarrello(): void { this.carrelloAperto.set(false); }
+
+  /** Stepper quantita': il backend impone il tetto sulla giacenza —
+   *  se rifiuta, il signal non cambia e il numero resta fermo (il
+   *  feedback e' l'immobilita', niente toast in un pannellino). Il
+   *  meno si ferma a 1: per togliere c'e' la X. */
+  cambiaQuantita(skuId: number, nuova: number): void {
+    if (nuova < 1) return;
+    this.carrelloS.updateVoce(skuId, nuova).subscribe({ error: () => {} });
+  }
+
+  /** Rimozione diretta dal pannello: il signal condiviso aggiorna
+   *  badge e pannello insieme, nessun ricaricamento manuale. */
+  rimuoviDalCarrello(voceId: number): void {
+    this.carrelloS.removeVoce(voceId).subscribe({ error: () => {} });
+  }
+
+  vaiAlCheckout(): void {
+    this.chiudiCarrello();
+    this.router.navigate(['/checkout']);
   }
 
   /** E' un admin? Mostra la scorciatoia per la plancia nel menu. */

@@ -28,11 +28,17 @@
 
 /* ---------- Carrello ---------- */
 .carrello-top {
-  position: relative; display: flex; align-items: center;
-  padding: 8px; border-radius: 50%; color: #f5e6c8;
-  transition: background .15s;
+  position: relative; display: flex; align-items: center; justify-content: center;
+  width: 42px; height: 42px; padding: 0;
+  border: 1.5px solid #d4a24c; border-radius: 50%;
+  background: #1a1410;                 /* il nero del sito, come il chip utente */
+  color: #d4a24c; cursor: pointer;
+  transition: background .15s, box-shadow .15s;
 }
-.carrello-top:hover { background: rgba(212, 162, 76, 0.15); }
+.carrello-top:hover {
+  background: #2a1f16;
+  box-shadow: 0 0 0 3px rgba(212, 162, 76, 0.2);
+}
 .badge-carrello {
   position: absolute; top: 0; right: 0;
   min-width: 18px; height: 18px; padding: 0 4px;
@@ -118,3 +124,71 @@
     overflow-x: auto; gap: 18px;
   }
 }
+/* ---- Mini-carrello (pannello dall'icona in topbar) ---- */
+.carrello-wrap { position: relative; }
+.sfondo-carrello { position: fixed; inset: 0; z-index: 55; }
+.pannello-carrello {
+  position: absolute; right: 0; top: calc(100% + 10px);
+  width: 320px; max-height: 70vh; overflow: auto;
+  background: #fff; color: #2a1f16;
+  border: 1px solid #e0d7c6; border-radius: 12px;
+  box-shadow: 0 14px 40px rgba(0,0,0,.28);
+  padding: 14px; z-index: 60;
+}
+.pc-titolo {
+  margin: 0 0 10px; font-weight: 700; font-size: .95rem;
+  display: flex; align-items: baseline; justify-content: space-between;
+}
+.pc-conta { color: #a09786; font-weight: 400; font-size: .8rem; }
+.pc-voci { list-style: none; margin: 0; padding: 0;
+           display: flex; flex-direction: column; gap: 10px; }
+.pc-voci li { display: flex; align-items: center; gap: 10px; }
+.pc-thumb {
+  width: 40px; height: 40px; flex-shrink: 0;
+  border: 1px solid #eee7d9; border-radius: 6px; background: #fff;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.pc-thumb img { width: 100%; height: 100%; object-fit: contain; }
+.pc-thumb mat-icon { color: #c9bfae; }
+.pc-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pc-nome {
+  font-size: .86rem; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.pc-info small { color: #a09786; font-size: .76rem; }
+.pc-quantita {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 2px;
+}
+.pc-step {
+  width: 20px; height: 20px; padding: 0;
+  border: 1px solid #d8cdb4; border-radius: 50%;
+  background: #fff; color: #8a6d2f; cursor: pointer;
+  font-size: .85rem; font-weight: 700; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.pc-step:hover:not(:disabled) { background: #faf3e3; }
+.pc-step:disabled { opacity: .35; cursor: default; }
+.pc-num { min-width: 16px; text-align: center; font-size: .84rem; font-weight: 600; }
+.pc-sub { color: #a09786; font-size: .76rem; }
+.pc-rimuovi {
+  border: none; background: none; cursor: pointer; padding: 2px;
+  color: #b5ab99; display: inline-flex; border-radius: 50%;
+  transition: color .15s, background .15s;
+}
+.pc-rimuovi:hover { color: #c0392b; background: #faf0ee; }
+.pc-rimuovi mat-icon { font-size: 18px; width: 18px; height: 18px; }
+.pc-totale {
+  display: flex; justify-content: space-between; align-items: baseline;
+  border-top: 1px solid #f2ede3; margin-top: 12px; padding-top: 10px;
+  font-size: .92rem;
+}
+.pc-checkout {
+  width: 100%; margin-top: 12px;
+  border: none; border-radius: 8px;
+  background: #d4a24c; color: #1a1410;
+  padding: 10px; font-size: .92rem; font-weight: 700; cursor: pointer;
+  transition: background .15s;
+}
+.pc-checkout:hover { background: #e8c579; }
+.carrello-vuoto { margin: 4px 2px; color: #a09786; font-size: .9rem; }

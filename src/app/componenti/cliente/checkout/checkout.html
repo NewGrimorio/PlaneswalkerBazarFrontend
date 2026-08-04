@@ -33,8 +33,32 @@
           <ul class="voci">
             @for (v of c.voci; track v.id) {
               <li>
-                <span>{{ v.nomeProdotto }} <small>× {{ v.quantita }}</small></span>
-                <span>{{ v.subtotale | number:'1.2-2' }} €</span>
+                <div class="voce-thumb">
+                  @if (urlImmagine(v.imageUrl); as u) {
+                    <img [src]="u" [alt]="v.nomeProdotto" loading="lazy">
+                  } @else {
+                    <mat-icon>image</mat-icon>
+                  }
+                </div>
+                <div class="voce-info">
+                  <span class="voce-nome">{{ v.nomeProdotto }}</span>
+                  <span class="voce-quantita">
+                    <button type="button" class="step-q" aria-label="Diminuisci"
+                            [disabled]="v.quantita <= 1"
+                            (click)="cambiaQuantita(v.skuId, v.quantita - 1)">−</button>
+                    <span class="num-q">{{ v.quantita }}</span>
+                    <button type="button" class="step-q" aria-label="Aumenta"
+                            (click)="cambiaQuantita(v.skuId, v.quantita + 1)">+</button>
+                    @if (v.tipoProdotto === 'SINGLE') {
+                      <small class="voce-variante">· {{ v.finitura }} · {{ v.condizione }} · {{ v.lingua }}</small>
+                    }
+                  </span>
+                </div>
+                <span class="voce-prezzo">{{ v.subtotale | number:'1.2-2' }} €</span>
+                <button type="button" class="voce-rimuovi" aria-label="Rimuovi dal carrello"
+                        (click)="rimuoviVoce(v.id)">
+                  <mat-icon>close</mat-icon>
+                </button>
               </li>
             }
           </ul>
