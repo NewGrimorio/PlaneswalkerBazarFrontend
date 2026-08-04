@@ -146,3 +146,42 @@
 <main class="contenuto-user">
   <router-outlet />
 </main>
+
+<!-- FOOTER (modello Moxfield): disclaimer legale Wizards, attribuzione
+     delle fonti dati REALI del progetto, riga di chiusura con Torna su.
+     Sta nel layout utente: compare su ogni pagina che un cliente puo'
+     visitare, mai sotto /admin. -->
+<footer class="footer-user">
+  <div class="footer-interno">
+
+    <p class="legale">
+      Wizards of the Coast, Magic: The Gathering e i rispettivi loghi sono
+      marchi registrati di Wizards of the Coast LLC negli Stati Uniti e in
+      altri paesi. © 1993–{{ annoCorrente }} Wizards. Tutti i diritti riservati.
+    </p>
+    <p class="legale">
+      PlaneswalkerBazar non è affiliato, approvato o sponsorizzato da
+      Wizards of the Coast LLC. L'uso di marchi e proprietà intellettuale di
+      Wizards avviene secondo la
+      <a href="https://company.wizards.com/it/legal/fancontentpolicy"
+         target="_blank" rel="noopener noreferrer">Fan Content Policy</a>.
+    </p>
+    <p class="legale">
+      Dati e immagini delle carte forniti da
+      <a href="https://scryfall.com" target="_blank" rel="noopener noreferrer">Scryfall</a>.
+      I prezzi di riferimento provengono da
+      <a href="https://www.cardtrader.com" target="_blank" rel="noopener noreferrer">Cardtrader</a>
+      e
+      <a href="https://www.cardmarket.com" target="_blank" rel="noopener noreferrer">Cardmarket</a>
+      e non costituiscono garanzia: fanno fede i prezzi in negozio.
+    </p>
+
+    <div class="riga-chiusura">
+      <span>© {{ annoCorrente }} Planeswalker Bazar · progetto Betacom Academy</span>
+      <button type="button" class="torna-su" (click)="tornaSu()">
+        <mat-icon>vertical_align_top</mat-icon> Torna su
+      </button>
+    </div>
+
+  </div>
+</footer>

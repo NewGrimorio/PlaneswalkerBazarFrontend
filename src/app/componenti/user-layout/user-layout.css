@@ -1,4 +1,8 @@
-:host { display: block; }
+:host {
+  display: flex; flex-direction: column;
+  min-height: 100vh;      /* sticky footer: su pagine corte resta in fondo */
+}
+.contenuto-user { flex: 1; }
 
 /* ================= TOPBAR A DUE RIGHE =================
    Riga alta:   logo | ricerca | carrello + chip utente
@@ -192,3 +196,34 @@
 }
 .pc-checkout:hover { background: #e8c579; }
 .carrello-vuoto { margin: 4px 2px; color: #a09786; font-size: .9rem; }
+
+/* ---- Footer (chiude la pagina come la topbar la apre) ---- */
+.footer-user {
+  margin-top: 48px;
+  background: #1a1410; color: #b5ab99;
+  border-top: 2px solid #d4a24c;
+}
+.footer-interno {
+  max-width: 1200px; margin: 0 auto;
+  padding: 28px 20px 22px;
+}
+.legale { margin: 0 0 10px; font-size: .78rem; line-height: 1.55; }
+.legale a { color: #d4a24c; text-decoration: none; }
+.legale a:hover { text-decoration: underline; }
+
+.riga-chiusura {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  border-top: 1px solid rgba(212, 162, 76, 0.25);
+  margin-top: 16px; padding-top: 14px;
+  font-size: .8rem; color: #8a7f6d;
+}
+.torna-su {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid #d4a24c; border-radius: 999px;
+  background: none; color: #d4a24c; cursor: pointer;
+  padding: 6px 14px; font: inherit; font-size: .8rem;
+  transition: background .15s;
+}
+.torna-su:hover { background: rgba(212, 162, 76, 0.12); }
+.torna-su mat-icon { font-size: 16px; width: 16px; height: 16px; }

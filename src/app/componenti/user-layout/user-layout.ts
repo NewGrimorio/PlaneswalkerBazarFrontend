@@ -98,6 +98,15 @@ export class UserLayout {
     this.router.navigate(['/checkout']);
   }
 
+  /** "Torna su" del footer: window solo nel browser (SSR-safe);
+   *  smooth per non teletrasportare l'utente. */
+  tornaSu(): void {
+    if (isPlatformBrowser(this.platformId))
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  readonly annoCorrente = new Date().getFullYear();
+
   /** E' un admin? Mostra la scorciatoia per la plancia nel menu. */
   get eAdmin(): boolean {
     return this.authS.utente()?.ruolo === 'ADMIN';
