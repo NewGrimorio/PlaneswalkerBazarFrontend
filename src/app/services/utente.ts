@@ -8,6 +8,10 @@ import { environment } from '../../environments/environment';
 
 const BASE = environment.apiUrl;
 
+/** Risposta dei flussi token via email (reset e riattivazione, V17/V18):
+ *  token valorizzato SOLO in sviluppo (app.reset.esponi-token). */
+export interface ResetPasswordDTO { msg: string; token: string | null; }
+
 @Injectable({ providedIn: 'root' })
 export class Utente {
   private http = inject(HttpClient);
@@ -44,6 +48,25 @@ export class Utente {
     codiceFiscale: string | null;
   }): Observable<UtenteDTO> {
     return this.http.post<UtenteDTO>(`${BASE}/auth/registrazione`, dati);
+  }
+
+  /**
+   * RIATTIVAZIONE (V18): gemella della reset-richiesta, la chiama il
+   * dialog della registrazione dopo il 409. Risposta IDENTICA
+   * qualunque sia lo stato dell'email (anti-enumerazione); in dev il
+   * token arriva nella risposta e simula il click sul link email.
+   */
+  riattivazioneRichiesta(email: string): Observable<ResetPasswordDTO> {
+    return this.http.post<ResetPasswordDTO>(`${BASE}/auth/riattivazione/richiesta`, { email });
+  }
+
+  /**
+   * Disattivazione SELF-SERVICE (V18): sensibile, viaggia con la
+   * password. Al ritorno le sessioni server sono GIA' tutte revocate:
+   * il chiamante deve solo pulire lo stato locale, niente logout().
+   */
+  disattivaAccount(password: string, motivo: string | null): Observable<{ msg: string }> {
+    return this.http.post<{ msg: string }>(`${BASE}/utenti/disattiva`, { password, motivo });
   }
 
   /**

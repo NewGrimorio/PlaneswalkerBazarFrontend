@@ -24,6 +24,7 @@ import { Account } from './componenti/admin/account/account';
 import { adminGuard } from './auth/admin-guard';
 import { autentificateGuard } from './auth/autentificate-guard';
 import { AccountCliente } from './componenti/cliente/account/account-cliente';
+import { UtentiAdmin } from './componenti/admin/utenti/utenti';
 import { OrdiniCliente } from './componenti/cliente/ordini/ordini';
 import { PortafoglioCliente } from './componenti/cliente/portafoglio/portafoglio';
 import { ContiCliente } from './componenti/cliente/conti/conti';
@@ -106,6 +107,7 @@ export const routes: Routes = [
             { path: 'ordini',     component: Ordini },
             { path: 'movimenti',  component: Movimenti },
             { path: 'recensioni', component: Recensioni },
+            { path: 'utenti',     component: UtentiAdmin },
             { path: 'vendite',    component: VenditeAdmin },
             // Componenti SEPARATI per scelta: la pagina admin e quella
             // cliente hanno ragioni di cambiamento diverse (plancia vs

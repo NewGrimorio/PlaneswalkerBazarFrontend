@@ -47,6 +47,8 @@ export class Dashboard {
   sezioni = [
     { titolo: 'Sincronizza set',  icona: 'cloud_download',  link: '/admin/sync',
       descrizione: 'Importa espansioni e carte da Scryfall' },
+    { titolo: 'Utenti',           icona: 'group',           link: '/admin/utenti',
+      descrizione: 'Account, ban e riattivazioni' },
     { titolo: 'Prodotti',         icona: 'inventory_2',     link: '/admin/prodotti',
       descrizione: 'Sigillato, accessori e lotti' },
     { titolo: 'Magazzino',        icona: 'warehouse',       link: '/admin/magazzino',

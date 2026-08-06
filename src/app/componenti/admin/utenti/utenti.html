@@ -1,0 +1,156 @@
+<div class="utenti-admin">
+  <header>
+    <h1>Utenti</h1>
+    <nav class="filtri">
+      @for (s of stati; track s.l) {
+        <button type="button" class="chip" [class.attivo]="statoSel() === s.v"
+                (click)="cambiaStato(s.v)">{{ s.l }}</button>
+      }
+      <input class="ricerca" type="search" name="q"
+             placeholder="Cerca per email, username o nome…"
+             [(ngModel)]="q" (input)="onRicerca()">
+    </nav>
+  </header>
+
+  @if (caricando()) {
+    <p class="stato">Caricamento…</p>
+  } @else if (!dati() || dati()!.utenti.length === 0) {
+    <p class="stato">Nessun utente trovato.</p>
+  } @else {
+    <table class="tabella">
+      <thead>
+        <tr>
+          <th>Utente</th>
+          <th>Email</th>
+          <th>Ruolo</th>
+          <th>Stato</th>
+          <th>Registrato</th>
+          <th class="col-azioni">Azioni</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (u of dati()!.utenti; track u.id) {
+          <tr [class.espansa]="espansoId() === u.id">
+            <td>
+              <strong>{{ u.username }}</strong>
+              <small class="anagrafica">{{ u.nome }} {{ u.cognome }}</small>
+            </td>
+            <td class="email">{{ u.email }}</td>
+            <td><span class="badge ruolo" [class.admin]="u.ruolo === 'ADMIN'">{{ u.ruolo }}</span></td>
+            <td><span class="badge" [class]="'stato-' + u.stato.toLowerCase()">{{ u.stato }}</span></td>
+            <td class="data">{{ u.dataRegistrazione | date:'dd/MM/yyyy' }}</td>
+            <td class="col-azioni">
+              <div class="azioni">
+                <!-- Le azioni seguono lo STATO. Per gli ADMIN niente
+                     provvedimenti: la guardia vera e' nel backend, qui
+                     semplicemente non si propongono azioni da 400. -->
+                @if (u.stato === 'ATTIVO') {
+                  <button type="button" class="btn neutro"
+                          matTooltip="Invia il link di reset password"
+                          [disabled]="inCorso() === u.id" (click)="resetPassword(u)">
+                    <mat-icon>lock_reset</mat-icon>
+                  </button>
+                  @if (u.ruolo !== 'ADMIN') {
+                    <button type="button" class="btn neutro"
+                            matTooltip="Disattiva l'account (reversibile)"
+                            [disabled]="inCorso() === u.id" (click)="apriDisattiva(u)">
+                      <mat-icon>person_off</mat-icon>
+                    </button>
+                    <button type="button" class="btn pericolo"
+                            matTooltip="Banna (permanente: email bloccata)"
+                            [disabled]="inCorso() === u.id" (click)="apriBanna(u)">
+                      <mat-icon>gavel</mat-icon>
+                    </button>
+                  }
+                } @else if (u.stato === 'DISATTIVATO') {
+                  <button type="button" class="btn primario"
+                          matTooltip="Riattiva l'account"
+                          [disabled]="inCorso() === u.id" (click)="apriRiattiva(u)">
+                    <mat-icon>how_to_reg</mat-icon>
+                  </button>
+                  @if (u.ruolo !== 'ADMIN') {
+                    <button type="button" class="btn pericolo"
+                            matTooltip="Banna (permanente: email bloccata)"
+                            [disabled]="inCorso() === u.id" (click)="apriBanna(u)">
+                      <mat-icon>gavel</mat-icon>
+                    </button>
+                  }
+                }
+                <button type="button" class="btn neutro"
+                        matTooltip="Storico dei cambi di stato"
+                        [class.attivo]="espansoId() === u.id" (click)="toggleStorico(u)">
+                  <mat-icon>history</mat-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Timeline del ledger: la storia dei provvedimenti -->
+          @if (espansoId() === u.id) {
+            <tr class="riga-storico">
+              <td colspan="6">
+                @if (caricandoStorico()) {
+                  <p class="stato">Caricamento storico…</p>
+                } @else if (storico().length === 0) {
+                  <p class="stato">Nessun cambio di stato: l'account è com'era alla registrazione.</p>
+                } @else {
+                  <ul class="timeline">
+                    @for (r of storico(); track r.id) {
+                      <li>
+                        <span class="quando">{{ r.creationDate | date:'dd/MM/yyyy HH:mm' }}</span>
+                        <span class="transizione">
+                          <span class="badge" [class]="'stato-' + r.statoDa.toLowerCase()">{{ r.statoDa }}</span>
+                          <mat-icon>east</mat-icon>
+                          <span class="badge" [class]="'stato-' + r.statoA.toLowerCase()">{{ r.statoA }}</span>
+                        </span>
+                        <span class="chi">da {{ esecutore(r, u.id) }}</span>
+                        @if (r.motivo) { <span class="perche">«{{ r.motivo }}»</span> }
+                      </li>
+                    }
+                  </ul>
+                }
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+
+    <footer class="paginazione">
+      <button type="button" class="btn neutro" [disabled]="pagina() === 0"
+              (click)="precedente()">← Precedente</button>
+      <span>Pagina {{ pagina() + 1 }} di {{ totalePagine() }} — {{ dati()!.totale }} utenti</span>
+      <button type="button" class="btn neutro" [disabled]="pagina() + 1 >= totalePagine()"
+              (click)="successiva()">Successiva →</button>
+    </footer>
+  }
+
+  @if (messaggio(); as m) {
+    <div class="toast" [class.errore]="m.errore">{{ m.testo }}</div>
+  }
+
+  <!-- Provvedimenti: <dialog> nativo, stesso pattern di admin/ordini.
+       Il MOTIVO e' obbligatorio per disattiva/banna: finisce nel
+       ledger, e un provvedimento senza motivo non e' difendibile.
+       Annulla per primo: focus iniziale sul default sicuro. -->
+  <dialog #dialogProvvedimento class="dialog-conferma" (close)="provvedimento.set(null)">
+    @if (provvedimento(); as p) {
+      <h3>{{ p.titolo }}</h3>
+      @if (p.motivoRichiesto) {
+        <label class="etichetta-motivo" for="motivo">Motivo (registrato nello storico)</label>
+        <textarea id="motivo" name="motivo" class="campo-motivo" rows="3"
+                  maxlength="500" [(ngModel)]="motivo"
+                  placeholder="Es. linguaggio offensivo nelle recensioni…"></textarea>
+      } @else {
+        <p class="testo-conferma">L'utente potrà accedere di nuovo con le sue credenziali.</p>
+      }
+      <div class="dialog-azioni">
+        <button type="button" class="btn neutro" (click)="chiudiProvvedimento()">Annulla</button>
+        <button type="button" class="btn"
+                [class.primario]="!p.distruttiva" [class.pericolo]="p.distruttiva"
+                [disabled]="motivoMancante"
+                (click)="confermaProvvedimento()">{{ p.etichetta }}</button>
+      </div>
+    }
+  </dialog>
+</div>

@@ -25,6 +25,7 @@ export class AdminLayout {
   voci = [
     { titolo: 'Dashboard',       icona: 'space_dashboard', link: '/admin' },
     { titolo: 'Sincronizza set', icona: 'cloud_download',  link: '/admin/sync' },
+    { titolo: 'Utenti',          icona: 'group',           link: '/admin/utenti' },
     { titolo: 'Prodotti',        icona: 'inventory_2',     link: '/admin/prodotti' },
     { titolo: 'Magazzino',       icona: 'warehouse',       link: '/admin/magazzino' },
     { titolo: 'Ordini',          icona: 'local_shipping',  link: '/admin/ordini' },

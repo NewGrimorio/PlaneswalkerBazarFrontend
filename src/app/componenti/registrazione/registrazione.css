@@ -43,3 +43,23 @@
 @media (max-width: 520px) {
   .riga { flex-direction: column; gap: 0; }
 }
+
+/* ---- Riattivazione account (V18): dialog aperto dal 409 ---- */
+.dialog-riattiva {
+  border: none;
+  border-radius: 12px;
+  padding: 1.4rem 1.5rem;
+  width: min(92vw, 440px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .25);
+}
+.dialog-riattiva::backdrop { background: rgba(20, 28, 42, .45); }
+.dialog-riattiva h3 { margin: 0 0 8px; }
+.testo-riattiva { margin: 6px 0; font-size: .95rem; color: #263041; }
+.dialog-azioni {
+  display: flex; justify-content: flex-end; gap: .6rem;
+  margin-top: 1.25rem;
+}
+.esito-riattiva {
+  margin: 8px 0 0; padding: 10px 12px; border-radius: 8px;
+  background: #eef7f0; color: #1e7a3e; font-size: .92rem;
+}

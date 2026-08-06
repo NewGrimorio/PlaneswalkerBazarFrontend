@@ -65,3 +65,20 @@ h1 { margin: 0 0 8px; font-size: 1.8rem; color: #2a1f16; }
   color: #a09786;
 }
 .valore-username { font-size: 1.05rem; color: #2a1f16; }
+
+/* ---- Disattivazione account (V18) ---- */
+.zona-disattivazione { border: 1px solid #e6b0aa; }
+.zona-disattivazione h2 { color: #b3261e; }
+.btn-disattiva { color: #b3261e; border-color: #e6b0aa; }
+
+.dialog-disattiva {
+  border: none; border-radius: 12px;
+  padding: 1.4rem 1.5rem; width: min(92vw, 440px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .25);
+}
+.dialog-disattiva::backdrop { background: rgba(20, 28, 42, .45); }
+.dialog-disattiva h3 { margin: 0 0 8px; }
+.testo-dialog { margin: 0 0 14px; font-size: .93rem; color: #556; }
+.campo-dialog { width: 100%; margin-top: 6px; }
+.btn-disattiva-conferma { background: #b3261e; color: #fff; }
+.dialog-azioni { display: flex; justify-content: flex-end; gap: .6rem; margin-top: 1.1rem; }

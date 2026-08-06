@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,6 +9,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { provideNativeDateAdapter, MAT_DATE_LOCALE } from '@angular/material/core';
 import { AuthServices } from '../../../auth/auth-services';
 import { Utente } from '../../../services/utente';
+import { Portafoglio } from '../../../services/portafoglio';
+import { Carrello } from '../../../services/carrello';
 import { UtenteDTO } from '../../../modelli/utente-dto';
 import { urlImmagine } from '../../../utils/url-immagine';
 
@@ -33,6 +35,12 @@ type Esito = { testo: string; errore: boolean } | null;
  * cambiando, subito dopo si fa un login SILENZIOSO con la nuova
  * password: famiglia fresca per QUESTO dispositivo, gli altri restano
  * fuori. UX intatta, sicurezza piena.
+ *
+ * DISATTIVAZIONE (V18): reversibile e self-service, con conferma
+ * password nel dialog. Al ritorno le sessioni server sono GIA' tutte
+ * revocate: qui si fa SOLO pulizia locale (stesso trittico di
+ * esci() in user-layout) e si torna alla home. Il rientro passera'
+ * dalla registrazione: email nota -> proposta di riattivazione.
  */
 @Component({
   selector: 'app-profilo',
@@ -49,7 +57,11 @@ export class Profilo {
 
   private authS = inject(AuthServices);
   private utenteS = inject(Utente);
+  private portafoglioS = inject(Portafoglio);
+  private carrelloS = inject(Carrello);
   private router = inject(Router);
+
+  private dialogDisattiva = viewChild.required<ElementRef<HTMLDialogElement>>('dialogDisattiva');
 
   // --- Card 0: immagine profilo ---
   immagineProfilo = signal<string | null>(null);
@@ -77,6 +89,11 @@ export class Profilo {
   // --- Card 3: password ---
   fVecchia = ''; fNuova = ''; fConferma = '';
   msgPassword = signal<Esito>(null);
+
+  // --- Card 4: disattivazione (V18) ---
+  fPasswordDisattiva = '';
+  fMotivoDisattiva = '';
+  msgDisattiva = signal<Esito>(null);
 
   inCorso = signal(false);
 
@@ -245,6 +262,47 @@ export class Profilo {
           });
         },
         error: err => { this.msgPassword.set(this.esitoErrore(err)); this.inCorso.set(false); }
+      });
+  }
+
+  // ------------------------------------------------------------------
+  // Card 4: disattivazione account (V18)
+  // ------------------------------------------------------------------
+
+  apriDisattiva(): void {
+    this.fPasswordDisattiva = '';
+    this.fMotivoDisattiva = '';
+    this.msgDisattiva.set(null);
+    this.dialogDisattiva().nativeElement.showModal();
+  }
+
+  chiudiDisattiva(): void {
+    this.dialogDisattiva().nativeElement.close();
+  }
+
+  confermaDisattiva(): void {
+    if (this.inCorso() || !this.fPasswordDisattiva) return;
+    this.inCorso.set(true);
+    this.msgDisattiva.set(null);
+
+    this.utenteS.disattivaAccount(this.fPasswordDisattiva,
+        this.fMotivoDisattiva.trim() || null)
+      .subscribe({
+        next: () => {
+          // Le sessioni server sono GIA' tutte revocate: solo pulizia
+          // locale, lo stesso trittico dell'esci() di user-layout.
+          this.chiudiDisattiva();
+          this.authS.resetAll();
+          this.portafoglioS.azzeraSaldo();
+          this.carrelloS.azzera();
+          this.router.navigate(['/']);
+        },
+        error: err => {
+          // Il dialog resta aperto: l'errore (password errata) si
+          // legge nel contesto in cui e' nato.
+          this.msgDisattiva.set(this.esitoErrore(err));
+          this.inCorso.set(false);
+        }
       });
   }
 

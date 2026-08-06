@@ -71,6 +71,9 @@
         @if (errore(); as e) {
           <p class="errore">{{ e }}</p>
         }
+        @if (esitoRiattiva(); as m) {
+          <p class="esito-riattiva">{{ m }}</p>
+        }
 
         <button mat-flat-button type="submit" class="campo"
                 [disabled]="f.invalid || passwordNonCoincidono || inCorso()">
@@ -83,4 +86,24 @@
       Hai già un account? <a routerLink="/login">Accedi</a>
     </mat-card-footer>
   </mat-card>
+
+  <!-- Riattivazione (V18): si apre SOLO al 409 della registrazione.
+       Stesso pattern <dialog> nativo dell'area admin: sempre nel DOM,
+       showModal() al bisogno. Annulla per primo: il focus iniziale
+       cade sul default sicuro. -->
+  <dialog #dialogRiattiva class="dialog-riattiva">
+    <h3>Bentornato!</h3>
+    <p class="testo-riattiva">{{ messaggioRiattiva() }}</p>
+    <p class="testo-riattiva">Desideri riattivare il vecchio account con una
+       nuova password? Ritroverai ordini, portafoglio e indirizzi.</p>
+    <div class="dialog-azioni">
+      <button mat-button type="button" (click)="chiudiRiattiva()">
+        No, uso un'altra email
+      </button>
+      <button mat-flat-button type="button" [disabled]="inCorsoRiattiva()"
+              (click)="confermaRiattiva()">
+        {{ inCorsoRiattiva() ? 'Invio…' : 'Sì, riattiva l\'account' }}
+      </button>
+    </div>
+  </dialog>
 </div>

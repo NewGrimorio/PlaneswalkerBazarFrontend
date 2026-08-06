@@ -149,3 +149,48 @@
             (click)="salvaPassword(fPassword)">Cambia password</button>
   </div>
 </div>
+
+<!-- ================= Disattivazione account (V18) ================= -->
+<div class="pannello-form zona-disattivazione">
+  <h2>Disattivazione account</h2>
+  <p class="nota">La disattivazione è <strong>reversibile</strong>: potrai
+     riattivare l'account in qualsiasi momento dalla pagina di registrazione,
+     usando la tua email e impostando una nuova password. Ordini, portafoglio
+     e indirizzi restano al loro posto.</p>
+  <div class="azioni-form">
+    <button mat-stroked-button class="btn-disattiva" type="button"
+            [disabled]="inCorso()" (click)="apriDisattiva()">
+      <mat-icon>person_off</mat-icon> Disattiva il mio account
+    </button>
+  </div>
+</div>
+
+<!-- Conferma: operazione sensibile come il cambio email, quindi
+     password nel dialog. Annulla per primo: focus sul default sicuro. -->
+<dialog #dialogDisattiva class="dialog-disattiva">
+  <h3>Disattivare l'account?</h3>
+  <p class="testo-dialog">Verrai disconnesso da tutti i dispositivi.
+     Per riattivarlo in futuro: registrazione con questa email.</p>
+  <mat-form-field appearance="outline" class="campo-dialog">
+    <mat-label>Password (per conferma)</mat-label>
+    <input matInput type="password" name="passwordDisattiva"
+           [(ngModel)]="fPasswordDisattiva" required>
+  </mat-form-field>
+  <mat-form-field appearance="outline" class="campo-dialog" subscriptSizing="dynamic">
+    <mat-label>Motivo (facoltativo)</mat-label>
+    <textarea matInput name="motivoDisattiva" rows="2" maxlength="500"
+              [(ngModel)]="fMotivoDisattiva"></textarea>
+    <mat-hint>Ci aiuta a migliorare</mat-hint>
+  </mat-form-field>
+  @if (msgDisattiva(); as m) {
+    <p class="messaggio errore">{{ m.testo }}</p>
+  }
+  <div class="dialog-azioni">
+    <button mat-button type="button" (click)="chiudiDisattiva()">Annulla</button>
+    <button mat-flat-button type="button" class="btn-disattiva-conferma"
+            [disabled]="inCorso() || !fPasswordDisattiva"
+            (click)="confermaDisattiva()">
+      {{ inCorso() ? 'Disattivazione…' : 'Disattiva account' }}
+    </button>
+  </div>
+</dialog>
